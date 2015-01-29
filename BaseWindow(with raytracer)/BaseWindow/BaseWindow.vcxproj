@@ -87,6 +87,7 @@
     <ClCompile Include="D3D11Timer.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="RTGraphics.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +98,7 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="hrTimer.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="RTGraphics.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

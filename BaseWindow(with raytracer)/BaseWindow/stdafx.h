@@ -3,7 +3,7 @@
 
 #include <windows.h>
 #include <D3D11.h>
-#include <D3DX11.h>
+//#include <D3DX11.h>
 #include <d3dCompiler.h>
 #include <string>
 #include <vector>
@@ -67,6 +67,20 @@ struct Triangle
 	XMFLOAT4 normal;
 	int ID;
 	XMFLOAT3 pad;
+};
+
+struct TriangleMat
+{
+	XMFLOAT4	pos0;
+	XMFLOAT4	pos1;
+	XMFLOAT4	pos2;
+	XMFLOAT2	textureCoordinate0;
+	XMFLOAT2	textureCoordinate1;
+	XMFLOAT2	textureCoordinate2;
+	int			ID;
+	float		pad;
+	XMFLOAT4	color;
+	XMFLOAT4	normal;
 };
 
 struct cbWorld
