@@ -134,7 +134,7 @@ void Graphics::createShader(std::string _shader, std::string _shaderModel)
 
 	std::wstring wfile;
 	wfile.assign(file.begin(), file.end());
-	size_t shaderSize;
+	//size_t shaderSize;
 
 	result = D3DReadFileToBlob(wfile.c_str(), &shaderBlob);
 	if (FAILED(result))

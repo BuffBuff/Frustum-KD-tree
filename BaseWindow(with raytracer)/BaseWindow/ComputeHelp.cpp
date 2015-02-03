@@ -7,11 +7,6 @@
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxguid.lib") 
 
-#if defined( DEBUG ) || defined( _DEBUG )
-#pragma comment(lib, "d3dx11d.lib")
-#else
-#pragma comment(lib, "d3dx11.lib")
-#endif
 
 ComputeShader::ComputeShader()
 	: mD3DDevice(NULL), mD3DDeviceContext(NULL)
@@ -281,9 +276,15 @@ ComputeTexture* ComputeWrap::CreateTexture(TCHAR* textureFilename, char* debugNa
 	ComputeTexture* texture = new ComputeTexture();
 	texture->_D3DContext = mD3DDeviceContext;
 
-	if(SUCCEEDED(D3DX11CreateTextureFromFile(mD3DDevice, textureFilename, NULL, NULL, (ID3D11Resource**)&texture->_Resource, NULL)))
+	wchar_t temp = (wchar_t)textureFilename;
+
+	HRESULT hr = S_OK;
+	hr = DirectX::CreateWICTextureFromFile(mD3DDevice, mD3DDeviceContext, &temp, nullptr, &texture->_ResourceView);
+
+
+	if (hr = S_OK)
 	{
-		texture->_ResourceView = CreateTextureSRV(texture->_Resource);
+		//texture->_ResourceView = CreateTextureSRV(texture->_Resource);
 		
 		if(debugName)
 		{
