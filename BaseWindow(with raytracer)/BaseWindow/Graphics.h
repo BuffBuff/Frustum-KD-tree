@@ -36,6 +36,7 @@ private:
 	void createRasterState();
 	void createViewport();
 	void createBlendState();
+	void release();
 
 	cbWorld cbWorld;
 	ID3D11Buffer* g_cbWorld = NULL;
@@ -56,7 +57,11 @@ private:
 
 	ID3D11RasterizerState *rasterState = NULL;
 
-	Mesh m_mesh;
+	//MESH
+	Mesh						m_mesh;
+	ComputeBuffer				*m_meshBuffer;
+	ComputeWrap					*m_ComputeSys;
+	ID3D11ShaderResourceView	*m_meshTexture;
 
 };
 

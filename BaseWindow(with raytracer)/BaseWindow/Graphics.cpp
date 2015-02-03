@@ -2,6 +2,8 @@
 
 
 Graphics::Graphics()
+: m_mesh(Mesh()),
+m_meshTexture(nullptr)
 {
 	createBackBuffer();
 	createShader("VertexShader", "vs_5_0");
@@ -9,8 +11,7 @@ Graphics::Graphics()
 	createBuffers();
 	createRasterState();
 	createViewport();
-	createBlendState();
-
+	createBlendState();	
 
 	D3D11_BUFFER_DESC bufferDesc;
 	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
@@ -35,7 +36,17 @@ Graphics::Graphics()
 
 	g_DeviceContext->Unmap(g_vertexBuffer, 0);
 
-	//------------------------------
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//Mesh
+///////////////////////////////////////////////////////////////////////////////////////////
+	m_mesh.loadObj("Meshi/kub.obj");
+
+	m_meshBuffer = m_ComputeSys->CreateBuffer(STRUCTURED_BUFFER, sizeof(Triangle), m_mesh.getFaces(), true, false, m_mesh.getTriangles(), false, "Structured Buffer: Mesh Texture");
+	
+	//bytas ut till det nya från martin
+	//D3DX11CreateShaderResourceViewFromFile(m_Device, m_mesh.getMaterial()->map_Kd.c_str(), NULL, NULL, &m_meshTexture, &hr);
+	CreateWICTextureFromFile(g_Device, g_DeviceContext, (wchar_t)m_mesh.getMaterial()->map_Kd.c_str()*, NULL, &m_meshTexture);
 
 }
 
@@ -134,7 +145,7 @@ void Graphics::createShader(std::string _shader, std::string _shaderModel)
 
 	std::wstring wfile;
 	wfile.assign(file.begin(), file.end());
-	//size_t shaderSize;
+	size_t shaderSize;
 
 	result = D3DReadFileToBlob(wfile.c_str(), &shaderBlob);
 	if (FAILED(result))
@@ -408,4 +419,15 @@ void Graphics::createBlendState()
 	if (FAILED(result))
 		MessageBox(NULL, "Failed Making Blendstate", "Create Blendstate", MB_OK);
 
+}
+
+void Graphics::release()
+{
+	SAFE_RELEASE(m_meshTexture);
+	SAFE_RELEASE(g_Device);
+	SAFE_RELEASE(g_DeviceContext);
+
+	SAFE_DELETE(m_meshBuffer);
+	SAFE_DELETE(m_ComputeSys);
+	g_backBuffer
 }
