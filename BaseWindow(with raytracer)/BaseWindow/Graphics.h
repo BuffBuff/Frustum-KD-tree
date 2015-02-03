@@ -56,7 +56,7 @@ private:
 
 	ID3D11RasterizerState *rasterState = NULL;
 
-
+	Mesh m_mesh;
 
 };
 

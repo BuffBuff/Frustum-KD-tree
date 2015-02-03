@@ -10,6 +10,8 @@
 #include <map>
 #include <fstream>
 
+#include "Mesh.h"
+
 #include <DirectXMath.h>
 using namespace DirectX;
 //#define D3DXMATRIX DirectX::XMMATRIX
