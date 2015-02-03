@@ -6,8 +6,8 @@
 #include <d3dcommon.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
-#include <d3dx11.h>
 
+#include <string>
 #include <tchar.h>
 
 
@@ -154,8 +154,7 @@ class ComputeShader
 private:
 	explicit ComputeShader();
 
-	bool Init(TCHAR* shaderFile, char* blobFileAppendix, char* pFunctionName, D3D10_SHADER_MACRO* pDefines,
-		ID3D11Device* d3dDevice, ID3D11DeviceContext*d3dContext);
+	bool Init(std::string shaderFile, ID3D11Device* d3dDevice, ID3D11DeviceContext*d3dContext);
 
 public:
 	~ComputeShader();
@@ -176,7 +175,7 @@ public:
 		mD3DDeviceContext = d3dContext;
 	}
 
-	ComputeShader* CreateComputeShader(TCHAR* shaderFile, char* blobFileAppendix, char* pFunctionName, D3D10_SHADER_MACRO* pDefines);
+	ComputeShader* CreateComputeShader(TCHAR* shaderFile);
 
 	ID3D11Buffer* CreateConstantBuffer(UINT uSize, VOID* pInitData, char* debugName = NULL);
 
