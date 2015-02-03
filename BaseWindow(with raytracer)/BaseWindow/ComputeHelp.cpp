@@ -7,11 +7,6 @@
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxguid.lib") 
 
-#if defined( DEBUG ) || defined( _DEBUG )
-#pragma comment(lib, "d3dx11d.lib")
-#else
-#pragma comment(lib, "d3dx11.lib")
-#endif
 
 ComputeShader::ComputeShader()
 	: mD3DDevice(NULL), mD3DDeviceContext(NULL)
@@ -24,49 +19,36 @@ ComputeShader::~ComputeShader()
 	SAFE_RELEASE(mD3DDevice);
 }
 
-bool ComputeShader::Init(TCHAR* shaderFile, char* blobFileAppendix, char* pFunctionName, D3D10_SHADER_MACRO* pDefines,
-	ID3D11Device* d3dDevice, ID3D11DeviceContext*d3dContext)
+bool ComputeShader::Init(std::string shaderFile, ID3D11Device* d3dDevice, ID3D11DeviceContext*d3dContext)
 {
 	HRESULT hr = S_OK;
 	mD3DDevice = d3dDevice;
 	mD3DDeviceContext = d3dContext;
 
-	ID3DBlob* pCompiledShader = NULL;
-	ID3DBlob* pErrorBlob = NULL;
-	
-	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if defined(DEBUG) || defined(_DEBUG)
-	dwShaderFlags |= D3DCOMPILE_DEBUG;
-	dwShaderFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL0;
-#else
-	dwShaderFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL0;
-#endif
+	ID3DBlob* shaderBlob = NULL;
+	ID3DBlob* errorBlob = NULL;
 
-	hr = D3DX11CompileFromFile(shaderFile, pDefines, NULL, pFunctionName, "cs_5_0", 
-		dwShaderFlags, NULL, NULL, &pCompiledShader, &pErrorBlob, NULL);
+	std::string fullpath = "Shaders/" + shaderFile + ".cso";
+	std::wstring wpath;
+	wpath.assign(fullpath.begin(), fullpath.end());
 
-	if (pErrorBlob)
+	hr = D3DReadFileToBlob(wpath.c_str(), &shaderBlob);
+
+	if (FAILED(hr))
+		return -1;
+
+	hr = mD3DDevice->CreateComputeShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &mShader);
+
+	if (FAILED(hr))
 	{
-		OutputDebugStringA((char*)pErrorBlob->GetBufferPointer());
+		MessageBox(NULL, "Failed to create Compute shader", "RenderDX11 Error!", S_OK);
+		return -1;
 	}
 
-	if(hr == S_OK)
-	{
-		/*
-		ID3D11ShaderReflection* pReflector = NULL;
-		hr = D3DReflect( pCompiledShader->GetBufferPointer(), 
-			pCompiledShader->GetBufferSize(), IID_ID3D11ShaderReflection, 
-			(void**) &pReflector);
-		*/
-		if(hr == S_OK)
-		{
-			hr = mD3DDevice->CreateComputeShader(pCompiledShader->GetBufferPointer(),
-				pCompiledShader->GetBufferSize(), NULL, &mShader);
-		}
-	}
+	shaderBlob->Release();
 
-	SAFE_RELEASE(pErrorBlob);
-	SAFE_RELEASE(pCompiledShader);
+	if (errorBlob != NULL)
+		errorBlob->Release();
 
     return (hr == S_OK);
 }
@@ -294,9 +276,15 @@ ComputeTexture* ComputeWrap::CreateTexture(TCHAR* textureFilename, char* debugNa
 	ComputeTexture* texture = new ComputeTexture();
 	texture->_D3DContext = mD3DDeviceContext;
 
-	if(SUCCEEDED(D3DX11CreateTextureFromFile(mD3DDevice, textureFilename, NULL, NULL, (ID3D11Resource**)&texture->_Resource, NULL)))
+	wchar_t temp = (wchar_t)textureFilename;
+
+	HRESULT hr = S_OK;
+	hr = DirectX::CreateWICTextureFromFile(mD3DDevice, mD3DDeviceContext, &temp, nullptr, &texture->_ResourceView);
+
+
+	if (hr = S_OK)
 	{
-		texture->_ResourceView = CreateTextureSRV(texture->_Resource);
+		//texture->_ResourceView = CreateTextureSRV(texture->_Resource);
 		
 		if(debugName)
 		{
@@ -428,15 +416,12 @@ void ComputeWrap::SetDebugName(ID3D11DeviceChild* object, char* debugName)
 #endif
 }
 
-ComputeShader* ComputeWrap::CreateComputeShader(TCHAR* shaderFile, char* blobFileAppendix, char* pFunctionName, D3D10_SHADER_MACRO* pDefines)
+ComputeShader* ComputeWrap::CreateComputeShader(TCHAR* shaderFile)
 {
 	ComputeShader* cs = new ComputeShader();
 
 	if(cs && !cs->Init(
 		shaderFile,
-		blobFileAppendix,
-		pFunctionName,
-		pDefines,
 		mD3DDevice,
 		mD3DDeviceContext))
 	{

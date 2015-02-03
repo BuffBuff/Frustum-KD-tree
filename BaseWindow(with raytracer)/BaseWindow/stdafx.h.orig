@@ -3,6 +3,10 @@
 
 #include <windows.h>
 #include <D3D11.h>
+<<<<<<< HEAD
+//#include <D3DX11.h>
+=======
+>>>>>>> origin/master
 #include <d3dCompiler.h>
 #include <string>
 #include <vector>

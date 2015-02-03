@@ -8,9 +8,3 @@ cbuffer cbWorld			: register(b0)
 	matrix	view;
 	matrix	projection;
 };
-
-//cbuffer cbEveryFrame	: register(b3)
-//{
-//	float	timeStep;
-//	float	gameTime;
-//};

@@ -2,7 +2,6 @@
 #define _XCAMERA
 
 #include "stdafx.h"
-//#include <d3dx10.h>
 #include "hrTimer.h"
 #include <d3d.h>
 #include <d3d11.h>

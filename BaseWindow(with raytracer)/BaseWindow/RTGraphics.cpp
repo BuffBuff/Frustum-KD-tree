@@ -7,7 +7,7 @@ RTGraphics::RTGraphics()
 
 	computeWrap = new ComputeWrap(g_Device,g_DeviceContext);
 
-	raytracer = computeWrap->CreateComputeShader("Raytracing.hlsl",NULL,"main",NULL);
+	raytracer = computeWrap->CreateComputeShader("Raytracing");
 
 	ID3D11Texture2D* pBackBuffer;
 	hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);

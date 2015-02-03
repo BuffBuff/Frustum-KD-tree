@@ -25,9 +25,9 @@ private:
 
 	ComputeWrap *computeWrap;
 
-	ComputeShader *raytracer;
+	ComputeShader *raytracer = NULL;
 
-	ComputeBuffer *triangleBuffer;
+	ComputeBuffer *triangleBuffer = NULL;
 
 	ID3D11Buffer *g_cBuffer;
 	cBuffer cb;

@@ -25,60 +25,81 @@
     <Filter Include="Shaders\Raytracer">
       <UniqueIdentifier>{0047b331-11f8-40b7-a57a-cfb4429ebb3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Raytracer">
+      <UniqueIdentifier>{875cb965-3be9-42ad-a6dd-a61705018d9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Raytracer">
+      <UniqueIdentifier>{281dd022-8db7-4a17-bcd0-5968bc93e10d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Normal render">
+      <UniqueIdentifier>{480a7f08-c1c1-4ac2-98d2-ae51bd0f8c22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Normal render">
+      <UniqueIdentifier>{00cc8cb0-2355-4aa2-9a42-eeb8932b49a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ButtonInput.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Graphics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RTGraphics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D11Timer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Externs</Filter>
     </ClCompile>
     <ClCompile Include="ComputeHelp.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Externs</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D11Timer.cpp">
+      <Filter>Externs</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Externs</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics.cpp">
+      <Filter>Source Files\Normal render</Filter>
+    </ClCompile>
+    <ClCompile Include="RTGraphics.cpp">
+      <Filter>Source Files\Raytracer</Filter>
+    </ClCompile>
+    <ClCompile Include="WICTextureLoader.cpp">
+      <Filter>Externs</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ButtonInput.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hrTimer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Graphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RTGraphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D11Timer.h">
+    <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ComputeHelp.h">
-      <Filter>Header Files</Filter>
+      <Filter>Externs</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="hrTimer.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D11Timer.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="ButtonInput.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTGraphics.h">
+      <Filter>Header Files\Raytracer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>Header Files\Normal render</Filter>
+    </ClInclude>
+    <ClInclude Include="PlatformHelpers.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="WICTextureLoader.h">
+      <Filter>Externs</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
@@ -108,5 +129,6 @@
     <None Include="resources.hlsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
