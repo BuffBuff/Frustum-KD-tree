@@ -1,3 +1,5 @@
+#pragma once
+#include "stdafx.h"
 #include <D3D11.h>
 
 class D3D11Timer

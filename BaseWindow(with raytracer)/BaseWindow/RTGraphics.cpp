@@ -105,7 +105,7 @@ void RTGraphics::Render(float _dt)
 
 	//set textures
 	ID3D11ShaderResourceView *srv[] = { triangleBuffer->GetResourceView() };
-	g_DeviceContext->CSGetShaderResources(0, 1, srv);
+	g_DeviceContext->CSSetShaderResources(0, 1, srv);
 
 	//dispatch
 	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);

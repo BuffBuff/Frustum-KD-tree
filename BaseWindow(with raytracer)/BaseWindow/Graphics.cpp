@@ -13,40 +13,46 @@ m_meshTexture(nullptr)
 	createViewport();
 	createBlendState();	
 
-	D3D11_BUFFER_DESC bufferDesc;
-	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
-	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	bufferDesc.ByteWidth = sizeof(Vertex) * 6;
-	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
-	HRESULT result = S_OK;
-	result = g_Device->CreateBuffer(&bufferDesc, NULL, &g_vertexBuffer);
-	if (FAILED(result))
-	{
-		MessageBox(NULL, "Error creating dynamic vertex buffer", "RenderDX11 Error", S_OK);
-	}
-
-
-	D3D11_MAPPED_SUBRESOURCE updateData;
-	ZeroMemory(&updateData, sizeof(updateData));
-
-	if (!FAILED(g_DeviceContext->Map(g_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &updateData)))
-		memcpy(updateData.pData, &wall[0], sizeof(Vertex)* 6);
-
-	g_DeviceContext->Unmap(g_vertexBuffer, 0);
+	
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Mesh
 ///////////////////////////////////////////////////////////////////////////////////////////
+	
+
+	
+	
+	//Load OBJ-file
 	m_mesh.loadObj("Meshi/kub.obj");
 
-	m_meshBuffer = m_ComputeSys->CreateBuffer(STRUCTURED_BUFFER, sizeof(Triangle), m_mesh.getFaces(), true, false, m_mesh.getTriangles(), false, "Structured Buffer: Mesh Texture");
-	
-	//bytas ut till det nya från martin
-	//D3DX11CreateShaderResourceViewFromFile(m_Device, m_mesh.getMaterial()->map_Kd.c_str(), NULL, NULL, &m_meshTexture, &hr);
-	CreateWICTextureFromFile(g_Device, g_DeviceContext, (wchar_t)m_mesh.getMaterial()->map_Kd.c_str()*, NULL, &m_meshTexture);
+	//Create Vertex Buffer
+	D3D11_BUFFER_DESC bufferDesc;
+	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
+	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	bufferDesc.ByteWidth = sizeof(TriangleMat)* m_mesh.getNrOfFaces();
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	HRESULT result = S_OK;
+	result = g_Device->CreateBuffer(&bufferDesc, NULL, &m_meshBuffer);
+	if (FAILED(result))
+	{
+		MessageBox(NULL, "Error creating dynamic mesh buffer", "RenderDX11 Error", S_OK);
+	}
+
+	//Fill Vertex Buffer
+	D3D11_MAPPED_SUBRESOURCE updateData;
+	ZeroMemory(&updateData, sizeof(updateData));
+
+	if (!FAILED(g_DeviceContext->Map(m_meshBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &updateData)))
+		memcpy(updateData.pData, &m_meshBuffer[0], sizeof(TriangleMat)* m_mesh.getNrOfFaces());
+
+	g_DeviceContext->Unmap(m_meshBuffer, 0);
+
+
+	//TEXTURE STUFF
+	CreateWICTextureFromFile(g_Device, g_DeviceContext, (wchar_t*)m_mesh.getMaterial()->map_Kd.c_str(), NULL, &m_meshTexture);
 
 }
 
@@ -70,13 +76,13 @@ HRESULT Graphics::Update(float _deltaTime)
 
 
 
-	D3D11_MAPPED_SUBRESOURCE updateData;
-	ZeroMemory(&updateData, sizeof(updateData));
+	//D3D11_MAPPED_SUBRESOURCE updateData;
+	//ZeroMemory(&updateData, sizeof(updateData));
 
-	if (!FAILED(g_DeviceContext->Map(g_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &updateData)))
-		memcpy(updateData.pData, &wall[0], sizeof(Vertex)* 6);
+	//if (!FAILED(g_DeviceContext->Map(g_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &updateData)))
+	//	memcpy(updateData.pData, &wall[0], sizeof(Vertex)* 6);
 
-	g_DeviceContext->Unmap(g_vertexBuffer, 0);
+	//g_DeviceContext->Unmap(g_vertexBuffer, 0);
 
 
 	return S_OK;
@@ -84,6 +90,8 @@ HRESULT Graphics::Update(float _deltaTime)
 
 HRESULT Graphics::Render(float _deltaTime)
 {
+	
+
 	//D3DXCOLOR color = D3DXCOLOR(Cam->getCameraPosition().x, Cam->getCameraPosition().y, Cam->getCameraPosition().z,0);
 	g_DeviceContext->VSSetShader(g_vertexShader,NULL,0);
 	g_DeviceContext->PSSetShader(g_pixelShader, NULL, 0);
@@ -97,7 +105,7 @@ HRESULT Graphics::Render(float _deltaTime)
 
 	g_DeviceContext->RSSetState(rasterState);
 
-	UINT strides = sizeof(Vertex);
+	UINT strides = sizeof(TriangleMat);
 	UINT offset = 0;
 
 	g_DeviceContext->OMSetRenderTargets(1, &g_backBuffer,NULL);
@@ -107,15 +115,13 @@ HRESULT Graphics::Render(float _deltaTime)
 
 	g_DeviceContext->OMSetBlendState(g_blendState, blendFactor, 0xffffffff);
 
-
-	//g_DeviceContext->IASetVertexBuffers(0, 1, &g_vertexBuffer, &strides, &offset);
-	//g_DeviceContext->Draw(6,0);
+	
+	g_DeviceContext->IASetVertexBuffers(0, 1, &m_meshBuffer, &strides, &offset);
+	g_DeviceContext->Draw(m_mesh.getNrOfFaces(),0);
 
 	//g_DeviceContext->IASetVertexBuffers(0, 1, object->getBuffer(), &strides,&offset );
 	//g_DeviceContext->Draw(3000,0);
-
-
-
+	
 	// Presenting swapchain
 	if (FAILED(g_SwapChain->Present(0, 0)))
 		return E_FAIL;
@@ -140,7 +146,7 @@ void Graphics::createShader(std::string _shader, std::string _shaderModel)
 {
 	HRESULT result = S_OK;
 	ID3DBlob* shaderBlob = NULL;
-	std::string path = "";
+	std::string path = "Shaders/";
 	std::string file = path + _shader + ".cso";
 
 	std::wstring wfile;
@@ -428,6 +434,4 @@ void Graphics::release()
 	SAFE_RELEASE(g_DeviceContext);
 
 	SAFE_DELETE(m_meshBuffer);
-	SAFE_DELETE(m_ComputeSys);
-	g_backBuffer
 }

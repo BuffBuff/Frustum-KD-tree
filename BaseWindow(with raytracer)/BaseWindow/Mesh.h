@@ -1,11 +1,12 @@
 #pragma once
 
+#include "stdafx.h"
 #include <string>
 #include <vector>
 #include <fstream>
 #include <sstream>
 #include <DirectXMath.h>
-#include "stdafx.h"
+
 //#include "Structs.h" //old
 
 using namespace DirectX;
@@ -45,13 +46,14 @@ struct Material
 
 class Mesh
 {
+
 public:
 	Mesh();
 	~Mesh();
 	void init();
 	void loadObj(char* textFile);
 	Material* getMaterial();
-	int getFaces();
+	int getNrOfFaces();
 	TriangleMat* getTriangles();
 private:
 	int m_nrOfFaces;

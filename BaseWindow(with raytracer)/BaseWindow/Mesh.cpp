@@ -184,7 +184,7 @@ Material* Mesh::getMaterial()
 	return &m_material;
 }
 
-int Mesh::getFaces()
+int Mesh::getNrOfFaces()
 {
 	return m_nrOfFaces;
 }

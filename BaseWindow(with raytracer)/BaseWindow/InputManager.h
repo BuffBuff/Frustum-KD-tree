@@ -1,5 +1,6 @@
 #ifndef _RAWINPUT
 #define _RAWINPUT
+#include "stdafx.h"
 #include "Camera.h"  //Gillar inte detta då det inte behövdes tidigare
 #include "ButtonInput.h"
 

@@ -9,8 +9,8 @@
 #include <map>
 #include <fstream>
 
-#include "ComputeHelp.h"
-#include "Mesh.h"
+//#include "ComputeHelp.h"
+//#include "Mesh.h"
 
 #include <DirectXMath.h>
 using namespace DirectX;

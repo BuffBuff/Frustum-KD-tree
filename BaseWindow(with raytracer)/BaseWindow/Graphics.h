@@ -1,6 +1,8 @@
 #pragma once
 #include "stdafx.h"
 #include "Camera.h"
+#include "Mesh.h"
+#include "WICTextureLoader.h"
 
 extern ID3D11Device* g_Device;
 extern ID3D11DeviceContext* g_DeviceContext;
@@ -59,8 +61,7 @@ private:
 
 	//MESH
 	Mesh						m_mesh;
-	ComputeBuffer				*m_meshBuffer;
-	ComputeWrap					*m_ComputeSys;
+	ID3D11Buffer				*m_meshBuffer;
 	ID3D11ShaderResourceView	*m_meshTexture;
 
 };
