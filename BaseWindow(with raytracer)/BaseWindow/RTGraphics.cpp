@@ -2,6 +2,8 @@
 
 
 RTGraphics::RTGraphics()
+: m_mesh(Mesh()),
+m_meshTexture(nullptr)
 {
 	HRESULT hr = S_OK;
 
@@ -22,6 +24,8 @@ RTGraphics::RTGraphics()
 
 	//createing triangle texture
 	createTriangleTexture();
+
+
 }
 
 void RTGraphics::createCBuffers()
@@ -55,16 +59,29 @@ void RTGraphics::createCBuffers()
 
 void RTGraphics::createTriangleTexture()
 {
-	Triangle tri;
-	tri.pos[0] = XMFLOAT4(0, 0, 0, 0);
-	tri.pos[1] = XMFLOAT4(1, 0, 0, 0);
-	tri.pos[2] = XMFLOAT4(0, 1, 0, 0);
-	tri.normal = XMFLOAT4(0, 0, 1, 1);
-	tri.color = XMFLOAT4(1, 0, 0, 1);
-	tri.ID = 0;
-	tri.pad = XMFLOAT3(0, 0, 0);
+	///////////////////////////////////////////////////////////////////////////////////////////
+	//Mesh
+	///////////////////////////////////////////////////////////////////////////////////////////
 
-	triangleBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER, sizeof(Triangle), 1, true, false, &tri, false, "Triangle buffer");
+	//Load OBJ-file
+	m_mesh.loadObj("Meshi/kub.obj");
+
+	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+											 sizeof(TriangleMat),
+											 m_mesh.getNrOfFaces(),
+											 true,
+											 false,
+											 m_mesh.getTriangles(),
+											 false,
+											 "Structured Buffer: Mesh Texture");
+
+	//TEXTURE STUFF
+	CreateWICTextureFromFile(g_Device, 
+							 g_DeviceContext, 
+							 (wchar_t*)m_mesh.getMaterial()->map_Kd.c_str(), 
+							 NULL, 
+							 &m_meshTexture);
+
 }
 
 RTGraphics::~RTGraphics()
@@ -104,7 +121,7 @@ void RTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(0,1,&backbuffer,NULL);
 
 	//set textures
-	ID3D11ShaderResourceView *srv[] = { triangleBuffer->GetResourceView() };
+	ID3D11ShaderResourceView *srv[] = { m_meshBuffer->GetResourceView() };
 	g_DeviceContext->CSSetShaderResources(0, 1, srv);
 
 	//dispatch

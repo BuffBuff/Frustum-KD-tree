@@ -51,6 +51,8 @@ struct cBuffer
 	XMFLOAT4 cameraPos;
 	XMFLOAT4X4 IP;
 	XMFLOAT4X4 IV;
+	int nrOfTriangles;
+	XMFLOAT3 pad;
 	//ObjTriangle objTriangle[12];
 };
 

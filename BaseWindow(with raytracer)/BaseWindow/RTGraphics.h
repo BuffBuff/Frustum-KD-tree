@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Camera.h"
+#include "Mesh.h"
 #include "ComputeHelp.h"
 
 extern ID3D11Device* g_Device;
@@ -33,5 +34,10 @@ private:
 	cBuffer cb;
 
 	ID3D11UnorderedAccessView *backbuffer;
+
+	//MESH
+	Mesh						m_mesh;
+	ComputeBuffer				*m_meshBuffer;
+	ID3D11ShaderResourceView	*m_meshTexture;
 };
 
