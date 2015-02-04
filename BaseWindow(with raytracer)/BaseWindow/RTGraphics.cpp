@@ -55,10 +55,16 @@ void RTGraphics::createCBuffers()
 
 void RTGraphics::createTriangleTexture()
 {
+	//tri.pos[0] = float4(0, 0, 1, 0);
+	//tri.pos[1] = float4(-1, 0, 1, 0);
+	//tri.pos[2] = float4(0, 1, 1, 0);
+	//tri.color = float4(0, 0, 1, 1);
+	//tri.normal = float4(0, 0, 1, 1);
+
 	Triangle tri;
-	tri.pos[0] = XMFLOAT4(0, 0, 0, 0);
-	tri.pos[1] = XMFLOAT4(1, 0, 0, 0);
-	tri.pos[2] = XMFLOAT4(0, 1, 0, 0);
+	tri.pos[0] = XMFLOAT4(0, 0, 1, 0);
+	tri.pos[1] = XMFLOAT4(-1, 0, 1, 0);
+	tri.pos[2] = XMFLOAT4(0, 1, 1, 0);
 	tri.normal = XMFLOAT4(0, 0, 1, 1);
 	tri.color = XMFLOAT4(1, 0, 0, 1);
 	tri.ID = 0;
@@ -105,7 +111,7 @@ void RTGraphics::Render(float _dt)
 
 	//set textures
 	ID3D11ShaderResourceView *srv[] = { triangleBuffer->GetResourceView() };
-	g_DeviceContext->CSGetShaderResources(0, 1, srv);
+	g_DeviceContext->CSSetShaderResources(0, 1, srv);
 
 	//dispatch
 	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);

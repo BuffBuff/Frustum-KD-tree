@@ -132,12 +132,12 @@ public:
 private:
 	ComputeTexture(const ComputeBuffer& cb) {}
 
-	ID3D11Texture2D*			_Resource;
-	ID3D11ShaderResourceView*	_ResourceView;
-	ID3D11UnorderedAccessView*	_UnorderedAccessView;
-	ID3D11Texture2D*			_Staging;
+	ID3D11Texture2D*			_Resource = NULL;
+	ID3D11ShaderResourceView*	_ResourceView = NULL;
+	ID3D11UnorderedAccessView*	_UnorderedAccessView = NULL;
+	ID3D11Texture2D*			_Staging = NULL;
 
-	ID3D11DeviceContext*        _D3DContext;
+	ID3D11DeviceContext*        _D3DContext = NULL;
 
 	friend class ComputeWrap;
 };
@@ -146,10 +146,10 @@ class ComputeShader
 {
 	friend class ComputeWrap;
 
-	ID3D11Device*               mD3DDevice;
-	ID3D11DeviceContext*        mD3DDeviceContext;
+	ID3D11Device*               mD3DDevice = NULL;
+	ID3D11DeviceContext*        mD3DDeviceContext = NULL;
 
-	ID3D11ComputeShader*		mShader;
+	ID3D11ComputeShader*		mShader = NULL;
 private:
 	explicit ComputeShader();
 
@@ -164,8 +164,8 @@ public:
 
 class ComputeWrap
 {
-	ID3D11Device*               mD3DDevice;
-	ID3D11DeviceContext*        mD3DDeviceContext;
+	ID3D11Device*               mD3DDevice = NULL;
+	ID3D11DeviceContext*        mD3DDeviceContext = NULL;
 
 public:
 	ComputeWrap(ID3D11Device* d3dDevice, ID3D11DeviceContext* d3dContext)

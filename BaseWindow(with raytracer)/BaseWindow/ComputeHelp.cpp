@@ -117,7 +117,12 @@ ID3D11Buffer* ComputeWrap::CreateStructuredBuffer(UINT uElementSize, UINT uCount
     {
         D3D11_SUBRESOURCE_DATA InitData;
         InitData.pSysMem = pInitData;
-		mD3DDevice->CreateBuffer( &desc, &InitData, &pBufOut);
+		HRESULT hr = mD3DDevice->CreateBuffer( &desc, &InitData, &pBufOut);
+
+		if (FAILED(hr))
+		{
+			MessageBox(NULL, "Failed Making Structured buffer", "Create Buffer", MB_OK);
+		}
     }
 	else
 	{
@@ -182,7 +187,12 @@ ID3D11ShaderResourceView* ComputeWrap::CreateBufferSRV(ID3D11Buffer* pBuffer)
 		return NULL;
 	}
 
-    mD3DDevice->CreateShaderResourceView(pBuffer, &desc, &pSRVOut);
+    HRESULT hr = mD3DDevice->CreateShaderResourceView(pBuffer, &desc, &pSRVOut);
+
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, "Failed Making Shader Resource View", "Create SRV", MB_OK);
+	}
 
 	return pSRVOut;
 }
