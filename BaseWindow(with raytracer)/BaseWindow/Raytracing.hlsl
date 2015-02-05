@@ -43,32 +43,6 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 	//------------------------------- single triangle test
-	//Triangle tri;
-	//tri.pos[0] = float4(0, 0, 1, 0);
-	//tri.pos[1] = float4(-1, 0, 1, 0);
-	//tri.pos[2] = float4(0, 1, 1, 0);
-	//tri.color = float4(0, 0, 1, 1);
-	//tri.normal = float4(0, 0, 1, 1);
-	//tri.ID = 0;
-	//tri.pad = float3(0,0,0);
-
-	//// test tri collision
-	//hit = RayVSTriangle(tri, r, hd.t);
-	//if (hit > -1)
-	//{
-	//	hd.pos = r.origin + r.dir * hit;
-	//	hd.normal = tri.normal;
-	//	hd.color = tri.color;
-	//	hd.ID = tri.ID;
-	//	hd.t = hit;
-	//	hd.bufferpos = threadID.xy;
-	//	outColor = hd.color;
-	//}
-
-	//outColor += triangles[0].pos[0];
-	//outColor += triangles[0].pos[1];
-	//outColor += triangles[0].pos[2];
-
 
 
 	hit = RayVSTriangle(triangles[0], r, hd.t);
