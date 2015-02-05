@@ -3,14 +3,17 @@
 
 #include <windows.h>
 #include <D3D11.h>
+<<<<<<< HEAD
+//#include <D3DX11.h>
+=======
+>>>>>>> origin/master
 #include <d3dCompiler.h>
 #include <string>
 #include <vector>
 #include <map>
 #include <fstream>
 
-//#include "ComputeHelp.h"
-//#include "Mesh.h"
+#include "Mesh.h"
 
 #include <DirectXMath.h>
 using namespace DirectX;
@@ -51,8 +54,6 @@ struct cBuffer
 	XMFLOAT4 cameraPos;
 	XMFLOAT4X4 IP;
 	XMFLOAT4X4 IV;
-	int nrOfTriangles;
-	XMFLOAT3 pad;
 	//ObjTriangle objTriangle[12];
 };
 

@@ -10,6 +10,7 @@
 #ifndef _HRTIMER
 #define _HRTIMER
 
+#include "stdafx.h"
 #include <windows.h>
 
 class timer

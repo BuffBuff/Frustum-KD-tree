@@ -100,8 +100,11 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="hrTimer.h" />
     <ClInclude Include="InputManager.h" />
+<<<<<<< HEAD
     <ClInclude Include="Mesh.h" />
+=======
     <ClInclude Include="PlatformHelpers.h" />
+>>>>>>> origin/master
     <ClInclude Include="RTGraphics.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WICTextureLoader.h" />

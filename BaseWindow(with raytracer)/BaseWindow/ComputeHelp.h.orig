@@ -3,27 +3,26 @@
 //--------------------------------------------------------------------------------------
 #pragma once
 
-#include "stdafx.h"
 #include <d3dcommon.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
+<<<<<<< HEAD
+//#include <d3dx11.h>
+=======
+>>>>>>> origin/master
 
 #include <string>
 #include <tchar.h>
 
 #include "WICTextureLoader.h"
 
+#ifndef SAFE_RELEASE
+#define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=NULL; } }
+#endif
 
-
-//#ifndef SAFE_RELEASE
-//#define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=NULL; } }
-//#endif
-//
-//#ifndef SAFE_DELETE
-//#define SAFE_DELETE(p)      { if (p) { delete (p); (p)=NULL; } }
-//#endif
-
-
+#ifndef SAFE_DELETE
+#define SAFE_DELETE(p)      { if (p) { delete (p); (p)=NULL; } }
+#endif
 
 enum COMPUTE_BUFFER_TYPE
 {
@@ -137,12 +136,12 @@ public:
 private:
 	ComputeTexture(const ComputeBuffer& cb) {}
 
-	ID3D11Texture2D*			_Resource = NULL;
-	ID3D11ShaderResourceView*	_ResourceView = NULL;
-	ID3D11UnorderedAccessView*	_UnorderedAccessView = NULL;
-	ID3D11Texture2D*			_Staging = NULL;
+	ID3D11Texture2D*			_Resource;
+	ID3D11ShaderResourceView*	_ResourceView;
+	ID3D11UnorderedAccessView*	_UnorderedAccessView;
+	ID3D11Texture2D*			_Staging;
 
-	ID3D11DeviceContext*        _D3DContext = NULL;
+	ID3D11DeviceContext*        _D3DContext;
 
 	friend class ComputeWrap;
 };
@@ -151,10 +150,10 @@ class ComputeShader
 {
 	friend class ComputeWrap;
 
-	ID3D11Device*               mD3DDevice = NULL;
-	ID3D11DeviceContext*        mD3DDeviceContext = NULL;
+	ID3D11Device*               mD3DDevice;
+	ID3D11DeviceContext*        mD3DDeviceContext;
 
-	ID3D11ComputeShader*		mShader = NULL;
+	ID3D11ComputeShader*		mShader;
 private:
 	explicit ComputeShader();
 
@@ -169,8 +168,8 @@ public:
 
 class ComputeWrap
 {
-	ID3D11Device*               mD3DDevice = NULL;
-	ID3D11DeviceContext*        mD3DDeviceContext = NULL;
+	ID3D11Device*               mD3DDevice;
+	ID3D11DeviceContext*        mD3DDeviceContext;
 
 public:
 	ComputeWrap(ID3D11Device* d3dDevice, ID3D11DeviceContext* d3dContext)

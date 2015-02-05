@@ -59,6 +59,7 @@ void RTGraphics::createCBuffers()
 
 void RTGraphics::createTriangleTexture()
 {
+<<<<<<< HEAD
 	///////////////////////////////////////////////////////////////////////////////////////////
 	//Mesh
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -84,6 +85,24 @@ void RTGraphics::createTriangleTexture()
 							 NULL, 
 							 &m_meshTexture);
 
+=======
+	//tri.pos[0] = float4(0, 0, 1, 0);
+	//tri.pos[1] = float4(-1, 0, 1, 0);
+	//tri.pos[2] = float4(0, 1, 1, 0);
+	//tri.color = float4(0, 0, 1, 1);
+	//tri.normal = float4(0, 0, 1, 1);
+
+	Triangle tri;
+	tri.pos[0] = XMFLOAT4(0, 0, 1, 0);
+	tri.pos[1] = XMFLOAT4(-1, 0, 1, 0);
+	tri.pos[2] = XMFLOAT4(0, 1, 1, 0);
+	tri.normal = XMFLOAT4(0, 0, 1, 1);
+	tri.color = XMFLOAT4(1, 0, 0, 1);
+	tri.ID = 0;
+	tri.pad = XMFLOAT3(0, 0, 0);
+
+	triangleBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER, sizeof(Triangle), 1, true, false, &tri, false, "Triangle buffer");
+>>>>>>> origin/master
 }
 
 RTGraphics::~RTGraphics()
@@ -124,7 +143,11 @@ void RTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(0,1,&backbuffer,NULL);
 
 	//set textures
+<<<<<<< HEAD
 	ID3D11ShaderResourceView *srv[] = { m_meshBuffer->GetResourceView() };
+=======
+	ID3D11ShaderResourceView *srv[] = { triangleBuffer->GetResourceView() };
+>>>>>>> origin/master
 	g_DeviceContext->CSSetShaderResources(0, 1, srv);
 
 	//dispatch

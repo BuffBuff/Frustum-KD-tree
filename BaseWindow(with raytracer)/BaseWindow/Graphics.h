@@ -1,6 +1,8 @@
 #pragma once
 #include "stdafx.h"
 #include "Camera.h"
+#include "Mesh.h"
+#include "WICTextureLoader.h"
 
 extern ID3D11Device* g_Device;
 extern ID3D11DeviceContext* g_DeviceContext;
@@ -36,6 +38,7 @@ private:
 	void createRasterState();
 	void createViewport();
 	void createBlendState();
+	void release();
 
 	cbWorld cbWorld;
 	ID3D11Buffer* g_cbWorld = NULL;
@@ -56,7 +59,10 @@ private:
 
 	ID3D11RasterizerState *rasterState = NULL;
 
-
+	//MESH
+	Mesh						m_mesh;
+	ID3D11Buffer				*m_meshBuffer;
+	ID3D11ShaderResourceView	*m_meshTexture;
 
 };
 

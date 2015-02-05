@@ -39,13 +39,18 @@ struct Light
 	float2 pad;
 };
 
-struct Triangle
+struct TriangleMat
 {
-	float4 pos[3];
-	float4 color;
-	float4 normal;
-	int ID;
-	float3 pad;
+	float4	pos0;
+	float4	pos1;
+	float4	pos2;
+	float2	textureCoordinate0;
+	float2	textureCoordinate1;
+	float2	textureCoordinate2;
+	int			ID;
+	float		pad;
+	float4	color;
+	float4	normal;
 };
 
 struct ObjTriangle

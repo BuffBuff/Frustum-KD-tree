@@ -1,6 +1,8 @@
-#pragma once
-#include "stdafx.h"
 #include <D3D11.h>
+<<<<<<< HEAD
+//#include <D3DX11.h>
+=======
+>>>>>>> origin/master
 
 class D3D11Timer
 {
