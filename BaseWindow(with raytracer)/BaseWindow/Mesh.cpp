@@ -169,6 +169,8 @@ void Mesh::loadMaterial(string filename)
 		else if( prefix == "map_Kd" )
 		{
 			lineStream >> m_material.map_Kd;
+
+			textureName = m_material.map_Kd.c_str();
 		}
 	}
 	file.close();
@@ -187,6 +189,11 @@ Material* Mesh::getMaterial()
 int Mesh::getNrOfFaces()
 {
 	return m_nrOfFaces;
+}
+
+std::string Mesh::getTextureString()
+{
+	return textureName;
 }
 
 void Mesh::setColor(XMFLOAT4 _color)

@@ -77,10 +77,17 @@ void RTGraphics::createTriangleTexture()
 											 false,
 											 "Structured Buffer: Mesh Texture");
 
+
+	//from wchat_t to string
+	//std::string narrow = converter.to_bytes(wide_utf16_source_string);
+	//from string to wchar_t
+	std::wstring meshTextureWstring = converter.from_bytes(m_mesh.getTextureString());
+
+
 	//TEXTURE STUFF
 	CreateWICTextureFromFile(g_Device, 
-							 g_DeviceContext, 
-							 (wchar_t*)m_mesh.getMaterial()->map_Kd.c_str(), 
+							 g_DeviceContext,
+							 meshTextureWstring.c_str(),
 							 NULL, 
 							 &m_meshTexture);
 
@@ -124,8 +131,8 @@ void RTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(0,1,&backbuffer,NULL);
 
 	//set textures
-	ID3D11ShaderResourceView *srv[] = { m_meshBuffer->GetResourceView() };
-	g_DeviceContext->CSSetShaderResources(0, 1, srv);
+	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView() };
+	g_DeviceContext->CSSetShaderResources(0, 2, srv);
 
 	//dispatch
 	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);

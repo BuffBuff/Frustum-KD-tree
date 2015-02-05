@@ -44,11 +44,11 @@ struct TriangleMat
 	float4	pos0;
 	float4	pos1;
 	float4	pos2;
-	float2	textureCoordinate0;
-	float2	textureCoordinate1;
-	float2	textureCoordinate2;
-	int			ID;
-	float		pad;
+	float2	tex0;
+	float2	tex1;
+	float2	tex2;
+	int		ID;
+	float	pad;
 	float4	color;
 	float4	normal;
 };

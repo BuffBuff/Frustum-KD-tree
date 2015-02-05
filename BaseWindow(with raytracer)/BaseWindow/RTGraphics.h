@@ -3,6 +3,10 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "ComputeHelp.h"
+#include <locale>
+#include <codecvt>
+#include <string>
+
 
 extern ID3D11Device* g_Device;
 extern ID3D11DeviceContext* g_DeviceContext;
@@ -20,6 +24,9 @@ public:
 	void Render(float _dt);
 
 private:
+	//Converter (sting to wstring)
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+
 
 	void createCBuffers();
 	void createTriangleTexture();

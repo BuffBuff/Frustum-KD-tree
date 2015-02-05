@@ -2,7 +2,8 @@
 
 RWTexture2D<float4> output : register(u0);
 
-StructuredBuffer<TriangleMat> triangles : register(t0);
+Texture2D MeshTexture : register(t0);
+StructuredBuffer<TriangleMat> triangles : register(t1);
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
@@ -38,19 +39,19 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	r.dir = rayDir;
 
 	// variable for testing the hit
-	float hit = -1.0f;
+	float3 hit = (-1.0f, -1.0f, -1.0f);
 
 	for (int i = 0; i < nrOfTriangles; i++)
 	{
-		hit = RayVSTriangle(triangles[i], r, hd.t);
-		if (hit > -1)
+		hit = RayVSTriangleMat(triangles[i], r, hd.t);
+		if (hit.x > -1)
 		{
 		outColor -= float4(1, 0, 0, 0);
-			hd.pos = r.origin + r.dir * hit;
+			hd.pos = r.origin + r.dir * hit.x;
 			hd.normal = triangles[i].normal;
-			hd.color = triangles[i].color;
+			hd.color = MeshTexture[hit.yz*512.f]; //triangles[i].color;
 			hd.ID = triangles[i].ID;
-			hd.t = hit;
+			hd.t = hit.x;
 			hd.bufferpos = threadID.xy;
 			outColor = hd.color;
 		}
