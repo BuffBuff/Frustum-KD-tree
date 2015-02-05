@@ -55,6 +55,7 @@ public:
 	Material* getMaterial();
 	int getNrOfFaces();
 	TriangleMat* getTriangles();
+	void setColor(XMFLOAT4 _color);
 private:
 	int m_nrOfFaces;
 	void loadMaterial(std::string filename);

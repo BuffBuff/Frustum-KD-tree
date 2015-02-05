@@ -41,16 +41,16 @@ struct Light
 
 struct TriangleMat
 {
-	XMFLOAT4	pos0;
-	XMFLOAT4	pos1;
-	XMFLOAT4	pos2;
-	XMFLOAT2	textureCoordinate0;
-	XMFLOAT2	textureCoordinate1;
-	XMFLOAT2	textureCoordinate2;
+	float4	pos0;
+	float4	pos1;
+	float4	pos2;
+	float2	textureCoordinate0;
+	float2	textureCoordinate1;
+	float2	textureCoordinate2;
 	int			ID;
 	float		pad;
-	XMFLOAT4	color;
-	XMFLOAT4	normal;
+	float4	color;
+	float4	normal;
 };
 
 struct ObjTriangle

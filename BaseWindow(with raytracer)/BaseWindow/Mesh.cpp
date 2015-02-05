@@ -188,3 +188,11 @@ int Mesh::getNrOfFaces()
 {
 	return m_nrOfFaces;
 }
+
+void Mesh::setColor(XMFLOAT4 _color)
+{
+	for (int i = 0; i < getNrOfFaces(); i++)
+	{
+		m_meshTriangles.at(i).color = _color;
+	}
+}

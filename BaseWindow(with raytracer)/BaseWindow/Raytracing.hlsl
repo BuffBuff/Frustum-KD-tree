@@ -2,7 +2,7 @@
 
 RWTexture2D<float4> output : register(u0);
 
-StructuredBuffer<Triangle> triangles : register(t0);
+StructuredBuffer<TriangleMat> triangles : register(t0);
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
@@ -40,41 +40,19 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	// variable for testing the hit
 	float hit = -1.0f;
 
-
-
-	//------------------------------- single triangle test
-	Triangle tri;
-	tri.pos[0] = float4(0, 0, 1, 0);
-	tri.pos[1] = float4(-1, 0, 1, 0);
-	tri.pos[2] = float4(0, 1, 1, 0);
-	tri.color = float4(0, 0, 1, 1);
-	tri.normal = float4(0, 0, 1, 1);
-	tri.ID = 0;
-	tri.pad = float3(0,0,0);
-
-	// test tri collision
-	hit = RayVSTriangle(tri, r, hd.t);
-	if (hit > -1)
+	for (int i = 0; i < nrOfTriangles; i++)
 	{
-		hd.pos = r.origin + r.dir * hit;
-		hd.normal = tri.normal;
-		hd.color = tri.color;
-		hd.ID = tri.ID;
-		hd.t = hit;
-		hd.bufferpos = threadID.xy;
-		outColor = hd.color;
-	}
-
-	hit = RayVSTriangle(triangles[0], r, hd.t);
-	if (hit > -1)
-	{
-		hd.pos = r.origin + r.dir * hit;
-		hd.normal = triangles[0].normal;
-		hd.color = triangles[0].color;
-		hd.ID = triangles[0].ID;
-		hd.t = hit;
-		hd.bufferpos = threadID.xy;
-		outColor = hd.color;
+		hit = RayVSTriangle(triangles[i], r, hd.t);
+		if (hit > -1)
+		{
+			hd.pos = r.origin + r.dir * hit;
+			hd.normal = triangles[i].normal;
+			hd.color = triangles[i].color;
+			hd.ID = triangles[i].ID;
+			hd.t = hit;
+			hd.bufferpos = threadID.xy;
+			outColor = hd.color;
+		}
 	}
 
 	//outColor = triangles[0].color;

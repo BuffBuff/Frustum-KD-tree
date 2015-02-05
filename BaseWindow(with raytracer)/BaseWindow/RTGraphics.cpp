@@ -65,6 +65,8 @@ void RTGraphics::createTriangleTexture()
 
 	//Load OBJ-file
 	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.setColor(XMFLOAT4(1,0,0,1));
+
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
@@ -109,6 +111,7 @@ void RTGraphics::Update(float _dt)
 	cb.IV = viewInv;
 	cb.IP = projInv;
 	cb.cameraPos = XMFLOAT4(tempp.x, tempp.y, tempp.z, 1);
+	cb.nrOfTriangles = m_mesh.getNrOfFaces();
 	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 }
 
