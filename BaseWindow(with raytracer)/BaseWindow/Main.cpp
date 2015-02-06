@@ -136,7 +136,7 @@ HRESULT Init()
 		return hr;
 
 #ifdef raytracing
-	graphics = new RTGraphics();
+	graphics = new RTGraphics(&g_hWnd);
 #else
 	graphics = new Graphics();
 #endif

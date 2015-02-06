@@ -1,11 +1,15 @@
 #include "RTGraphics.h"
 
 
-RTGraphics::RTGraphics()
+RTGraphics::RTGraphics(HWND* _hwnd)
 : m_mesh(Mesh()),
-m_meshTexture(nullptr)
+m_meshTexture(nullptr),
+m_time(0.f),
+m_fps(0.f)
 {
 	HRESULT hr = S_OK;
+
+	m_Hwnd = _hwnd;
 
 	computeWrap = new ComputeWrap(g_Device,g_DeviceContext);
 
@@ -120,6 +124,20 @@ void RTGraphics::Update(float _dt)
 	cb.cameraPos = XMFLOAT4(tempp.x, tempp.y, tempp.z, 1);
 	cb.nrOfTriangles = m_mesh.getNrOfFaces();
 	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+
+	m_time += _dt;
+	static int frameCnt = 0;
+	static float t_base = 0.f;
+	frameCnt++;
+
+	if (m_time - t_base >= 1.f)
+	{
+		frameCnt /= 1;
+		m_fps = (float)frameCnt;
+		frameCnt = 0;
+		t_base += 1.f;
+	}
+
 }
 
 void RTGraphics::Render(float _dt)
@@ -147,4 +165,14 @@ void RTGraphics::Render(float _dt)
 	//present scene
 	if (FAILED(g_SwapChain->Present(0, 0)))
 		MessageBox(NULL,"Failed to present the swapchain","RT Render Error",S_OK);
+
+	//Title text and some timers
+	char title[256];
+	sprintf_s(
+		title,
+		sizeof(title),
+		"Super mega awesume project 3 - fps: %f",
+		m_fps
+		);
+	SetWindowText(*m_Hwnd, title);
 }
