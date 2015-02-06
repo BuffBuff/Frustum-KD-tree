@@ -68,14 +68,13 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/Bunny.obj");
+	m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	createKdTree(&m_mesh);
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
-											4096,
-											 //m_mesh.getNrOfFaces(),
+											 m_mesh.getNrOfFaces(),
 											 true,
 											 false,
 											 m_mesh.getTriangles(),

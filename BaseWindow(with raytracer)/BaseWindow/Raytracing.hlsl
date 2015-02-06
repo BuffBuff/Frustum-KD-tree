@@ -42,20 +42,19 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	float3 hit = (-1.0f, -1.0f, -1.0f);
 
 
-	//for (int i = 0; i < nrOfTriangles; i++)
-	for (int i = 0; i < 5000; i++)
+	for (int i = 0; i < nrOfTriangles; i++)
+	//for (int i = 0; i < 5000; i++)
 	{
 		hit = RayVSTriangleMat(triangles[i], r, hd.t);
 		if (hit.x > -1)
 		{
-		outColor -= float4(1, 0, 0, 0);
 			hd.pos = r.origin + r.dir * hit.x;
 			hd.normal = triangles[i].normal;
 			hd.color = MeshTexture[hit.yz*512.f] + triangles[i].color;
 			hd.ID = triangles[i].ID;
 			hd.t = hit.x;
 			hd.bufferpos = threadID.xy;
-			outColor = hd.color;
+			outColor = MeshTexture[hit.yz*512.f] + triangles[i].color;
 		}
 	}
 

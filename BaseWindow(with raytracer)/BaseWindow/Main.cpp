@@ -6,6 +6,9 @@
 #include "Graphics.h"
 #include "RTGraphics.h"
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 
 //--------------------------------------------------------------------------------------
 // Forward declarations
@@ -146,6 +149,8 @@ HRESULT Init()
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 		return 0;
 
