@@ -27,6 +27,12 @@ void Mesh::loadObj(char* textFile)
 
 	fstream file( textFile );
 
+	if (!file.is_open())
+	{
+		MessageBox(NULL, "OBJ file not found!", "Create OBJ FAILED", MB_OK);
+		return;
+	}
+
 	string srcMaterial;
 	string line;
 	string prefix;
@@ -76,24 +82,77 @@ void Mesh::loadObj(char* textFile)
 		else if( prefix == "f" )
 		{
 			m_nrOfFaces++;
-			unsigned int iPosition, iTexCoord, iNormal;
+			unsigned int iPosition = -1;
+			unsigned int iTexCoord = -1;
+			unsigned int iNormal = -1;
 			TriangleMat vertex;
 			char slash;
-	
-			lineStream >> iPosition >> slash >> iTexCoord >> slash >> iNormal;
-			vertex.pos0		= positions	[ iPosition - 1 ];
-			vertex.normal	= normals	[ iNormal - 1 ];
-			vertex.textureCoordinate0 = texCoords	[ iTexCoord - 1 ];
-			//pos1
-			lineStream >> iPosition >> slash >> iTexCoord >> slash >> iNormal;
-			vertex.pos1		= positions	[ iPosition - 1 ];
-			vertex.textureCoordinate1 = texCoords	[ iTexCoord - 1 ];
-			//pos2
-			lineStream >> iPosition >> slash >> iTexCoord >> slash >> iNormal;
-			vertex.pos2		= positions	[ iPosition - 1 ];
-			vertex.textureCoordinate2 = texCoords	[ iTexCoord - 1 ];
+			if (normals.size() > 0 && texCoords.size() > 0)
+			{
+				lineStream >> iPosition >> slash >> iTexCoord >> slash >> iNormal;
+				vertex.pos0 = positions[iPosition - 1];
+				vertex.normal = normals[iNormal - 1];
+				vertex.textureCoordinate0 = texCoords[iTexCoord - 1];
+				//pos1
+				lineStream >> iPosition >> slash >> iTexCoord >> slash >> iNormal;
+				vertex.pos1 = positions[iPosition - 1];
+				vertex.textureCoordinate1 = texCoords[iTexCoord - 1];
+				//pos2
+				lineStream >> iPosition >> slash >> iTexCoord >> slash >> iNormal;
+				vertex.pos2 = positions[iPosition - 1];
+				vertex.textureCoordinate2 = texCoords[iTexCoord - 1];
+			}
+			else if (normals.size() > 0)
+			{
+				lineStream >> iPosition >> slash >> iNormal;
+				vertex.pos0 = positions[iPosition - 1];
+				vertex.normal = normals[iNormal - 1];
+				vertex.textureCoordinate0 = XMFLOAT2(0,0);
+				//pos1
+				lineStream >> iPosition >> slash >> iNormal;
+				vertex.pos1 = positions[iPosition - 1];
+				vertex.textureCoordinate1 = XMFLOAT2(0, 0);
+				//pos2
+				lineStream >> iPosition >> slash >> iNormal;
+				vertex.pos2 = positions[iPosition - 1];
+				vertex.textureCoordinate2 = XMFLOAT2(0, 0);
+			}
+			else if (texCoords.size() > 0)
+			{
+				lineStream >> iPosition >> slash >> iTexCoord;
+				vertex.pos0 = positions[iPosition - 1];
+				vertex.normal = XMFLOAT4(0,0,0,0);
+				vertex.textureCoordinate0 = texCoords[iTexCoord - 1];
+				//pos1
+				lineStream >> iPosition >> slash >> iTexCoord;
+				vertex.pos1 = positions[iPosition - 1];
+				vertex.textureCoordinate1 = texCoords[iTexCoord - 1];
+				//pos2
+				lineStream >> iPosition >> slash >> iTexCoord;
+				vertex.pos2 = positions[iPosition - 1];
+				vertex.textureCoordinate2 = texCoords[iTexCoord - 1];
+			}
+			else
+			{
+				lineStream >> iPosition;
+				vertex.pos0 = positions[iPosition - 1];
+				vertex.normal = XMFLOAT4(0,0,0,0);
+				vertex.textureCoordinate0 = XMFLOAT2(0, 0);
+				//pos1
+				lineStream >> iPosition;
+				vertex.pos1 = positions[iPosition - 1];
+				vertex.textureCoordinate1 = XMFLOAT2(0, 0);
+				//pos2
+				lineStream >> iPosition;
+				vertex.pos2 = positions[iPosition - 1];
+				vertex.textureCoordinate2 = XMFLOAT2(0, 0);
+			}
 			vertex.ID = id + 20;
 			m_meshTriangles.push_back( vertex );
+			/*if (m_meshTriangles.size() > 12500)
+			{
+				return;
+			}*/
 			id++;
 			vertex.pad = 1.0f;
 			vertex.color = XMFLOAT4(0.f, 0.f, 0.f, 0.f);
@@ -177,6 +236,11 @@ void Mesh::loadMaterial(string filename)
 TriangleMat* Mesh::getTriangles()
 {
 	return &m_meshTriangles[0];
+}
+
+std::vector<TriangleMat>* Mesh::getTriangleList()
+{
+	return &m_meshTriangles;
 }
 
 Material* Mesh::getMaterial()

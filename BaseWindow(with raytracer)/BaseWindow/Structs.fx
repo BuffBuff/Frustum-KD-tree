@@ -64,4 +64,6 @@ struct ObjTriangle
 	float pad;
 };
 
+
+
 #endif

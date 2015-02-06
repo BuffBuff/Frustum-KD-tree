@@ -23,6 +23,8 @@ private:
 
 	void createCBuffers();
 	void createTriangleTexture();
+	void createKdTree(Mesh *_mesh);
+	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node _node, int _split);
 
 	ComputeWrap *computeWrap;
 
@@ -39,5 +41,6 @@ private:
 	Mesh						m_mesh;
 	ComputeBuffer				*m_meshBuffer;
 	ID3D11ShaderResourceView	*m_meshTexture;
+	Node						m_rootNode;
 };
 

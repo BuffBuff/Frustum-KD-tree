@@ -41,7 +41,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	float hit = -1.0f;
 
 
-	for (int i = 0; i < nrOfTriangles; i++)
+	//for (int i = 0; i < nrOfTriangles; i++)
+	for (int i = 0; i < 5000; i++)
 	{
 		hit = RayVSTriangle(triangles[i], r, hd.t);
 		if (hit > -1)
@@ -56,26 +57,6 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			outColor = hd.color;
 		}
 	}
-
-	//outColor = triangles[0].color;
-
-	//  basic triangle collision
-	/*for (int i = 0; i < NRTRIANGLES; i++)		
-	{
-		float3 nopp = tri[i].pad;
-			hit = RayVSTriangle(tri[i], r, hd.t);
-
-		if (hit > -1)
-		{
-			hd.pos = r.origin + r.dir * hit;
-			hd.normal = tri[i].normal;
-			hd.color = tri[i].color;
-			hd.ID = tri[i].ID;
-			hd.t = hit;
-			hd.bufferpos = threadID.xy;
-
-		}
-	}*/
 
 	// the output picture
 	output[threadID.xy] = outColor;

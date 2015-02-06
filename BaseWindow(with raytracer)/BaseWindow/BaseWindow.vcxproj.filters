@@ -37,6 +37,9 @@
     <Filter Include="Source Files\Normal render">
       <UniqueIdentifier>{00cc8cb0-2355-4aa2-9a42-eeb8932b49a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Global">
+      <UniqueIdentifier>{593c2e1c-7aee-4b84-9397-7db058922362}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -112,17 +115,17 @@
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Shaders\Normal render</Filter>
     </FxCompile>
-    <FxCompile Include="Buffers.fx">
-      <Filter>Shaders\Raytracer</Filter>
-    </FxCompile>
     <FxCompile Include="Collisions.fx">
       <Filter>Shaders\Raytracer</Filter>
     </FxCompile>
     <FxCompile Include="Structs.fx">
-      <Filter>Shaders\Raytracer</Filter>
+      <Filter>Shaders\Global</Filter>
     </FxCompile>
     <FxCompile Include="Raytracing.hlsl">
-      <Filter>Shaders\Raytracer</Filter>
+      <Filter>Shaders\Global</Filter>
+    </FxCompile>
+    <FxCompile Include="Buffers.fx">
+      <Filter>Shaders\Global</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
