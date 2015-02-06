@@ -51,7 +51,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		outColor -= float4(1, 0, 0, 0);
 			hd.pos = r.origin + r.dir * hit.x;
 			hd.normal = triangles[i].normal;
-			hd.color = MeshTexture[hit.yz*512.f]; //triangles[i].color;
+			hd.color = MeshTexture[hit.yz*512.f] + triangles[i].color;
 			hd.ID = triangles[i].ID;
 			hd.t = hit.x;
 			hd.bufferpos = threadID.xy;

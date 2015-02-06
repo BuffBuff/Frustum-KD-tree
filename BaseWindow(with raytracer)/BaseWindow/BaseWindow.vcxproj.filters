@@ -115,16 +115,16 @@
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Shaders\Normal render</Filter>
     </FxCompile>
-    <FxCompile Include="Collisions.fx">
-      <Filter>Shaders\Raytracer</Filter>
-    </FxCompile>
     <FxCompile Include="Structs.fx">
       <Filter>Shaders\Global</Filter>
     </FxCompile>
-    <FxCompile Include="Raytracing.hlsl">
+    <FxCompile Include="Buffers.fx">
       <Filter>Shaders\Global</Filter>
     </FxCompile>
-    <FxCompile Include="Buffers.fx">
+    <FxCompile Include="Raytracing.hlsl">
+      <Filter>Shaders\Raytracer</Filter>
+    </FxCompile>
+    <FxCompile Include="Collisions.fx">
       <Filter>Shaders\Global</Filter>
     </FxCompile>
   </ItemGroup>

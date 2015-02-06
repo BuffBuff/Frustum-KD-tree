@@ -192,24 +192,165 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 
 }
 
-void sortAABBX(std::vector<AABB>* _AABBList)
+void sortAABBX(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
 {
+	float pivotValue;
+	int pivotIndex;
 
+	int highIndex = _highIndex;
+	int lowIndex = _lowIndex;
+
+	pivotValue = _AABBList->at(_highIndex).minPoint.x + _AABBList->at(_highIndex).maxPoint.x;
+	pivotIndex = _highIndex;
+
+	_highIndex--;
+
+	while (lowIndex < highIndex)
+	{
+		float highValue = _AABBList->at(highIndex).minPoint.x + _AABBList->at(highIndex).maxPoint.x;
+		float lowValue = _AABBList->at(lowIndex).minPoint.x + _AABBList->at(lowIndex).maxPoint.x;
+
+		if (highValue < pivotValue && lowValue > pivotValue) //Time to swap = highIndex value lower than pivotValue and lowIndex value higher than pivotValue
+		{
+			AABB temp = _AABBList->at(lowIndex);
+			_AABBList->at(lowIndex) = _AABBList->at(highIndex);
+			_AABBList->at(highIndex) = temp;
+			lowIndex++;
+		}
+		else if (lowValue <= pivotValue) //lowIndex value smaler than pivotValue
+		{
+			lowIndex++;
+		}
+		else if (highValue >= pivotValue) //highIndex value higher than pivotValue
+		{
+			highIndex--;
+		}
+	}
+
+	AABB temp = _AABBList->at(highIndex);
+	_AABBList->at(highIndex) = _AABBList->at(pivotIndex);  //swapping the pivot element to the right place
+	_AABBList->at(pivotIndex) = temp;
+
+	if (lowIndex - 1 - _lowIndex > 2)
+	{
+		sortAABBX(_AABBList, _lowIndex, lowIndex - 1); // left sub sort
+	}
+	if (_highIndex - lowIndex > 2)
+	{
+		sortAABBX(_AABBList, lowIndex, _highIndex); // right sub sort
+	}
 }
 
+void sortAABBY(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
+{
+	float pivotValue;
+	int pivotIndex;
 
-void RTGraphics::createKDNodeSplit(std::vector<AABB>* _aabbList, Node _node, int _split)
+	int highIndex = _highIndex;
+	int lowIndex = _lowIndex;
+
+	pivotValue = _AABBList->at(_highIndex).minPoint.y + _AABBList->at(_highIndex).maxPoint.y;
+	pivotIndex = _highIndex;
+
+	_highIndex--;
+
+	while (lowIndex < highIndex)
+	{
+		float highValue = _AABBList->at(highIndex).minPoint.y + _AABBList->at(highIndex).maxPoint.y;
+		float lowValue = _AABBList->at(lowIndex).minPoint.y + _AABBList->at(lowIndex).maxPoint.y;
+
+		if (highValue < pivotValue && lowValue > pivotValue) //Time to swap = highIndex value lower than pivotValue and lowIndex value higher than pivotValue
+		{
+			AABB temp = _AABBList->at(lowIndex);
+			_AABBList->at(lowIndex) = _AABBList->at(highIndex);
+			_AABBList->at(highIndex) = temp;
+			lowIndex++;
+		}
+		else if (lowValue <= pivotValue) //lowIndex value smaler than pivotValue
+		{
+			lowIndex++;
+		}
+		else if (highValue >= pivotValue) //highIndex value higher than pivotValue
+		{
+			highIndex--;
+		}
+	}
+
+	AABB temp = _AABBList->at(highIndex);
+	_AABBList->at(highIndex) = _AABBList->at(pivotIndex);  //swapping the pivot element to the right place
+	_AABBList->at(pivotIndex) = temp;
+
+	if (lowIndex - 1 - _lowIndex > 2)
+	{
+		sortAABBY(_AABBList, _lowIndex, lowIndex - 1); // left sub sort
+	}
+	if (_highIndex - lowIndex > 2)
+	{
+		sortAABBY(_AABBList, lowIndex, _highIndex); // right sub sort
+	}
+}
+
+void sortAABBZ(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
+{
+	float pivotValue;
+	int pivotIndex;
+
+	int highIndex = _highIndex;
+	int lowIndex = _lowIndex;
+
+	pivotValue = _AABBList->at(_highIndex).minPoint.z + _AABBList->at(_highIndex).maxPoint.z;
+	pivotIndex = _highIndex;
+
+	_highIndex--;
+
+	while (lowIndex < highIndex)
+	{
+		float highValue = _AABBList->at(highIndex).minPoint.z + _AABBList->at(highIndex).maxPoint.z;
+		float lowValue = _AABBList->at(lowIndex).minPoint.z + _AABBList->at(lowIndex).maxPoint.z;
+
+		if (highValue < pivotValue && lowValue > pivotValue) //Time to swap = highIndex value lower than pivotValue and lowIndex value higher than pivotValue
+		{
+			AABB temp = _AABBList->at(lowIndex);
+			_AABBList->at(lowIndex) = _AABBList->at(highIndex);
+			_AABBList->at(highIndex) = temp;
+			lowIndex++;
+		}
+		else if (lowValue <= pivotValue) //lowIndex value smaler than pivotValue
+		{
+			lowIndex++;
+		}
+		else if (highValue >= pivotValue) //highIndex value higher than pivotValue
+		{
+			highIndex--;
+		}
+	}
+
+	AABB temp = _AABBList->at(highIndex);
+	_AABBList->at(highIndex) = _AABBList->at(pivotIndex);  //swapping the pivot element to the right place
+	_AABBList->at(pivotIndex) = temp;
+
+	if (lowIndex - 1 - _lowIndex > 2)
+	{
+		sortAABBZ(_AABBList, _lowIndex, lowIndex - 1); // left sub sort
+	}
+	if (_highIndex - lowIndex > 2)
+	{
+		sortAABBZ(_AABBList, lowIndex, _highIndex); // right sub sort
+	}
+}
+
+void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node _node, int _split)
 {
 	switch (_split)
 	{
 	case 1:		// SPLITT IN X
-
+		sortAABBX(_AABBList,0,_AABBList->size()-1);
 		break;
 	case 2:		// SPLITT IN Y
-
+		sortAABBY(_AABBList, 0, _AABBList->size() - 1);
 		break;
 	case 3:		// SPLITT IN Z
-
+		sortAABBZ(_AABBList, 0, _AABBList->size() - 1);
 		break;
 	}
 }
