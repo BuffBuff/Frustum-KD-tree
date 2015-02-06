@@ -28,9 +28,9 @@ bool Camera::init(unsigned int clientWidth, unsigned int clientHeight)
 
 void Camera::setPositionAndView(float x, float y, float z, float hDeg, float pDeg)
 {
-	m_lookAt.x = x;
-	m_lookAt.y = y;
-	m_lookAt.z = z;
+	m_position.x = x;
+	m_position.y = y;
+	m_position.z = z;
 
 	adjustHeadingPitch(hDeg * (float)DEG_TO_RAD, pDeg * (float)DEG_TO_RAD);
 
