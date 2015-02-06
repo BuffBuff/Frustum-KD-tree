@@ -64,14 +64,13 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/Bunny.obj");
+	m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	createKdTree(&m_mesh);
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
-											4096,
-											 //m_mesh.getNrOfFaces(),
+											 m_mesh.getNrOfFaces(),
 											 true,
 											 false,
 											 m_mesh.getTriangles(),
@@ -188,7 +187,7 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 		aabbList.push_back(aabb);
 	}
 
-	createKDNodeSplit(&aabbList,m_rootNode,1);
+	createKDNodeSplit(&aabbList,&m_rootNode,1);
 
 }
 
@@ -200,15 +199,15 @@ void sortAABBX(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
 	int highIndex = _highIndex;
 	int lowIndex = _lowIndex;
 
-	pivotValue = _AABBList->at(_highIndex).minPoint.x + _AABBList->at(_highIndex).maxPoint.x;
+	pivotValue = (_AABBList->at(_highIndex).minPoint.x + _AABBList->at(_highIndex).maxPoint.x) * 0.5f;
 	pivotIndex = _highIndex;
 
 	_highIndex--;
 
 	while (lowIndex < highIndex)
 	{
-		float highValue = _AABBList->at(highIndex).minPoint.x + _AABBList->at(highIndex).maxPoint.x;
-		float lowValue = _AABBList->at(lowIndex).minPoint.x + _AABBList->at(lowIndex).maxPoint.x;
+		float highValue = (_AABBList->at(highIndex).minPoint.x + _AABBList->at(highIndex).maxPoint.x) * 0.5f;
+		float lowValue = (_AABBList->at(lowIndex).minPoint.x + _AABBList->at(lowIndex).maxPoint.x) * 0.5f;
 
 		if (highValue < pivotValue && lowValue > pivotValue) //Time to swap = highIndex value lower than pivotValue and lowIndex value higher than pivotValue
 		{
@@ -249,15 +248,15 @@ void sortAABBY(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
 	int highIndex = _highIndex;
 	int lowIndex = _lowIndex;
 
-	pivotValue = _AABBList->at(_highIndex).minPoint.y + _AABBList->at(_highIndex).maxPoint.y;
+	pivotValue = (_AABBList->at(_highIndex).minPoint.y + _AABBList->at(_highIndex).maxPoint.y) * 0.5f;
 	pivotIndex = _highIndex;
 
 	_highIndex--;
 
 	while (lowIndex < highIndex)
 	{
-		float highValue = _AABBList->at(highIndex).minPoint.y + _AABBList->at(highIndex).maxPoint.y;
-		float lowValue = _AABBList->at(lowIndex).minPoint.y + _AABBList->at(lowIndex).maxPoint.y;
+		float highValue = (_AABBList->at(highIndex).minPoint.y + _AABBList->at(highIndex).maxPoint.y) * 0.5f;
+		float lowValue = (_AABBList->at(lowIndex).minPoint.y + _AABBList->at(lowIndex).maxPoint.y) * 0.5f;
 
 		if (highValue < pivotValue && lowValue > pivotValue) //Time to swap = highIndex value lower than pivotValue and lowIndex value higher than pivotValue
 		{
@@ -298,15 +297,15 @@ void sortAABBZ(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
 	int highIndex = _highIndex;
 	int lowIndex = _lowIndex;
 
-	pivotValue = _AABBList->at(_highIndex).minPoint.z + _AABBList->at(_highIndex).maxPoint.z;
+	pivotValue = (_AABBList->at(_highIndex).minPoint.z + _AABBList->at(_highIndex).maxPoint.z) * 0.5f;
 	pivotIndex = _highIndex;
 
 	_highIndex--;
 
 	while (lowIndex < highIndex)
 	{
-		float highValue = _AABBList->at(highIndex).minPoint.z + _AABBList->at(highIndex).maxPoint.z;
-		float lowValue = _AABBList->at(lowIndex).minPoint.z + _AABBList->at(lowIndex).maxPoint.z;
+		float highValue = (_AABBList->at(highIndex).minPoint.z + _AABBList->at(highIndex).maxPoint.z) * 0.5f;
+		float lowValue = (_AABBList->at(lowIndex).minPoint.z + _AABBList->at(lowIndex).maxPoint.z) * 0.5f;
 
 		if (highValue < pivotValue && lowValue > pivotValue) //Time to swap = highIndex value lower than pivotValue and lowIndex value higher than pivotValue
 		{
@@ -329,30 +328,154 @@ void sortAABBZ(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
 	_AABBList->at(highIndex) = _AABBList->at(pivotIndex);  //swapping the pivot element to the right place
 	_AABBList->at(pivotIndex) = temp;
 
-	if (lowIndex - 1 - _lowIndex > 2)
+	if (lowIndex - 1 - _lowIndex > 1)
 	{
 		sortAABBZ(_AABBList, _lowIndex, lowIndex - 1); // left sub sort
 	}
-	if (_highIndex - lowIndex > 2)
+	if (_highIndex - lowIndex > 1)
 	{
 		sortAABBZ(_AABBList, lowIndex, _highIndex); // right sub sort
 	}
 }
 
-void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node _node, int _split)
+void createNodeAABB(Node* _node, std::vector<AABB>* _AABBList)
 {
-	switch (_split)
+	XMFLOAT4 max = _AABBList->at(0).maxPoint;
+	XMFLOAT4 min = _AABBList->at(0).minPoint;;
+	
+	for (int i = 1; i < _AABBList->size(); i++)
 	{
-	case 1:		// SPLITT IN X
-		sortAABBX(_AABBList,0,_AABBList->size()-1);
-		break;
-	case 2:		// SPLITT IN Y
-		sortAABBY(_AABBList, 0, _AABBList->size() - 1);
-		break;
-	case 3:		// SPLITT IN Z
-		sortAABBZ(_AABBList, 0, _AABBList->size() - 1);
-		break;
+
 	}
+}
+
+void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
+{
+	int medianIndex = _AABBList->size() / 2;
+	int medianValue = (_AABBList->at(medianIndex).maxPoint.x + _AABBList->at(medianIndex).minPoint.x)*0.5f;
+
+	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
+	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
+
+	for (int i = 0; i < _AABBList->size(); i++)
+	{
+		if (_AABBList->at(i).maxPoint.x < medianValue)
+		{
+			AABBListLeft->push_back(_AABBList->at(i));
+		}
+		else if (_AABBList->at(i).minPoint.x > medianValue)
+		{
+			AABBListRight->push_back(_AABBList->at(i));
+		}
+		else
+		{
+			AABBListLeft->push_back(_AABBList->at(i));
+			AABBListRight->push_back(_AABBList->at(i));
+		}
+	}
+
+	if (AABBListLeft->size() < _AABBList->size())
+		createKDNodeSplit(AABBListLeft, _node->left, 1);
+
+	if (AABBListRight->size() < _AABBList->size())
+		createKDNodeSplit(AABBListRight, _node->right, 1);
+
+}
+
+void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
+{
+	int medianIndex = _AABBList->size() / 2;
+	int medianValue = (_AABBList->at(medianIndex).maxPoint.y + _AABBList->at(medianIndex).minPoint.y)*0.5f;
+
+	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
+	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
+
+	for (int i = 0; i < _AABBList->size(); i++)
+	{
+		if (_AABBList->at(i).maxPoint.y < medianValue)
+		{
+			AABBListLeft->push_back(_AABBList->at(i));
+		}
+		else if (_AABBList->at(i).minPoint.y > medianValue)
+		{
+			AABBListRight->push_back(_AABBList->at(i));
+		}
+		else
+		{
+			AABBListLeft->push_back(_AABBList->at(i));
+			AABBListRight->push_back(_AABBList->at(i));
+		}
+	}
+
+	if (AABBListLeft->size() < _AABBList->size())
+		createKDNodeSplit(AABBListLeft, _node->left, 1);
+
+	if (AABBListRight->size() < _AABBList->size())
+		createKDNodeSplit(AABBListRight, _node->right, 1);
+
+}
+
+void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
+{
+	int medianIndex = _AABBList->size() / 2;
+	int medianValue = (_AABBList->at(medianIndex).maxPoint.z + _AABBList->at(medianIndex).minPoint.z)*0.5f;
+
+	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
+	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
+
+	for (int i = 0; i < _AABBList->size(); i++)
+	{
+		if (_AABBList->at(i).maxPoint.z < medianValue)
+		{
+			AABBListLeft->push_back(_AABBList->at(i));
+		}
+		else if (_AABBList->at(i).minPoint.z > medianValue)
+		{
+			AABBListRight->push_back(_AABBList->at(i));
+		}
+		else
+		{
+			AABBListLeft->push_back(_AABBList->at(i));
+			AABBListRight->push_back(_AABBList->at(i));
+		}
+	}
+
+	if (AABBListLeft->size() < _AABBList->size())
+		createKDNodeSplit(AABBListLeft, _node->left, 1);
+
+	if (AABBListRight->size() < _AABBList->size())
+		createKDNodeSplit(AABBListRight, _node->right, 1);
+
+}
+
+void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node, int _split)
+{
+	
+	if (_AABBList->size() > 1)
+	{
+
+		_node->left = new Node();
+		_node->right = new Node();
+
+		switch (_split)
+		{
+		case 1:		// SPLITT IN X
+			sortAABBX(_AABBList, 0, _AABBList->size() - 1);
+			splitListX(_node, _AABBList);
+			break;
+		case 2:		// SPLITT IN Y
+			sortAABBY(_AABBList, 0, _AABBList->size() - 1);
+			splitListY(_node, _AABBList);
+			break;
+		case 3:		// SPLITT IN Z
+			sortAABBZ(_AABBList, 0, _AABBList->size() - 1);
+			splitListZ(_node, _AABBList);
+			break;
+		}
+	}
+
+	_node->index = _AABBList->at(0).triangleIndex;
+
 }
 
 

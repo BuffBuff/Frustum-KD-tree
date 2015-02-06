@@ -112,7 +112,9 @@ struct AABB
 struct Node
 {
 	Node *right;
-	Node *Left;
+	Node *left;
+	AABB aabb;
+	int index = -1;
 };
 
 
