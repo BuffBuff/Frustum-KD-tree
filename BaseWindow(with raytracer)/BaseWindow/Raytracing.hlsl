@@ -41,7 +41,9 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	// variable for testing the hit
 	float3 hit = (-1.0f, -1.0f, -1.0f);
 
-	for (int i = 0; i < nrOfTriangles; i++)
+
+	//for (int i = 0; i < nrOfTriangles; i++)
+	for (int i = 0; i < 5000; i++)
 	{
 		hit = RayVSTriangleMat(triangles[i], r, hd.t);
 		if (hit.x > -1)
@@ -49,33 +51,13 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		outColor -= float4(1, 0, 0, 0);
 			hd.pos = r.origin + r.dir * hit.x;
 			hd.normal = triangles[i].normal;
-			hd.color = MeshTexture[hit.yz*512.f]; //triangles[i].color;
+			hd.color = MeshTexture[hit.yz*512.f] + triangles[i].color;
 			hd.ID = triangles[i].ID;
 			hd.t = hit.x;
 			hd.bufferpos = threadID.xy;
 			outColor = hd.color;
 		}
 	}
-
-	//outColor = triangles[0].color;
-
-	//  basic triangle collision
-	/*for (int i = 0; i < NRTRIANGLES; i++)		
-	{
-		float3 nopp = tri[i].pad;
-			hit = RayVSTriangle(tri[i], r, hd.t);
-
-		if (hit > -1)
-		{
-			hd.pos = r.origin + r.dir * hit;
-			hd.normal = tri[i].normal;
-			hd.color = tri[i].color;
-			hd.ID = tri[i].ID;
-			hd.t = hit;
-			hd.bufferpos = threadID.xy;
-
-		}
-	}*/
 
 	// the output picture
 	output[threadID.xy] = outColor;

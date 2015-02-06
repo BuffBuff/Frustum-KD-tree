@@ -1,7 +1,7 @@
 #include "RTGraphics.h"
 
 
-RTGraphics::RTGraphics(HWND* _hwnd)
+ RTGraphics::RTGraphics(HWND* _hwnd)
 : m_mesh(Mesh()),
 m_meshTexture(nullptr),
 m_time(0.f),
@@ -68,13 +68,14 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/Bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
-
+	createKdTree(&m_mesh);
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
-											 m_mesh.getNrOfFaces(),
+											4096,
+											 //m_mesh.getNrOfFaces(),
 											 true,
 											 false,
 											 m_mesh.getTriangles(),
@@ -176,3 +177,69 @@ void RTGraphics::Render(float _dt)
 		);
 	SetWindowText(*m_Hwnd, title);
 }
+
+void RTGraphics::createKdTree(Mesh *_mesh)
+{
+	std::vector<TriangleMat> *triangleList = _mesh->getTriangleList();
+	std::vector<AABB> aabbList;
+
+
+	// CREATION OF AABB LIST
+	for (int i = 0; i < triangleList->size(); i++)
+	{
+		float min = INFINITY;
+		float max = -INFINITY;
+
+		TriangleMat tri = triangleList->at(i);
+		AABB aabb;
+
+		aabb.maxPoint.x = (tri.pos0.x > tri.pos1.x) ? tri.pos0.x : tri.pos1.x;
+		aabb.maxPoint.x = (aabb.maxPoint.x > tri.pos2.x) ? aabb.maxPoint.x : tri.pos2.x;
+
+		aabb.maxPoint.y = (tri.pos0.y > tri.pos1.y) ? tri.pos0.y : tri.pos1.y;
+		aabb.maxPoint.y = (aabb.maxPoint.y > tri.pos2.y) ? aabb.maxPoint.y : tri.pos2.y;
+
+		aabb.maxPoint.z = (tri.pos0.z > tri.pos1.z) ? tri.pos0.z : tri.pos1.z;
+		aabb.maxPoint.z = (aabb.maxPoint.z > tri.pos2.z) ? aabb.maxPoint.z : tri.pos2.z;
+
+		aabb.minPoint.x = (tri.pos0.x < tri.pos1.x) ? tri.pos0.x : tri.pos1.x;
+		aabb.minPoint.x = (aabb.minPoint.x < tri.pos2.x) ? aabb.minPoint.x : tri.pos2.x;
+
+		aabb.minPoint.y = (tri.pos0.y < tri.pos1.y) ? tri.pos0.y : tri.pos1.y;
+		aabb.minPoint.y = (aabb.minPoint.y < tri.pos2.y) ? aabb.minPoint.y : tri.pos2.y;
+
+		aabb.minPoint.z = (tri.pos0.z < tri.pos1.z) ? tri.pos0.z : tri.pos1.z;
+		aabb.minPoint.z = (aabb.minPoint.z < tri.pos2.z) ? aabb.minPoint.z : tri.pos2.z;
+
+		aabb.triangleIndex = i;
+
+		aabbList.push_back(aabb);
+	}
+
+	createKDNodeSplit(&aabbList,m_rootNode,1);
+
+}
+
+void sortAABBX(std::vector<AABB>* _AABBList)
+{
+
+}
+
+
+void RTGraphics::createKDNodeSplit(std::vector<AABB>* _aabbList, Node _node, int _split)
+{
+	switch (_split)
+	{
+	case 1:		// SPLITT IN X
+
+		break;
+	case 2:		// SPLITT IN Y
+
+		break;
+	case 3:		// SPLITT IN Z
+
+		break;
+	}
+}
+
+

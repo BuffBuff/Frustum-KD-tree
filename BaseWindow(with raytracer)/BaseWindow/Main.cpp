@@ -166,7 +166,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	QueryPerformanceCounter((LARGE_INTEGER*)&prevTimeStamp);
 
 	Cam->setPerspectiveProjectionLH(90.0f, (float)g_Width, (float)g_Height, 1.0f, 1000.0f);
-	Cam->setPositionAndView(0.0f, 0.0f, -20.0f, 0.0f, 0.0f);
+	Cam->setPositionAndView(0.0f, 0.0f, -5.0f, 0.0f, 0.0f);
 
 	// Main message loop
 	MSG msg = { 0 };

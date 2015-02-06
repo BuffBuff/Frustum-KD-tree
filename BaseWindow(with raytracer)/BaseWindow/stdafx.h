@@ -102,7 +102,18 @@ struct COLOR
 	operator const FLOAT* () { return (FLOAT*)this; }
 };
 
+struct AABB
+{
+	XMFLOAT4 minPoint;
+	XMFLOAT4 maxPoint;
+	int triangleIndex;
+};
 
+struct Node
+{
+	Node *right;
+	Node *Left;
+};
 
 
 

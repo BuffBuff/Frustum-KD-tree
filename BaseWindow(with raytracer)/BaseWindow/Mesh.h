@@ -55,6 +55,7 @@ public:
 	Material* getMaterial();
 	int getNrOfFaces();
 	TriangleMat* getTriangles();
+	std::vector<TriangleMat>* getTriangleList();
 	void setColor(XMFLOAT4 _color);
 	std::string getTextureString();
 private:

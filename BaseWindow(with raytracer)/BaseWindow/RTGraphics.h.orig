@@ -46,14 +46,16 @@ private:
 	Mesh						m_mesh;
 	ComputeBuffer				*m_meshBuffer;
 	ID3D11ShaderResourceView	*m_meshTexture;
-	
-	Node						m_rootNode;
-	
+<<<<<<< HEAD
+
 	//HWND
 	HWND*						m_Hwnd;
 
 	//Timers
 	float						m_time;
 	float						m_fps;
+=======
+	Node						m_rootNode;
+>>>>>>> origin/master
 };
 
