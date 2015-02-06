@@ -30,7 +30,7 @@ private:
 	float m_pitch;
 	float m_yaw;
 
-	int movementToggles[4];	//forward:back:left:right
+	int movementToggles[6];	//forward:back:left:right:up:down
 	float movementSpeed;
 
 	timer m_camTimer;

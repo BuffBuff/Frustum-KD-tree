@@ -66,6 +66,12 @@ void inline HandleRawInput( HWND &hWnd, HRAWINPUT &lParam )
 					case 'D' : Cam->setMovementToggle( 3, 0 );
 					break;
 
+					case VK_SPACE: Cam->setMovementToggle(4, 0);
+					break;
+
+					case VK_SHIFT: Cam->setMovementToggle(5, 0);
+					break;
+
 					case 'M' : buttonInput->SetMPressed(false);
 					break;
 					
@@ -79,7 +85,7 @@ void inline HandleRawInput( HWND &hWnd, HRAWINPUT &lParam )
 					break;
 
 					case 'C' : buttonInput->SetCPressed(false);
-					break;
+					break;								
 				}
 			break;
 
@@ -102,6 +108,12 @@ void inline HandleRawInput( HWND &hWnd, HRAWINPUT &lParam )
 					case 'D' : Cam->setMovementToggle( 3, 1 );
 					break;
 
+					case VK_SPACE: Cam->setMovementToggle(4, 1);
+					break;
+
+					case VK_SHIFT: Cam->setMovementToggle(5, -1);
+					break;
+
 					case 'M' : buttonInput->SetMPressed(true);
 					break;
 
@@ -115,7 +127,7 @@ void inline HandleRawInput( HWND &hWnd, HRAWINPUT &lParam )
 					break;
 
 					case 'C' : buttonInput->SetCPressed(true);
-					break;
+					break;					
 				}
 			break;
 		}

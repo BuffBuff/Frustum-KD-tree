@@ -26,7 +26,6 @@ private:
 	//Converter (sting to wstring)
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 
-
 	void createCBuffers();
 	void createTriangleTexture();
 
