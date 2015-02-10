@@ -48,7 +48,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		hit = RayVSTriangleMat(triangles[i], r, hd.t);
 		if (hit.x > -1)
 		{
-			outColor -= float4(1, 0, 0, 0);
+
 			hd.pos = r.origin + r.dir * hit.x;
 			hd.normal = triangles[i].normal;
 			hd.color = MeshTexture[hit.yz*512.f] + triangles[i].color;

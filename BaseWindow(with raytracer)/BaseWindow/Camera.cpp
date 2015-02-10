@@ -13,6 +13,8 @@ movementSpeed(10.0f)
 	movementToggles[1] = 0;
 	movementToggles[2] = 0;
 	movementToggles[3] = 0;
+	movementToggles[4] = 0;
+	movementToggles[5] = 0;
 }
 
 Camera::~Camera()
@@ -84,7 +86,8 @@ void Camera::update()
 	float t = (float)m_camTimer.getElapsedTimeSeconds();
 
 	XMVECTOR nPos = (float)t * (movementToggles[0] + movementToggles[1]) * movementSpeed * XMLoadFloat3(&m_forward) +
-		(float)t * (movementToggles[2] + movementToggles[3]) * movementSpeed * XMLoadFloat3(&m_right);
+		(float)t * (movementToggles[2] + movementToggles[3]) * movementSpeed * XMLoadFloat3(&m_right) +
+		(float)t * (movementToggles[4] + movementToggles[5]) * movementSpeed * XMLoadFloat3(&m_up);
 
 	XMStoreFloat3(&m_position, nPos + XMLoadFloat3(&m_position));
 

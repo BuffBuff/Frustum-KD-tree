@@ -1,11 +1,15 @@
 #include "RTGraphics.h"
 
 
-RTGraphics::RTGraphics()
+RTGraphics::RTGraphics(HWND* _hwnd)
 : m_mesh(Mesh()),
-m_meshTexture(nullptr)
+m_meshTexture(nullptr),
+m_time(0.f),
+m_fps(0.f)
 {
 	HRESULT hr = S_OK;
+
+	m_Hwnd = _hwnd;
 
 	computeWrap = new ComputeWrap(g_Device,g_DeviceContext);
 
@@ -59,50 +63,39 @@ void RTGraphics::createCBuffers()
 
 void RTGraphics::createTriangleTexture()
 {
-<<<<<<< HEAD
 	///////////////////////////////////////////////////////////////////////////////////////////
 	//Mesh
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/Bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
-
+	createKdTree(&m_mesh);
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
-											 m_mesh.getNrOfFaces(),
+											4096,
+											 //m_mesh.getNrOfFaces(),
 											 true,
 											 false,
 											 m_mesh.getTriangles(),
 											 false,
 											 "Structured Buffer: Mesh Texture");
 
+
+	//from wchat_t to string
+	//std::string narrow = converter.to_bytes(wide_utf16_source_string);
+	//from string to wchar_t
+	std::wstring meshTextureWstring = converter.from_bytes(m_mesh.getTextureString());
+
+
 	//TEXTURE STUFF
 	CreateWICTextureFromFile(g_Device, 
-							 g_DeviceContext, 
-							 (wchar_t*)m_mesh.getMaterial()->map_Kd.c_str(), 
+							 g_DeviceContext,
+							 meshTextureWstring.c_str(),
 							 NULL, 
 							 &m_meshTexture);
 
-=======
-	//tri.pos[0] = float4(0, 0, 1, 0);
-	//tri.pos[1] = float4(-1, 0, 1, 0);
-	//tri.pos[2] = float4(0, 1, 1, 0);
-	//tri.color = float4(0, 0, 1, 1);
-	//tri.normal = float4(0, 0, 1, 1);
-
-	Triangle tri;
-	tri.pos[0] = XMFLOAT4(0, 0, 1, 0);
-	tri.pos[1] = XMFLOAT4(-1, 0, 1, 0);
-	tri.pos[2] = XMFLOAT4(0, 1, 1, 0);
-	tri.normal = XMFLOAT4(0, 0, 1, 1);
-	tri.color = XMFLOAT4(1, 0, 0, 1);
-	tri.ID = 0;
-	tri.pad = XMFLOAT3(0, 0, 0);
-
-	triangleBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER, sizeof(Triangle), 1, true, false, &tri, false, "Triangle buffer");
->>>>>>> origin/master
 }
 
 RTGraphics::~RTGraphics()
@@ -132,6 +125,20 @@ void RTGraphics::Update(float _dt)
 	cb.cameraPos = XMFLOAT4(tempp.x, tempp.y, tempp.z, 1);
 	cb.nrOfTriangles = m_mesh.getNrOfFaces();
 	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+
+	m_time += _dt;
+	static int frameCnt = 0;
+	static float t_base = 0.f;
+	frameCnt++;
+
+	if (m_time - t_base >= 1.f)
+	{
+		frameCnt /= 1;
+		m_fps = (float)frameCnt;
+		frameCnt = 0;
+		t_base += 1.f;
+	}
+
 }
 
 void RTGraphics::Render(float _dt)
@@ -143,12 +150,8 @@ void RTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(0,1,&backbuffer,NULL);
 
 	//set textures
-<<<<<<< HEAD
-	ID3D11ShaderResourceView *srv[] = { m_meshBuffer->GetResourceView() };
-=======
-	ID3D11ShaderResourceView *srv[] = { triangleBuffer->GetResourceView() };
->>>>>>> origin/master
-	g_DeviceContext->CSSetShaderResources(0, 1, srv);
+	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView() };
+	g_DeviceContext->CSSetShaderResources(0, 2, srv);
 
 	//dispatch
 	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
@@ -163,4 +166,84 @@ void RTGraphics::Render(float _dt)
 	//present scene
 	if (FAILED(g_SwapChain->Present(0, 0)))
 		MessageBox(NULL,"Failed to present the swapchain","RT Render Error",S_OK);
+<<<<<<< HEAD
+
+	//Title text and some timers
+	char title[256];
+	sprintf_s(
+		title,
+		sizeof(title),
+		"Super mega awesume project 3 - fps: %f",
+		m_fps
+		);
+	SetWindowText(*m_Hwnd, title);
 }
+=======
+}
+
+void RTGraphics::createKdTree(Mesh *_mesh)
+{
+	std::vector<TriangleMat> *triangleList = _mesh->getTriangleList();
+	std::vector<AABB> aabbList;
+
+
+	// CREATION OF AABB LIST
+	for (int i = 0; i < triangleList->size(); i++)
+	{
+		float min = INFINITY;
+		float max = -INFINITY;
+
+		TriangleMat tri = triangleList->at(i);
+		AABB aabb;
+
+		aabb.maxPoint.x = (tri.pos0.x > tri.pos1.x) ? tri.pos0.x : tri.pos1.x;
+		aabb.maxPoint.x = (aabb.maxPoint.x > tri.pos2.x) ? aabb.maxPoint.x : tri.pos2.x;
+
+		aabb.maxPoint.y = (tri.pos0.y > tri.pos1.y) ? tri.pos0.y : tri.pos1.y;
+		aabb.maxPoint.y = (aabb.maxPoint.y > tri.pos2.y) ? aabb.maxPoint.y : tri.pos2.y;
+
+		aabb.maxPoint.z = (tri.pos0.z > tri.pos1.z) ? tri.pos0.z : tri.pos1.z;
+		aabb.maxPoint.z = (aabb.maxPoint.z > tri.pos2.z) ? aabb.maxPoint.z : tri.pos2.z;
+
+		aabb.minPoint.x = (tri.pos0.x < tri.pos1.x) ? tri.pos0.x : tri.pos1.x;
+		aabb.minPoint.x = (aabb.minPoint.x < tri.pos2.x) ? aabb.minPoint.x : tri.pos2.x;
+
+		aabb.minPoint.y = (tri.pos0.y < tri.pos1.y) ? tri.pos0.y : tri.pos1.y;
+		aabb.minPoint.y = (aabb.minPoint.y < tri.pos2.y) ? aabb.minPoint.y : tri.pos2.y;
+
+		aabb.minPoint.z = (tri.pos0.z < tri.pos1.z) ? tri.pos0.z : tri.pos1.z;
+		aabb.minPoint.z = (aabb.minPoint.z < tri.pos2.z) ? aabb.minPoint.z : tri.pos2.z;
+
+		aabb.triangleIndex = i;
+
+		aabbList.push_back(aabb);
+	}
+
+	createKDNodeSplit(&aabbList,m_rootNode,1);
+
+}
+
+void sortAABBX(std::vector<AABB>* _AABBList)
+{
+
+}
+
+
+void RTGraphics::createKDNodeSplit(std::vector<AABB>* _aabbList, Node _node, int _split)
+{
+	switch (_split)
+	{
+	case 1:		// SPLITT IN X
+
+		break;
+	case 2:		// SPLITT IN Y
+
+		break;
+	case 3:		// SPLITT IN Z
+
+		break;
+	}
+}
+
+
+>>>>>>> origin/master

@@ -29,10 +29,8 @@ private:
 	void createCBuffers();
 	void createTriangleTexture();
 	void createKdTree(Mesh *_mesh);
-	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node* _node, int _split);
-	void splitListX(Node* _node, std::vector<AABB>* _AABBList);
-	void splitListY(Node* _node, std::vector<AABB>* _AABBList);
-	void splitListZ(Node* _node, std::vector<AABB>* _AABBList);
+	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node _node, int _split);
+
 	ComputeWrap *computeWrap;
 
 	ComputeShader *raytracer = NULL;
@@ -48,14 +46,16 @@ private:
 	Mesh						m_mesh;
 	ComputeBuffer				*m_meshBuffer;
 	ID3D11ShaderResourceView	*m_meshTexture;
-	
-	Node						m_rootNode;
-	
+<<<<<<< HEAD
+
 	//HWND
 	HWND*						m_Hwnd;
 
 	//Timers
 	float						m_time;
 	float						m_fps;
+=======
+	Node						m_rootNode;
+>>>>>>> origin/master
 };
 
