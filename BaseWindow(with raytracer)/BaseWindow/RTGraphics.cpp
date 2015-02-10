@@ -240,6 +240,16 @@ void sortAABBX(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
 	}
 }
 
+void assignTriangles(Node* _node, std::vector<AABB>* _AABBList)
+{
+	_node->index = new std::vector<int>();
+
+	for (int i = 0; i < _AABBList->size(); i++)
+	{
+		_node->index->push_back(_AABBList->at(i).triangleIndex);
+	}
+}
+
 void sortAABBY(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
 {
 	float pivotValue;
@@ -345,8 +355,18 @@ void createNodeAABB(Node* _node, std::vector<AABB>* _AABBList)
 	
 	for (int i = 1; i < _AABBList->size(); i++)
 	{
+		max.x = (_AABBList->at(i).maxPoint.x < max.x) ? _AABBList->at(i).maxPoint.x : max.x;
+		max.y = (_AABBList->at(i).maxPoint.y < max.y) ? _AABBList->at(i).maxPoint.y : max.y;
+		max.z = (_AABBList->at(i).maxPoint.z < max.z) ? _AABBList->at(i).maxPoint.z : max.z;
 
+		min.x = (_AABBList->at(i).minPoint.x < min.x) ? _AABBList->at(i).minPoint.x : min.x;
+		min.y = (_AABBList->at(i).minPoint.y < min.y) ? _AABBList->at(i).minPoint.y : min.y;
+		min.z = (_AABBList->at(i).minPoint.z < min.z) ? _AABBList->at(i).minPoint.z : min.z;
 	}
+
+	_node->aabb.maxPoint = max;
+	_node->aabb.minPoint = min;
+
 }
 
 void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
@@ -374,12 +394,32 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 		}
 	}
 
-	if (AABBListLeft->size() < _AABBList->size())
-		createKDNodeSplit(AABBListLeft, _node->left, 1);
+	// SPLITT LIST OR CREATE LEAF NODE
+	if (AABBListLeft->size() < _AABBList->size() && AABBListLeft->size() > 0)
+	{
+		_node->left = new Node();
 
-	if (AABBListRight->size() < _AABBList->size())
-		createKDNodeSplit(AABBListRight, _node->right, 1);
+		createKDNodeSplit(AABBListLeft, _node->left, 2);
+	}
+	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
+	{
+		_node->left = new Node();
 
+		assignTriangles(_node->left, _AABBList);
+	}
+
+	if (AABBListRight->size() < _AABBList->size() && AABBListRight->size() > 0)
+	{
+		_node->right = new Node();
+
+		createKDNodeSplit(AABBListRight, _node->right, 2);
+	}
+	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
+	{
+		_node->right = new Node();
+
+		assignTriangles(_node->right, _AABBList);
+	}
 }
 
 void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
@@ -407,12 +447,32 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 		}
 	}
 
-	if (AABBListLeft->size() < _AABBList->size())
-		createKDNodeSplit(AABBListLeft, _node->left, 1);
+	// SPLITT LIST OR CREATE LEAF NODE
+	if (AABBListLeft->size() < _AABBList->size() && AABBListLeft->size() > 0)
+	{
+		_node->left = new Node();
 
-	if (AABBListRight->size() < _AABBList->size())
-		createKDNodeSplit(AABBListRight, _node->right, 1);
+		createKDNodeSplit(AABBListLeft, _node->left, 3);
+	}
+	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
+	{
+		_node->left = new Node();
 
+		assignTriangles(_node->left, _AABBList);
+	}
+
+	if (AABBListRight->size() < _AABBList->size() && AABBListRight->size() > 0)
+	{
+		_node->right = new Node();
+
+		createKDNodeSplit(AABBListRight, _node->right, 3);
+	}
+	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
+	{
+		_node->right = new Node();
+
+		assignTriangles(_node->right, _AABBList);
+	}
 }
 
 void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
@@ -440,41 +500,62 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 		}
 	}
 
-	if (AABBListLeft->size() < _AABBList->size())
+	// SPLITT LIST OR CREATE LEAF NODE
+	if (AABBListLeft->size() < _AABBList->size() && AABBListLeft->size() > 0)
+	{
+		_node->left = new Node();
+
 		createKDNodeSplit(AABBListLeft, _node->left, 1);
+	}
+	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
+	{
+		_node->left = new Node();
 
-	if (AABBListRight->size() < _AABBList->size())
+		assignTriangles(_node->left, _AABBList);
+	}
+
+	if (AABBListRight->size() < _AABBList->size() && AABBListRight->size() > 0)
+	{
+		_node->right = new Node();
+
 		createKDNodeSplit(AABBListRight, _node->right, 1);
+	}
+	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
+	{
+		_node->right = new Node();
 
+		assignTriangles(_node->right, _AABBList);
+	}
 }
 
 void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node, int _split)
 {
 	
-	if (_AABBList->size() > 1)
+	switch (_split)
 	{
+	case 1:		// SPLITT IN X
 
-		_node->left = new Node();
-		_node->right = new Node();
+		sortAABBX(_AABBList, 0, _AABBList->size() - 1);
+		createNodeAABB(_node, _AABBList);
+		splitListX(_node, _AABBList);
+		assignTriangles(_node, _AABBList);
+		break;
+	case 2:		// SPLITT IN Y
 
-		switch (_split)
-		{
-		case 1:		// SPLITT IN X
-			sortAABBX(_AABBList, 0, _AABBList->size() - 1);
-			splitListX(_node, _AABBList);
-			break;
-		case 2:		// SPLITT IN Y
-			sortAABBY(_AABBList, 0, _AABBList->size() - 1);
-			splitListY(_node, _AABBList);
-			break;
-		case 3:		// SPLITT IN Z
-			sortAABBZ(_AABBList, 0, _AABBList->size() - 1);
-			splitListZ(_node, _AABBList);
-			break;
-		}
+		sortAABBY(_AABBList, 0, _AABBList->size() - 1);
+		createNodeAABB(_node, _AABBList);
+		splitListY(_node, _AABBList);
+		assignTriangles(_node, _AABBList);
+		break;
+	case 3:		// SPLITT IN Z
+
+		sortAABBZ(_AABBList, 0, _AABBList->size() - 1);
+		createNodeAABB(_node, _AABBList);
+		splitListZ(_node, _AABBList);
+		assignTriangles(_node, _AABBList);
+		break;
 	}
 
-	_node->index = _AABBList->at(0).triangleIndex;
 
 }
 

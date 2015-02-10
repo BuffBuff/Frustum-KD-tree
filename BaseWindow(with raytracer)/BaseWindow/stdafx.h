@@ -109,12 +109,18 @@ struct AABB
 	int triangleIndex;
 };
 
+struct NodeAABB
+{
+	XMFLOAT4 minPoint;
+	XMFLOAT4 maxPoint;
+};
+
 struct Node
 {
 	Node *right;
 	Node *left;
-	AABB aabb;
-	int index = -1;
+	NodeAABB aabb;
+	std::vector<int> *index;
 };
 
 
