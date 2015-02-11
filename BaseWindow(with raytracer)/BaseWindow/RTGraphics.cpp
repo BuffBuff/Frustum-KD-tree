@@ -423,9 +423,15 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 		}
 		else
 		{
-			AABBListNode->push_back(_AABBList->at(i));
-			//AABBListLeft->push_back(_AABBList->at(i));
-			//AABBListRight->push_back(_AABBList->at(i));
+			if (AABBListNode->size() == 0)
+			{
+				AABBListNode->push_back(_AABBList->at(i));
+			}
+			else
+			{
+				AABBListLeft->push_back(_AABBList->at(i));
+				AABBListRight->push_back(_AABBList->at(i));
+			}
 		}
 	}
 
@@ -436,12 +442,12 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListLeft, _node->left, 2);
 	}
-	/*else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
+	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
 	{
 		_node->left = new Node();
 
 		assignTriangles(_node->left, _AABBList);
-	}*/
+	}
 
 	if (AABBListRight->size() < _AABBList->size() && AABBListRight->size() > 0)
 	{
@@ -449,12 +455,12 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListRight, _node->right, 2);
 	}
-	/*else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
+	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
 	{
 		_node->right = new Node();
 
 		assignTriangles(_node->right, _AABBList);
-	}*/
+	}
 
 	assignTriangles(_node, AABBListNode);
 
@@ -486,9 +492,15 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 		}
 		else
 		{
-			AABBListNode->push_back(_AABBList->at(i));
-			//AABBListLeft->push_back(_AABBList->at(i));
-			//AABBListRight->push_back(_AABBList->at(i));
+			if (AABBListNode->size() == 0)
+			{
+				AABBListNode->push_back(_AABBList->at(i));
+			}
+			else
+			{
+				AABBListLeft->push_back(_AABBList->at(i));
+				AABBListRight->push_back(_AABBList->at(i));
+			}
 		}
 	}
 
@@ -499,12 +511,12 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListLeft, _node->left, 3);
 	}
-	/*else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
+	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
 	{
 	_node->left = new Node();
 
 	assignTriangles(_node->left, _AABBList);
-	}*/
+	}
 
 	if (AABBListRight->size() < _AABBList->size() && AABBListRight->size() > 0)
 	{
@@ -512,12 +524,12 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListRight, _node->right, 3);
 	}
-	/*else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
+	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
 	{
 	_node->right = new Node();
 
 	assignTriangles(_node->right, _AABBList);
-	}*/
+	}
 
 	assignTriangles(_node, AABBListNode);
 
@@ -548,9 +560,15 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 		}
 		else
 		{
-			AABBListNode->push_back(_AABBList->at(i));
-			//AABBListLeft->push_back(_AABBList->at(i));
-			//AABBListRight->push_back(_AABBList->at(i));
+			if (AABBListNode->size() == 0)
+			{
+				AABBListNode->push_back(_AABBList->at(i));
+			}
+			else
+			{
+				AABBListLeft->push_back(_AABBList->at(i));
+				AABBListRight->push_back(_AABBList->at(i));
+			}
 		}
 	}
 
@@ -561,12 +579,12 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListLeft, _node->left, 1);
 	}
-	/*else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
+	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
 	{
 	_node->left = new Node();
 
 	assignTriangles(_node->left, _AABBList);
-	}*/
+	}
 
 	if (AABBListRight->size() < _AABBList->size() && AABBListRight->size() > 0)
 	{
@@ -574,12 +592,12 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListRight, _node->right, 1);
 	}
-	/*else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
+	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
 	{
 	_node->right = new Node();
 
 	assignTriangles(_node->right, _AABBList);
-	}*/
+	}
 
 	assignTriangles(_node, AABBListNode);
 
