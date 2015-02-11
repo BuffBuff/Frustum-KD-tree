@@ -21,6 +21,7 @@ public:
 
 	void Update(float _dt);
 	void Render(float _dt);
+	void release();
 
 private:
 	//Converter (sting to wstring)

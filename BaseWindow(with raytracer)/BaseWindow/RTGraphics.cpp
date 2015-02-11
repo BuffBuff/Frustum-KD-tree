@@ -177,6 +177,19 @@ void RTGraphics::Render(float _dt)
 	SetWindowText(*m_Hwnd, title);
 }
 
+void RTGraphics::release()
+{
+	SAFE_RELEASE(m_meshTexture);
+	SAFE_RELEASE(g_cBuffer);
+	SAFE_RELEASE(backbuffer);
+
+	SAFE_DELETE(m_meshBuffer);
+	SAFE_DELETE(raytracer);
+	SAFE_DELETE(computeWrap);
+	SAFE_DELETE(triangleBuffer);
+
+}
+
 void RTGraphics::createKdTree(Mesh *_mesh)
 {
 	std::vector<TriangleMat> *triangleList = _mesh->getTriangleList();
