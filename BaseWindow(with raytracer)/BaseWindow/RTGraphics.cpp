@@ -68,7 +68,7 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/Bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	createKdTree(&m_mesh);
 
@@ -217,6 +217,17 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 
 	createKDNodeSplit(&aabbList,&m_rootNode,1);
 
+	int breakStop = 0;
+}
+
+void assignTriangles(Node* _node, std::vector<AABB>* _AABBList)
+{
+	_node->index = new std::vector<int>();
+
+	for (int i = 0; i < _AABBList->size(); i++)
+	{
+		_node->index->push_back(_AABBList->at(i).triangleIndex);
+	}
 }
 
 void sortAABBX(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
@@ -265,16 +276,6 @@ void sortAABBX(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
 	if (_highIndex - lowIndex > 2)
 	{
 		sortAABBX(_AABBList, lowIndex, _highIndex); // right sub sort
-	}
-}
-
-void assignTriangles(Node* _node, std::vector<AABB>* _AABBList)
-{
-	_node->index = new std::vector<int>();
-
-	for (int i = 0; i < _AABBList->size(); i++)
-	{
-		_node->index->push_back(_AABBList->at(i).triangleIndex);
 	}
 }
 
@@ -400,7 +401,7 @@ void createNodeAABB(Node* _node, std::vector<AABB>* _AABBList)
 void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 {
 	int medianIndex = _AABBList->size() / 2;
-	int medianValue = (_AABBList->at(medianIndex).maxPoint.x + _AABBList->at(medianIndex).minPoint.x)*0.5f;
+	float medianValue = (_AABBList->at(medianIndex).maxPoint.x + _AABBList->at(medianIndex).minPoint.x)*0.5f;
 
 	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
 	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
@@ -453,7 +454,7 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 {
 	int medianIndex = _AABBList->size() / 2;
-	int medianValue = (_AABBList->at(medianIndex).maxPoint.y + _AABBList->at(medianIndex).minPoint.y)*0.5f;
+	float medianValue = (_AABBList->at(medianIndex).maxPoint.y + _AABBList->at(medianIndex).minPoint.y)*0.5f;
 
 	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
 	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
@@ -506,7 +507,7 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 {
 	int medianIndex = _AABBList->size() / 2;
-	int medianValue = (_AABBList->at(medianIndex).maxPoint.z + _AABBList->at(medianIndex).minPoint.z)*0.5f;
+	float medianValue = (_AABBList->at(medianIndex).maxPoint.z + _AABBList->at(medianIndex).minPoint.z)*0.5f;
 
 	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
 	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
