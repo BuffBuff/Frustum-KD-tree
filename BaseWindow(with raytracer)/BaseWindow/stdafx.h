@@ -120,7 +120,7 @@ struct Node
 	Node *right;
 	Node *left;
 	NodeAABB aabb;
-	std::vector<int> *index;
+	std::vector<int> *index = NULL;
 };
 
 
