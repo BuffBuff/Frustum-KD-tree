@@ -53,7 +53,6 @@ struct cBuffer
 	XMFLOAT4X4 IV;
 	int nrOfTriangles;
 	XMFLOAT3 pad;
-	//ObjTriangle objTriangle[12];
 };
 
 struct Triangle
@@ -123,7 +122,20 @@ struct Node
 	std::vector<int> *index;
 };
 
+struct nodePass1
+{
+	int index;					//index to start indices
+	int nrOfTriangles;			//how many indices to read
+	int parent;					//parent id
+	int left_right_bool;		//0 == left child node; 1 == right child node
+};
 
+struct nodePass2
+{
+	int index;					//index to start indices
+	int nrOfTriangles;			//how many indices to read
+	int left_right_nodeID[2];	//0 == left child node, 1 == right child node
+};
 
 
 

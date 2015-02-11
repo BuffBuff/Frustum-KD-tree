@@ -53,17 +53,19 @@ struct TriangleMat
 	float4	normal;
 };
 
-struct ObjTriangle
+struct nodePass1
 {
-	float4 pos[3];
-	float4 normal;
-	float2 texCx;
-	float2 texCy;
-	float2 texCz;
-	int ID;
-	float pad;
+	int index;					//index to start indices
+	int nrOfTriangles;			//how many indices to read
+	int parent;					//parent id
+	int left_right_bool;		//0 == left child node; 1 == right child node
 };
 
-
+struct nodePass2
+{
+	int index;					//index to start indices
+	int nrOfTriangles;			//how many indices to read
+	int left_right_nodeID[2];	//0 == left child node, 1 == right child node
+};
 
 #endif
