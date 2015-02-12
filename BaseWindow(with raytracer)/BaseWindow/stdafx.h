@@ -116,8 +116,8 @@ struct NodeAABB
 
 struct Node
 {
-	Node *right;
-	Node *left;
+	Node *right = NULL;
+	Node *left = NULL;
 	NodeAABB aabb;
 	std::vector<int> *index = NULL;
 };
