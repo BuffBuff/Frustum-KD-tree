@@ -103,17 +103,29 @@ void RTGraphics::createTriangleTexture()
 void RTGraphics::createNodeBuffer(int _nrOfNodes, Node* _rootNode)
 {
 	std::vector<nodePass2> *initdata = new std::vector<nodePass2>();
+	std::vector<int> *indiceList = new std::vector<int>();
 
 	//init pass2 data from kd-tree
 
 	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-											 sizeof(nodePass1),
+											 sizeof(nodePass2),
 											 _nrOfNodes,
 											 true,
 											 false,
 											 &initdata[0],
 											 false,
 											 "Structed Buffer: Node Buffer");
+
+	m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+											 sizeof(int),
+											 indiceList->size(),
+											 true,
+											 false,
+											 &indiceList[0],
+											 false,
+											 "Structed Buffer: Indice Buffer");
+
+
 }
 
 RTGraphics::~RTGraphics()
@@ -168,8 +180,9 @@ void RTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(0,1,&backbuffer,NULL);
 
 	//set textures
-	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView() };
-	g_DeviceContext->CSSetShaderResources(0, 2, srv);
+	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView(),
+										m_NodeBuffer->GetResourceView(), m_Indices->GetResourceView()};
+	g_DeviceContext->CSSetShaderResources(0, 4, srv);
 
 	//dispatch
 	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
@@ -185,7 +198,7 @@ void RTGraphics::Render(float _dt)
 	if (FAILED(g_SwapChain->Present(0, 0)))
 		MessageBox(NULL,"Failed to present the swapchain","RT Render Error",S_OK);
 
-	//Title text and some timers
+	//Title text and FPS counter
 	char title[256];
 	sprintf_s(
 		title,

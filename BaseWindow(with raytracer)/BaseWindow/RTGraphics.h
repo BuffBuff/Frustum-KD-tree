@@ -53,7 +53,7 @@ private:
 	
 	//blululululu
 	ComputeBuffer				*m_NodeBuffer;
-
+	ComputeBuffer				*m_Indices;
 
 	Node						m_rootNode;
 	
