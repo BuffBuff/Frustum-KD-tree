@@ -17,6 +17,7 @@ HRESULT             InitWindow(HINSTANCE hInstance, int nCmdShow);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 HRESULT				Render(float deltaTime);
 HRESULT				Update(float deltaTime);
+void				release();
 
 HINSTANCE				g_hInst = NULL;
 HWND					g_hWnd = NULL;
@@ -199,6 +200,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		}
 	}
 
+	release();
+
 	return (int)msg.wParam;
 }
 
@@ -284,4 +287,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
+}
+
+void release()
+{
+	graphics->release();
+
+	SAFE_RELEASE(g_Device);
+	SAFE_RELEASE(g_DeviceContext);
+	SAFE_RELEASE(g_SwapChain);
+	
+	Cam->~Camera();
 }
