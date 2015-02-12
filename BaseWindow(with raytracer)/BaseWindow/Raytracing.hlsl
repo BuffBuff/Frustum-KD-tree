@@ -5,6 +5,9 @@ RWTexture2D<float4> output : register(u0);
 Texture2D MeshTexture : register(t0);
 StructuredBuffer<TriangleMat> triangles : register(t1);
 
+StructuredBuffer<NodePass2> KDtree : register(t2);
+StructuredBuffer<int> Indices : register(t3);
+
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
 {
@@ -38,9 +41,13 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	r.origin = cameraPos;
 	r.dir = rayDir;
 
+	while (true)
+	{
+
+	}
+
 	// variable for testing the hit
 	float3 hit = (-1.0f, -1.0f, -1.0f);
-
 
 	for (int i = 0; i < nrOfTriangles; i++)
 	//for (int i = 0; i < 5000; i++)
