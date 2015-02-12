@@ -33,6 +33,8 @@ private:
 	void splitListX(Node* _node, std::vector<AABB>* _AABBList);
 	void splitListY(Node* _node, std::vector<AABB>* _AABBList);
 	void splitListZ(Node* _node, std::vector<AABB>* _AABBList);
+	void createNodeBuffer(Node* _rootNode);
+
 	ComputeWrap *computeWrap;
 
 	ComputeShader *raytracer = NULL;

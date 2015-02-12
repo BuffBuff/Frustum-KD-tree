@@ -97,6 +97,77 @@ void RTGraphics::createTriangleTexture()
 
 }
 
+void fillKDBuffers(Node* _node, std::vector<nodePass2> *_initdata, std::vector<int> *_indiceList, int _index)
+{
+
+	if (_node->left == NULL && _node->right == NULL)
+	{
+		_initdata->at(_index).left_right_nodeID[0] = -1;
+		_initdata->at(_index).left_right_nodeID[1] = -1;
+		_initdata->at(_index).index = _indiceList->size();
+		_initdata->at(_index).nrOfTriangles = _node->index->size();
+
+		for (int i = 0; i < _node->index->size(); i++)
+		{
+			_indiceList->push_back(_node->index->at(i));
+		}
+
+	}
+	else
+	{
+		nodePass2 nodeRight;
+		nodePass2 nodeLeft;
+
+		nodeLeft.aabb = _node->left->aabb;
+		nodeRight.aabb = _node->right->aabb;
+
+		_initdata->push_back(nodeLeft);
+		_initdata->at(_index).left_right_nodeID[0] = _initdata->size() - 1;
+
+		_initdata->push_back(nodeRight);
+		_initdata->at(_index).left_right_nodeID[1] = _initdata->size() - 1;
+
+		fillKDBuffers(_node->left, _initdata, _indiceList, _initdata->at(_index).left_right_nodeID[0]);
+		fillKDBuffers(_node->right, _initdata, _indiceList, _initdata->at(_index).left_right_nodeID[1]);
+	}
+
+}
+
+void RTGraphics::createNodeBuffer(Node* _rootNode)
+{
+	std::vector<nodePass2> *initdata = new std::vector<nodePass2>();
+	std::vector<int> *indiceList = new std::vector<int>();
+
+	//init pass2 data from kd-tree
+	nodePass2 node;
+	node.aabb = _rootNode->aabb;
+
+	initdata->push_back(node);
+
+	fillKDBuffers(_rootNode, initdata, indiceList, 0);
+
+
+	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(nodePass2),
+		initdata->size(),
+		true,
+		false,
+		&initdata[0],
+		false,
+		"Structed Buffer: Node Buffer");
+
+	m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int),
+		indiceList->size(),
+		true,
+		false,
+		&indiceList[0],
+		false,
+		"Structed Buffer: Indice Buffer");
+
+
+}
+
 RTGraphics::~RTGraphics()
 {
 }
