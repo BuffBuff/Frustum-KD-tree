@@ -29,6 +29,9 @@ m_fps(0.f)
 	//createing triangle texture
 	createTriangleTexture();
 
+	//createing node buffer
+	createNodeBuffer(&m_rootNode);
+
 
 }
 
@@ -119,7 +122,11 @@ void fillKDBuffers(Node* _node, std::vector<nodePass2> *_initdata, std::vector<i
 		nodePass2 nodeLeft;
 
 		nodeLeft.aabb = _node->left->aabb;
+		nodeLeft.index = -1;
+		nodeLeft.nrOfTriangles = 0;
 		nodeRight.aabb = _node->right->aabb;
+		nodeRight.index = -1;
+		nodeRight.nrOfTriangles = 0;
 
 		_initdata->push_back(nodeLeft);
 		_initdata->at(_index).left_right_nodeID[0] = _initdata->size() - 1;
@@ -138,9 +145,11 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 	std::vector<nodePass2> *initdata = new std::vector<nodePass2>();
 	std::vector<int> *indiceList = new std::vector<int>();
 
-	//init pass2 data from kd-tree
+
 	nodePass2 node;
 	node.aabb = _rootNode->aabb;
+	node.index = -1;
+	node.nrOfTriangles = 0;
 
 	initdata->push_back(node);
 
@@ -148,23 +157,22 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 
 
 	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-		sizeof(nodePass2),
-		initdata->size(),
-		true,
-		false,
-		&initdata[0],
-		false,
-		"Structed Buffer: Node Buffer");
+											 sizeof(nodePass2),
+											 initdata->size(),
+											 true,
+											 false,
+											 initdata->data(),
+											 false,
+											 "Structed Buffer: Node Buffer");
 
 	m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-		sizeof(int),
-		indiceList->size(),
-		true,
-		false,
-		&indiceList[0],
-		false,
-		"Structed Buffer: Indice Buffer");
-
+											 sizeof(int),
+											 indiceList->size(),
+											 true,
+											 false,
+											 indiceList->data(),
+											 false,
+											 "Structed Buffer: Indice Buffer");
 
 }
 
@@ -220,8 +228,9 @@ void RTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(0,1,&backbuffer,NULL);
 
 	//set textures
-	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView() };
-	g_DeviceContext->CSSetShaderResources(0, 2, srv);
+	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView(),
+										m_NodeBuffer->GetResourceView(), m_Indices->GetResourceView()};
+	g_DeviceContext->CSSetShaderResources(0, 4, srv);
 
 	//dispatch
 	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
@@ -237,7 +246,7 @@ void RTGraphics::Render(float _dt)
 	if (FAILED(g_SwapChain->Present(0, 0)))
 		MessageBox(NULL,"Failed to present the swapchain","RT Render Error",S_OK);
 
-	//Title text and some timers
+	//Title text and FPS counter
 	char title[256];
 	sprintf_s(
 		title,
@@ -246,6 +255,19 @@ void RTGraphics::Render(float _dt)
 		m_fps
 		);
 	SetWindowText(*m_Hwnd, title);
+}
+
+void RTGraphics::release()
+{
+	SAFE_RELEASE(m_meshTexture);
+	SAFE_RELEASE(g_cBuffer);
+	SAFE_RELEASE(backbuffer);
+
+	SAFE_DELETE(m_meshBuffer);
+	SAFE_DELETE(raytracer);
+	SAFE_DELETE(computeWrap);
+	SAFE_DELETE(triangleBuffer);
+
 }
 
 void RTGraphics::createKdTree(Mesh *_mesh)
@@ -501,10 +523,14 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListLeft, _node->left, 2);
 	}
+	else if (AABBListLeft->size() == _AABBList->size() && AABBListRight->size() == _AABBList->size())
+	{
+		return;
+	}
 	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
 	{
 		_node->left = new Node();
-
+		_node->left->aabb = _node->aabb;
 		assignTriangles(_node->left, _AABBList);
 	}
 
@@ -517,7 +543,7 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
 	{
 		_node->right = new Node();
-
+		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
 }
@@ -554,10 +580,14 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListLeft, _node->left, 3);
 	}
+	else if (AABBListLeft->size() == _AABBList->size() && AABBListRight->size() == _AABBList->size())
+	{
+		return;
+	}
 	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
 	{
 		_node->left = new Node();
-
+		_node->left->aabb = _node->aabb;
 		assignTriangles(_node->left, _AABBList);
 	}
 
@@ -570,7 +600,7 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
 	{
 		_node->right = new Node();
-
+		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
 }
@@ -607,10 +637,14 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListLeft, _node->left, 1);
 	}
+	else if (AABBListLeft->size() == _AABBList->size() && AABBListRight->size() == _AABBList->size())
+	{
+		return;
+	}
 	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
 	{
 		_node->left = new Node();
-
+		_node->left->aabb = _node->aabb;
 		assignTriangles(_node->left, _AABBList);
 	}
 
@@ -623,7 +657,7 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
 	{
 		_node->right = new Node();
-
+		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
 }

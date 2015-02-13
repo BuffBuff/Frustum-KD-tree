@@ -21,6 +21,7 @@ public:
 
 	void Update(float _dt);
 	void Render(float _dt);
+	void release();
 
 private:
 	//Converter (sting to wstring)
@@ -28,12 +29,12 @@ private:
 
 	void createCBuffers();
 	void createTriangleTexture();
+	void createNodeBuffer(Node* _rootNode);
 	void createKdTree(Mesh *_mesh);
 	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node* _node, int _split);
 	void splitListX(Node* _node, std::vector<AABB>* _AABBList);
 	void splitListY(Node* _node, std::vector<AABB>* _AABBList);
 	void splitListZ(Node* _node, std::vector<AABB>* _AABBList);
-	void createNodeBuffer(Node* _rootNode);
 
 	ComputeWrap *computeWrap;
 
@@ -51,6 +52,10 @@ private:
 	ComputeBuffer				*m_meshBuffer;
 	ID3D11ShaderResourceView	*m_meshTexture;
 	
+	//blululululu
+	ComputeBuffer				*m_NodeBuffer;
+	ComputeBuffer				*m_Indices;
+
 	Node						m_rootNode;
 	
 	//HWND
