@@ -29,12 +29,13 @@ private:
 
 	void createCBuffers();
 	void createTriangleTexture();
-	void createNodeBuffer(int _nrOfNodes, Node* _rootNode);
+	void createNodeBuffer(Node* _rootNode);
 	void createKdTree(Mesh *_mesh);
 	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node* _node, int _split);
 	void splitListX(Node* _node, std::vector<AABB>* _AABBList);
 	void splitListY(Node* _node, std::vector<AABB>* _AABBList);
 	void splitListZ(Node* _node, std::vector<AABB>* _AABBList);
+
 	ComputeWrap *computeWrap;
 
 	ComputeShader *raytracer = NULL;

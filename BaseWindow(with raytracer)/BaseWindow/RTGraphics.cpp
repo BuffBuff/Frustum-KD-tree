@@ -30,7 +30,7 @@ m_fps(0.f)
 	createTriangleTexture();
 
 	//createing node buffer
-	createNodeBuffer(0, &m_rootNode);
+	createNodeBuffer(&m_rootNode);
 
 
 }
@@ -71,7 +71,7 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/Bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	createKdTree(&m_mesh);
 
@@ -100,19 +100,68 @@ void RTGraphics::createTriangleTexture()
 
 }
 
-void RTGraphics::createNodeBuffer(int _nrOfNodes, Node* _rootNode)
+void fillKDBuffers(Node* _node, std::vector<NodePass2> *_initdata, std::vector<int> *_indiceList, int _index)
+{
+
+	if (_node->left == NULL && _node->right == NULL)
+	{
+		_initdata->at(_index).left_right_nodeID[0] = -1;
+		_initdata->at(_index).left_right_nodeID[1] = -1;
+		_initdata->at(_index).index = _indiceList->size();
+		_initdata->at(_index).nrOfTriangles = _node->index->size();
+
+		for (int i = 0; i < _node->index->size(); i++)
+		{
+			_indiceList->push_back(_node->index->at(i));
+		}
+
+	}
+	else
+	{
+		NodePass2 nodeRight;
+		NodePass2 nodeLeft;
+
+		nodeLeft.aabb = _node->left->aabb;
+		nodeLeft.index = -1;
+		nodeLeft.nrOfTriangles = 0;
+		nodeRight.aabb = _node->right->aabb;
+		nodeRight.index = -1;
+		nodeRight.nrOfTriangles = 0;
+
+		_initdata->push_back(nodeLeft);
+		_initdata->at(_index).left_right_nodeID[0] = _initdata->size() - 1;
+
+		_initdata->push_back(nodeRight);
+		_initdata->at(_index).left_right_nodeID[1] = _initdata->size() - 1;
+
+		fillKDBuffers(_node->left, _initdata, _indiceList, _initdata->at(_index).left_right_nodeID[0]);
+		fillKDBuffers(_node->right, _initdata, _indiceList, _initdata->at(_index).left_right_nodeID[1]);
+	}
+
+}
+
+void RTGraphics::createNodeBuffer(Node* _rootNode)
 {
 	std::vector<NodePass2> *initdata = new std::vector<NodePass2>();
 	std::vector<int> *indiceList = new std::vector<int>();
 
-	//init pass2 data from kd-tree
+
+	NodePass2 node;
+	node.aabb = _rootNode->aabb;
+	node.index = -1;
+	node.nrOfTriangles = 0;
+
+	initdata->push_back(node);
+
+	fillKDBuffers(_rootNode, initdata, indiceList, 0);
+
 
 	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(NodePass2),
-											 _nrOfNodes,
+											 initdata->size(),
 											 true,
 											 false,
-											 &initdata[0],
+											 initdata->data(),
 											 false,
 											 "Structed Buffer: Node Buffer");
 
@@ -121,10 +170,9 @@ void RTGraphics::createNodeBuffer(int _nrOfNodes, Node* _rootNode)
 											 indiceList->size(),
 											 true,
 											 false,
-											 &indiceList[0],
+											 indiceList->data(),
 											 false,
 											 "Structed Buffer: Indice Buffer");
-
 
 }
 
@@ -262,6 +310,17 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 
 	createKDNodeSplit(&aabbList,&m_rootNode,1);
 
+	int breakStop = 0;
+}
+
+void assignTriangles(Node* _node, std::vector<AABB>* _AABBList)
+{
+	_node->index = new std::vector<int>();
+
+	for (int i = 0; i < _AABBList->size(); i++)
+	{
+		_node->index->push_back(_AABBList->at(i).triangleIndex);
+	}
 }
 
 void sortAABBX(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
@@ -310,16 +369,6 @@ void sortAABBX(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
 	if (_highIndex - lowIndex > 2)
 	{
 		sortAABBX(_AABBList, lowIndex, _highIndex); // right sub sort
-	}
-}
-
-void assignTriangles(Node* _node, std::vector<AABB>* _AABBList)
-{
-	_node->index = new std::vector<int>();
-
-	for (int i = 0; i < _AABBList->size(); i++)
-	{
-		_node->index->push_back(_AABBList->at(i).triangleIndex);
 	}
 }
 
@@ -445,7 +494,7 @@ void createNodeAABB(Node* _node, std::vector<AABB>* _AABBList)
 void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 {
 	int medianIndex = _AABBList->size() / 2;
-	int medianValue = (_AABBList->at(medianIndex).maxPoint.x + _AABBList->at(medianIndex).minPoint.x)*0.5f;
+	float medianValue = (_AABBList->at(medianIndex).maxPoint.x + _AABBList->at(medianIndex).minPoint.x)*0.5f;
 
 	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
 	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
@@ -474,10 +523,14 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListLeft, _node->left, 2);
 	}
+	else if (AABBListLeft->size() == _AABBList->size() && AABBListRight->size() == _AABBList->size())
+	{
+		return;
+	}
 	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
 	{
 		_node->left = new Node();
-
+		_node->left->aabb = _node->aabb;
 		assignTriangles(_node->left, _AABBList);
 	}
 
@@ -490,7 +543,7 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
 	{
 		_node->right = new Node();
-
+		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
 }
@@ -498,7 +551,7 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 {
 	int medianIndex = _AABBList->size() / 2;
-	int medianValue = (_AABBList->at(medianIndex).maxPoint.y + _AABBList->at(medianIndex).minPoint.y)*0.5f;
+	float medianValue = (_AABBList->at(medianIndex).maxPoint.y + _AABBList->at(medianIndex).minPoint.y)*0.5f;
 
 	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
 	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
@@ -527,10 +580,14 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListLeft, _node->left, 3);
 	}
+	else if (AABBListLeft->size() == _AABBList->size() && AABBListRight->size() == _AABBList->size())
+	{
+		return;
+	}
 	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
 	{
 		_node->left = new Node();
-
+		_node->left->aabb = _node->aabb;
 		assignTriangles(_node->left, _AABBList);
 	}
 
@@ -543,7 +600,7 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
 	{
 		_node->right = new Node();
-
+		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
 }
@@ -551,7 +608,7 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 {
 	int medianIndex = _AABBList->size() / 2;
-	int medianValue = (_AABBList->at(medianIndex).maxPoint.z + _AABBList->at(medianIndex).minPoint.z)*0.5f;
+	float medianValue = (_AABBList->at(medianIndex).maxPoint.z + _AABBList->at(medianIndex).minPoint.z)*0.5f;
 
 	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
 	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
@@ -580,10 +637,14 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 
 		createKDNodeSplit(AABBListLeft, _node->left, 1);
 	}
+	else if (AABBListLeft->size() == _AABBList->size() && AABBListRight->size() == _AABBList->size())
+	{
+		return;
+	}
 	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
 	{
 		_node->left = new Node();
-
+		_node->left->aabb = _node->aabb;
 		assignTriangles(_node->left, _AABBList);
 	}
 
@@ -596,7 +657,7 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
 	{
 		_node->right = new Node();
-
+		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
 }
