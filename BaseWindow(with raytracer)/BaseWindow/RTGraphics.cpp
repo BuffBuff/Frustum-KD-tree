@@ -30,7 +30,7 @@ m_fps(0.f)
 	createTriangleTexture();
 
 	//createing node buffer
-	creatingNodeBuffer();
+	createNodeBuffer(0, &m_rootNode);
 
 
 }
@@ -102,13 +102,13 @@ void RTGraphics::createTriangleTexture()
 
 void RTGraphics::createNodeBuffer(int _nrOfNodes, Node* _rootNode)
 {
-	std::vector<nodePass2> *initdata = new std::vector<nodePass2>();
+	std::vector<NodePass2> *initdata = new std::vector<NodePass2>();
 	std::vector<int> *indiceList = new std::vector<int>();
 
 	//init pass2 data from kd-tree
 
 	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-											 sizeof(nodePass2),
+											 sizeof(NodePass2),
 											 _nrOfNodes,
 											 true,
 											 false,

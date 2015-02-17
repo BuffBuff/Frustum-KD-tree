@@ -59,7 +59,7 @@ struct NodeAABB
 	float4 maxPoint;
 };
 
-struct nodePass1
+struct NodePass1
 {
 	int index;					//index to start indices
 	int nrOfTriangles;			//how many indices to read
@@ -67,7 +67,7 @@ struct nodePass1
 	int left_right_bool;		//0 == left child node; 1 == right child node
 };
 
-struct nodePass2
+struct NodePass2
 {
 	int index;					//index to start indices
 	int nrOfTriangles;			//how many indices to read

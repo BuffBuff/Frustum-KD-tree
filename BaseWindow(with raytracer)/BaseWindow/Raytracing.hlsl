@@ -43,7 +43,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	while (true)
 	{
-
+		break;
 	}
 
 	// variable for testing the hit
