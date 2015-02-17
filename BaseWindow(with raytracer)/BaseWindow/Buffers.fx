@@ -15,6 +15,9 @@ static const int COREMULTIPLIERHEIGHT = 25; // change to modify screen size
 static const float WIDTH = CORETHREADSWIDTH * COREMULTIPLIERWIDTH;
 static const float HEIGHT = CORETHREADSHEIGHT * COREMULTIPLIERHEIGHT;
 
+static const int NUMDIM = 3; // the number of dimensions our application uses
+
+
 cbuffer consts : register(c0)
 {
 	float4 cameraPos;

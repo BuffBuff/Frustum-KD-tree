@@ -41,8 +41,11 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	r.origin = cameraPos;
 	r.dir = rayDir;
 
+	int nodeIndex = 0;
+
 	while (true)
 	{
+		//if ()
 		break;
 	}
 

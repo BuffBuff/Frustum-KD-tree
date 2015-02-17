@@ -119,3 +119,71 @@ float3 RayVSTriangleMat(TriangleMat p_tri, Ray p_ray, float _dist)
 	
 	return float3(-1,0,0);
 }
+
+#define LEFT -1
+#define RIGHT 1
+#define MIDDLE 0
+
+int RayVSAABB(Ray _ray, NodeAABB _aabb, float _dist)
+{
+	float maxT[NUMDIM];
+	int inside = 1;
+	int quadrant[NUMDIM];
+	float candidatePlane[NUMDIM];
+
+	// Find candidate planes
+	for (int i = 0; i < NUMDIM; i++)
+	{
+		quadrant[i] = MIDDLE;
+		if (_ray.origin[i] < _aabb.minPoint[i])
+		{
+			quadrant[i] = LEFT;
+			candidatePlane[i] = _aabb.minPoint[i];
+			inside = 0;
+		}
+		else if (_ray.origin[i] > _aabb.maxPoint[i])
+		{
+			quadrant[i] = RIGHT;
+			candidatePlane[i] = _aabb.maxPoint[i];
+			inside = 0;
+		}
+	}
+
+	// if origin inside AABB
+	if (inside == 1)
+	{
+		return 1;
+	}
+
+	// check to see if the ray intersects the AABB
+
+	// calculate t distance to candidate planes
+	for (int i = 0; i < NUMDIM; i++)
+	{
+		maxT[i] = -1;
+		if (quadrant[i] != MIDDLE && _ray.dir[i] != 0)
+		{
+			maxT[i] = (candidatePlane[i] - _ray.origin[i]) / _ray.dir[i];
+		}
+	}
+
+	// get the largest of the maxT
+	int whichPlane = 0;
+	whichPlane = maxT[whichPlane] < maxT[1] ? 1 : whichPlane;
+	whichPlane = maxT[whichPlane] < maxT[2] ? 2 : whichPlane;
+
+	// Check if the final candidate is inside the box
+	if (maxT[whichPlane] < 0)
+	{
+		return 0;
+	}
+	for (int i = 0; i < NUMDIM; i++)
+	{
+		if (whichPlane != i && (_ray.origin[i] + (maxT[whichPlane] * _ray.dir[i])) < _aabb.minPoint[i] ||
+			whichPlane != i && (_ray.origin[i] + (maxT[whichPlane] * _ray.dir[i])) > _aabb.maxPoint[i])
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
