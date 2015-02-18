@@ -237,7 +237,7 @@ void Mesh::loadMaterial(string filename)
 
 TriangleMat* Mesh::getTriangles()
 {
-	return &m_meshTriangles[0];
+	return m_meshTriangles.data();
 }
 
 std::vector<TriangleMat>* Mesh::getTriangleList()

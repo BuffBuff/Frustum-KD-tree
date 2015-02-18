@@ -71,7 +71,7 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/Bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	createKdTree(&m_mesh);
 
@@ -260,8 +260,32 @@ void RTGraphics::Render(float _dt)
 	SetWindowText(*m_Hwnd, title);
 }
 
+void releaseKdTree(Node *_node)
+{
+	if (_node->left != NULL)
+	{
+		releaseKdTree(_node->left);
+		SAFE_DELETE(_node->left);
+	}
+	else
+	{
+		_node->index->clear();
+	}
+	if (_node->right != NULL)
+	{
+		releaseKdTree(_node->right);
+		SAFE_DELETE(_node->right);
+	}
+	else
+	{
+		_node->index->clear();
+	}
+}
+
 void RTGraphics::release()
 {
+	releaseKdTree(&m_rootNode);
+
 	SAFE_RELEASE(m_meshTexture);
 	SAFE_RELEASE(g_cBuffer);
 	SAFE_RELEASE(backbuffer);

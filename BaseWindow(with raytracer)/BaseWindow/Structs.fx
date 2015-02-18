@@ -71,8 +71,9 @@ struct NodePass2
 {
 	int index;					//index to start indices
 	int nrOfTriangles;			//how many indices to read
-	NodeAABB aabb;				//AABB collisionbox
 	int left_right_nodeID[2];	//0 == left child node, 1 == right child node
+	NodeAABB aabb;				//AABB collisionbox
+
 };
 
 #endif

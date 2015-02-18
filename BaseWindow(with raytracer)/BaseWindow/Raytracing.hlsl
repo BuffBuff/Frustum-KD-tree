@@ -73,11 +73,20 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			hd.ID = triangles[Indices[i]].ID;
 			hd.t = hit.x;
 			hd.bufferpos = threadID.xy;
-			outColor = float4(1, 0, 0, 1);//MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+			outColor = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
 		}
 	}
-
-	outColor.x = nodeIndex;
+	
+	/*if (KDtree[0].left_right_nodeID[0] < -100)
+	{
+		outColor = float4(1,0,0,1);
+	}
+	else
+	{
+		outColor = float4(0, 1, 0, 1);
+	}*/
+	//outColor.y = Indices[1];
+	//outColor.z = Indices[2];
 
 	//// variable for testing the hit
 	//float3 hit = (-1.0f, -1.0f, -1.0f);
