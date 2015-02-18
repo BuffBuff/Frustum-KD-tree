@@ -123,8 +123,9 @@ float3 RayVSTriangleMat(TriangleMat p_tri, Ray p_ray, float _dist)
 #define LEFT -1
 #define RIGHT 1
 #define MIDDLE 0
-
-int RayVSAABB(Ray _ray, NodeAABB _aabb, float _dist)
+#define MAXDIST 9999
+// Implements support for dist later
+int RayVSAABB(Ray _ray, NodeAABB _aabb)
 {
 	float maxT[NUMDIM];
 	int inside = 1;
@@ -152,7 +153,7 @@ int RayVSAABB(Ray _ray, NodeAABB _aabb, float _dist)
 	// if origin inside AABB
 	if (inside == 1)
 	{
-		return 1;
+		return 0;
 	}
 
 	// check to see if the ray intersects the AABB
@@ -175,15 +176,15 @@ int RayVSAABB(Ray _ray, NodeAABB _aabb, float _dist)
 	// Check if the final candidate is inside the box
 	if (maxT[whichPlane] < 0)
 	{
-		return 0;
+		return MAXDIST;
 	}
 	for (int i = 0; i < NUMDIM; i++)
 	{
 		if (whichPlane != i && (_ray.origin[i] + (maxT[whichPlane] * _ray.dir[i])) < _aabb.minPoint[i] ||
 			whichPlane != i && (_ray.origin[i] + (maxT[whichPlane] * _ray.dir[i])) > _aabb.maxPoint[i])
 		{
-			return 0;
+			return MAXDIST;
 		}
 	}
-	return 1;
+	return maxT[whichPlane];
 }

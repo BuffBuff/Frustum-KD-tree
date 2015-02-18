@@ -71,7 +71,7 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/Bunny.obj");
+	m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	createKdTree(&m_mesh);
 
@@ -238,6 +238,9 @@ void RTGraphics::Render(float _dt)
 	//unset buffers
 	ID3D11UnorderedAccessView* nulluav[] = { NULL, NULL, NULL, NULL };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 4, nulluav, NULL);
+
+	ID3D11ShaderResourceView* nullsrv[] = { NULL, NULL, NULL, NULL };
+	g_DeviceContext->CSSetShaderResources(0, 4, nullsrv);
 
 	//unset shader
 	raytracer->Unset();
