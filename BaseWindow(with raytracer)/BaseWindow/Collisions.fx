@@ -122,66 +122,129 @@ float3 RayVSTriangleMat(TriangleMat p_tri, Ray p_ray, float _dist)
 
 
 // Implements support for dist later
-int RayVSAABB(Ray _ray, NodeAABB _aabb)
+float RayVSAABB(Ray _ray, NodeAABB _aabb)
 {
-	float maxT[NUMDIM];
-	int inside = 1;
-	int quadrant[NUMDIM];
-	float candidatePlane[NUMDIM];
+	float tMin = -MAXDIST;
+	float tMax = MAXDIST;
+	float t1;
+	float t2;
 
-	// Find candidate planes
-	for (int i = 0; i < NUMDIM; i++)
+	float3 normalizedDirs[3];
+	normalizedDirs[0] = float3(1, 0, 0);
+	normalizedDirs[1] = float3(0, 1, 0);
+	normalizedDirs[2] = float3(0, 0, 1);
+
+	float3 AABBCenter = (_aabb.minPoint.xyz + _aabb.maxPoint.xyz) * 0.5f;
+
+	float3 lengthToSide = AABBCenter - _aabb.maxPoint.xyz;
+
+	float3 p = AABBCenter - _ray.origin.xyz;
+
+
+	for (int i = 0; i < 3; i++)
 	{
-		quadrant[i] = MIDDLE;
-		if (_ray.origin[i] < _aabb.minPoint[i])
+		float e = dot(normalizedDirs[i], p);
+		float f = dot(normalizedDirs[i], _ray.dir);
+
+		if (abs(f) > EPSILON)
 		{
-			quadrant[i] = LEFT;
-			candidatePlane[i] = _aabb.minPoint[i];
-			inside = 0;
+			t1 = (e + lengthToSide[i]) / f;
+			t2 = (e - lengthToSide[i]) / f;
+			if (t1 > t2)
+			{
+				float temp = t1;
+				t1 = t2;
+				t2 = temp;
+			}
+			if (t1 > tMin)
+			{
+				tMin = t1;
+			}
+			if (t2 < tMax)
+			{
+				tMax = t2;
+			}
+			if (tMin > tMax)
+			{
+				return MAXDIST;
+			}
+			if (tMax < 0)
+			{
+				return MAXDIST;
+			}
 		}
-		else if (_ray.origin[i] > _aabb.maxPoint[i])
-		{
-			quadrant[i] = RIGHT;
-			candidatePlane[i] = _aabb.maxPoint[i];
-			inside = 0;
-		}
-	}
-
-	// if origin inside AABB
-	if (inside == 1)
-	{
-		return 0;
-	}
-
-	// check to see if the ray intersects the AABB
-
-	// calculate t distance to candidate planes
-	for (int i = 0; i < NUMDIM; i++)
-	{
-		maxT[i] = -1;
-		if (quadrant[i] != MIDDLE && _ray.dir[i] != 0)
-		{
-			maxT[i] = (candidatePlane[i] - _ray.origin[i]) / _ray.dir[i];
-		}
-	}
-
-	// get the largest of the maxT
-	int whichPlane = 0;
-	whichPlane = maxT[whichPlane] < maxT[1] ? 1 : whichPlane;
-	whichPlane = maxT[whichPlane] < maxT[2] ? 2 : whichPlane;
-
-	// Check if the final candidate is inside the box
-	if (maxT[whichPlane] < 0)
-	{
-		return MAXDIST;
-	}
-	for (int i = 0; i < NUMDIM; i++)
-	{
-		if (whichPlane != i && (_ray.origin[i] + (maxT[whichPlane] * _ray.dir[i])) < _aabb.minPoint[i] ||
-			whichPlane != i && (_ray.origin[i] + (maxT[whichPlane] * _ray.dir[i])) > _aabb.maxPoint[i])
+		else if (-e - lengthToSide[i] > 0 || -e + lengthToSide[i] < 0)
 		{
 			return MAXDIST;
 		}
 	}
-	return maxT[whichPlane];
+
+	if (tMin > 0)
+		return tMin;
+	else
+		return tMax;
 }
+
+
+
+//	float maxT[NUMDIM];
+//	int inside = 1;
+//	int quadrant[NUMDIM];
+//	float candidatePlane[NUMDIM];
+//
+//	// Find candidate planes
+//	for (int i = 0; i < NUMDIM; i++)
+//	{
+//		quadrant[i] = MIDDLE;
+//		if (_ray.origin[i] < _aabb.minPoint[i])
+//		{
+//			quadrant[i] = LEFT;
+//			candidatePlane[i] = _aabb.minPoint[i];
+//			inside = 0;
+//		}
+//		else if (_ray.origin[i] > _aabb.maxPoint[i])
+//		{
+//			quadrant[i] = RIGHT;
+//			candidatePlane[i] = _aabb.maxPoint[i];
+//			inside = 0;
+//		}
+//	}
+//
+//	// if origin inside AABB
+//	if (inside == 1)
+//	{
+//		return 0;
+//	}
+//
+//	// check to see if the ray intersects the AABB
+//
+//	// calculate t distance to candidate planes
+//	for (int i = 0; i < NUMDIM; i++)
+//	{
+//		maxT[i] = -1;
+//		if (quadrant[i] != MIDDLE && _ray.dir[i] != 0)
+//		{
+//			maxT[i] = (candidatePlane[i] - _ray.origin[i]) / _ray.dir[i];
+//		}
+//	}
+//
+//	// get the largest of the maxT
+//	int whichPlane = 0;
+//	whichPlane = maxT[whichPlane] < maxT[1] ? 1 : whichPlane;
+//	whichPlane = maxT[whichPlane] < maxT[2] ? 2 : whichPlane;
+//
+//	// Check if the final candidate is inside the box
+//	if (maxT[whichPlane] < 0)
+//	{
+//		return MAXDIST;
+//	}
+//	for (int i = 0; i < NUMDIM; i++)
+//	{
+//		if (whichPlane != i && (_ray.origin[i] + (maxT[whichPlane] * _ray.dir[i])) < _aabb.minPoint[i] ||
+//			whichPlane != i && (_ray.origin[i] + (maxT[whichPlane] * _ray.dir[i])) > _aabb.maxPoint[i])
+//		{
+//			return MAXDIST;
+//		}
+//	}
+//	return maxT[whichPlane];
+//}

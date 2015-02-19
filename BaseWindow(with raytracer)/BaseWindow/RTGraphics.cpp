@@ -71,7 +71,7 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/Bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	createKdTree(&m_mesh);
 
@@ -504,9 +504,9 @@ void createNodeAABB(Node* _node, std::vector<AABB>* _AABBList)
 	
 	for (int i = 1; i < _AABBList->size(); i++)
 	{
-		max.x = (_AABBList->at(i).maxPoint.x < max.x) ? _AABBList->at(i).maxPoint.x : max.x;
-		max.y = (_AABBList->at(i).maxPoint.y < max.y) ? _AABBList->at(i).maxPoint.y : max.y;
-		max.z = (_AABBList->at(i).maxPoint.z < max.z) ? _AABBList->at(i).maxPoint.z : max.z;
+		max.x = (_AABBList->at(i).maxPoint.x > max.x) ? _AABBList->at(i).maxPoint.x : max.x;
+		max.y = (_AABBList->at(i).maxPoint.y > max.y) ? _AABBList->at(i).maxPoint.y : max.y;
+		max.z = (_AABBList->at(i).maxPoint.z > max.z) ? _AABBList->at(i).maxPoint.z : max.z;
 
 		min.x = (_AABBList->at(i).minPoint.x < min.x) ? _AABBList->at(i).minPoint.x : min.x;
 		min.y = (_AABBList->at(i).minPoint.y < min.y) ? _AABBList->at(i).minPoint.y : min.y;

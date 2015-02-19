@@ -95,7 +95,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		{
 			nodeIndex = nodeStack[nextNode];
 			nextNode--;
-			outColor.y = 1;
+			//outColor.y = 1;
 
 		}
 		else
@@ -123,6 +123,14 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	//	}
 	//}
 	
+	/*int testIndex = KDtree[nodeIndex].left_right_nodeID[0];
+
+	if (RayVSAABB(r, KDtree[testIndex].aabb) != MAXDIST)
+	{
+		outColor.x += 1;
+	}*/
+	
+
 	// the output picture
 	output[threadID.xy] = outColor;
 	//output[threadID.xy] = float4(1, 1, 0, 1);

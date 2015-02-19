@@ -21,7 +21,7 @@ static const int NUMDIM = 3; // the number of dimensions our application uses
 #define RIGHT 1
 #define MIDDLE 0
 #define MAXDIST 9999
-
+#define EPSILON 0.0000001
 cbuffer consts : register(c0)
 {
 	float4 cameraPos;
