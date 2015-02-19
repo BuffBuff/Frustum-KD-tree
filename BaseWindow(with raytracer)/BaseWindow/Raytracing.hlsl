@@ -87,7 +87,11 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				}
 			}
 
-			outColor.x = 1;
+			if (hit.x > -1)
+			{
+				break;
+			}
+			//outColor.x = 1;
 
 		}
 
