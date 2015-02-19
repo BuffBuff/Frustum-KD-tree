@@ -1,7 +1,7 @@
 #include "Structs.fx"
 
 
-static const int NRLIGHTS= 10;
+static const int NRLIGHTS= 1;
 static const int NRTRIANGLES = 12;
 static const int NRTRIANGLESMESH = 12;
 static const int NRLIGHTSUSE = 1;
@@ -29,4 +29,9 @@ cbuffer consts : register(c0)
 	float4x4 IV;
 	int	nrOfTriangles;
 	float3 pad;
+};
+
+cbuffer lights : register(c1)
+{
+	Light lightList[NROFLIGHTS];
 };

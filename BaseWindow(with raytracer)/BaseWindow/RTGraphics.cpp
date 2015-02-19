@@ -192,6 +192,9 @@ void RTGraphics::createLightBuffer()
 		m_lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
 	}
 
+
+
+
 }
 
 RTGraphics::~RTGraphics()
