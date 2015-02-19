@@ -43,13 +43,60 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	int nodeIndex = 0;
 
+	int nextNode = -1;
+	int nodeStack[30];
+	float3 hit = (-1.0f, -1.0f, -1.0f);
+
+
 	while (true)
 	{
 		if (KDtree[nodeIndex].index == -1)
 		{
-			nodeIndex = (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) <
-				RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb)) ?
-				KDtree[nodeIndex].left_right_nodeID[0] : KDtree[nodeIndex].left_right_nodeID[1];
+
+			if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
+			{
+				nextNode++;
+				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
+
+			}
+
+			if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
+			{
+				nextNode++;
+				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
+
+			}
+
+		}
+		else
+		{
+			// triangle intersect logic
+			for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
+			{
+				hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
+				if (hit.x > -1)
+				{
+
+					hd.pos = r.origin + r.dir * hit.x;
+					hd.normal = triangles[Indices[i]].normal;
+					hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+					hd.ID = triangles[Indices[i]].ID;
+					hd.t = hit.x;
+					hd.bufferpos = threadID.xy;
+					outColor = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+				}
+			}
+
+			outColor.x = 1;
+
+		}
+
+		if (nextNode > -1)
+		{
+			nodeIndex = nodeStack[nextNode];
+			nextNode--;
+			outColor.y = 1;
+
 		}
 		else
 		{
@@ -59,55 +106,23 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	}
 
 	// variable for testing the hit
-	float3 hit = (-1.0f, -1.0f, -1.0f);
 
-	for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
-	{
-		hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
-		if (hit.x > -1)
-		{
-
-			hd.pos = r.origin + r.dir * hit.x;
-			hd.normal = triangles[Indices[i]].normal;
-			hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
-			hd.ID = triangles[Indices[i]].ID;
-			hd.t = hit.x;
-			hd.bufferpos = threadID.xy;
-			outColor = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
-		}
-	}
-	
-	/*if (KDtree[0].left_right_nodeID[0] < -100)
-	{
-		outColor = float4(1,0,0,1);
-	}
-	else
-	{
-		outColor = float4(0, 1, 0, 1);
-	}*/
-	//outColor.y = Indices[1];
-	//outColor.z = Indices[2];
-
-	//// variable for testing the hit
-	//float3 hit = (-1.0f, -1.0f, -1.0f);
-
-	//for (int i = 0; i < nrOfTriangles; i++)
-	////for (int i = 0; i < 5000; i++)
+	//for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
 	//{
-	//	hit = RayVSTriangleMat(triangles[i], r, hd.t);
+	//	hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
 	//	if (hit.x > -1)
 	//	{
 
 	//		hd.pos = r.origin + r.dir * hit.x;
-	//		hd.normal = triangles[i].normal;
-	//		hd.color = MeshTexture[hit.yz*512.f] + triangles[i].color;
-	//		hd.ID = triangles[i].ID;
+	//		hd.normal = triangles[Indices[i]].normal;
+	//		hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+	//		hd.ID = triangles[Indices[i]].ID;
 	//		hd.t = hit.x;
 	//		hd.bufferpos = threadID.xy;
-	//		outColor = MeshTexture[hit.yz*512.f] + triangles[i].color;
+	//		outColor = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
 	//	}
 	//}
-
+	
 	// the output picture
 	output[threadID.xy] = outColor;
 	//output[threadID.xy] = float4(1, 1, 0, 1);

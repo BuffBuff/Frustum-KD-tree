@@ -120,10 +120,7 @@ float3 RayVSTriangleMat(TriangleMat p_tri, Ray p_ray, float _dist)
 	return float3(-1,0,0);
 }
 
-#define LEFT -1
-#define RIGHT 1
-#define MIDDLE 0
-#define MAXDIST 9999
+
 // Implements support for dist later
 int RayVSAABB(Ray _ray, NodeAABB _aabb)
 {

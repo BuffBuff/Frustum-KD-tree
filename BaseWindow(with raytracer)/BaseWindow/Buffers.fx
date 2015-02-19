@@ -17,6 +17,10 @@ static const float HEIGHT = CORETHREADSHEIGHT * COREMULTIPLIERHEIGHT;
 
 static const int NUMDIM = 3; // the number of dimensions our application uses
 
+#define LEFT -1
+#define RIGHT 1
+#define MIDDLE 0
+#define MAXDIST 9999
 
 cbuffer consts : register(c0)
 {
