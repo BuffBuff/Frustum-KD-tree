@@ -33,6 +33,8 @@ static const float HEIGHT = CORETHREADSHEIGHT * COREMULTIPLIERHEIGHT;
 static const int NROFTHREADSWIDTH = WIDTH / CORETHREADSWIDTH;
 static const int NROFTHREADSHEIGHT = HEIGHT / CORETHREADSHEIGHT;
 
+static const int NROFLIGHTS = 1;
+
 //#pragma comment(lib, "d3d11.lib")
 //#pragma comment(lib, "d3dcompiler.lib")
 //#pragma comment (lib,"dxerr.lib")
@@ -138,7 +140,14 @@ struct NodePass2
 	NodeAABB aabb;				//AABB collisionbox
 };
 
-
+struct Light
+{
+	XMFLOAT4 pos;
+	XMFLOAT4 ambient;
+	XMFLOAT4 diffuse;
+	float range;
+	XMFLOAT3 pad;
+};
 
 
 

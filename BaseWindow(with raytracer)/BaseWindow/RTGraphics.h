@@ -30,6 +30,7 @@ private:
 	void createCBuffers();
 	void createTriangleTexture();
 	void createNodeBuffer(Node* _rootNode);
+	void createLightBuffer();
 	void createKdTree(Mesh *_mesh);
 	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node* _node, int _split);
 	void splitListX(Node* _node, std::vector<AABB>* _AABBList);
@@ -64,5 +65,8 @@ private:
 	//Timers
 	float						m_time;
 	float						m_fps;
+
+	//Light
+	Light						m_lightList[NROFLIGHTS];
 };
 

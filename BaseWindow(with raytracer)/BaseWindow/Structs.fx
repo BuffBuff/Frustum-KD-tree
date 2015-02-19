@@ -76,4 +76,14 @@ struct NodePass2
 
 };
 
+struct Light
+{
+	float4 pos;
+	float4 ambient;
+	float4 diffuse;
+	float range;
+	float3 pad;
+
+};
+
 #endif

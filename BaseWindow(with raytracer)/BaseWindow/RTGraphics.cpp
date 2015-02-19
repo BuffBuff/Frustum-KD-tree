@@ -26,13 +26,14 @@ m_fps(0.f)
 	//creating constant buffers
 	createCBuffers();
 
-	//createing triangle texture
+	//creating triangle texture
 	createTriangleTexture();
 
-	//createing node buffer
+	//creating node buffer
 	createNodeBuffer(&m_rootNode);
 
-
+	//create lights
+	createLightBuffer();
 }
 
 void RTGraphics::createCBuffers()
@@ -173,6 +174,23 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 											 indiceList->data(),
 											 false,
 											 "Structed Buffer: Indice Buffer");
+
+}
+
+void RTGraphics::createLightBuffer()
+{
+	std::srand(10);
+	for (int i = 0; i < NROFLIGHTS; i++)
+	{
+		float rx = ((float)(std::rand() % 64)) - 32;
+		float ry = ((float)(std::rand() % 64)) - 32;
+		float rz = ((float)(std::rand() % 64)) - 32;
+		m_lightList[i].pos = XMFLOAT4(rx, ry, rz, 1.f);
+		m_lightList[i].ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.f);
+		m_lightList[i].diffuse = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.f);
+		m_lightList[i].range = 75.f;
+		m_lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
+	}
 
 }
 
