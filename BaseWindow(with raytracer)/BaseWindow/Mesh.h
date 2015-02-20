@@ -54,6 +54,8 @@ public:
 	void loadObj(char* textFile);
 	Material* getMaterial();
 	int getNrOfFaces();
+	void scaleMesh(XMFLOAT3 _scale);
+	void rotateMesh(XMFLOAT3 _rotation);
 	TriangleMat* getTriangles();
 	std::vector<TriangleMat>* getTriangleList();
 	void setColor(XMFLOAT4 _color);

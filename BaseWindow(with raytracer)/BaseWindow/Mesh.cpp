@@ -1,6 +1,6 @@
 #include "Mesh.h"
 using namespace std;
-
+using namespace DirectX;
 Mesh::Mesh()
 {
 	m_meshTriangles.clear();
@@ -253,6 +253,57 @@ Material* Mesh::getMaterial()
 int Mesh::getNrOfFaces()
 {
 	return m_nrOfFaces;
+}
+
+void Mesh::scaleMesh(XMFLOAT3 _scale)
+{
+	for (int i = 0; i < m_meshTriangles.size(); i++)
+	{
+		m_meshTriangles[i].pos0.x *= _scale.x;
+		m_meshTriangles[i].pos0.y *= _scale.y;
+		m_meshTriangles[i].pos0.z *= _scale.z;
+		m_meshTriangles[i].pos1.x *= _scale.x;
+		m_meshTriangles[i].pos1.y *= _scale.y;
+		m_meshTriangles[i].pos1.z *= _scale.z;
+		m_meshTriangles[i].pos2.x *= _scale.x;
+		m_meshTriangles[i].pos2.y *= _scale.y;
+		m_meshTriangles[i].pos2.z *= _scale.z;
+	}
+	
+}
+
+void Mesh::rotateMesh(XMFLOAT3 _rotation)
+{
+
+
+	XMMATRIX rotMatrix = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&_rotation));
+
+	for (int i = 0; i < m_meshTriangles.size(); i++)
+	{
+		XMStoreFloat4(&m_meshTriangles[i].pos0, XMVector4Transform(XMLoadFloat4(&m_meshTriangles[i].pos0), rotMatrix));
+		XMStoreFloat4(&m_meshTriangles[i].pos1, XMVector4Transform(XMLoadFloat4(&m_meshTriangles[i].pos1), rotMatrix));
+		XMStoreFloat4(&m_meshTriangles[i].pos2, XMVector4Transform(XMLoadFloat4(&m_meshTriangles[i].pos2), rotMatrix));
+
+
+		/*XMFLOAT3 temp;
+		XMStoreFloat3(&temp, XMVector3Rotate(XMLoadFloat3(&XMFLOAT3(m_meshTriangles[i].pos0.x, m_meshTriangles[i].pos0.y, m_meshTriangles[i].pos0.z)), XMLoadFloat3(&_rotation)));
+		m_meshTriangles[i].pos0.x = temp.x;
+		m_meshTriangles[i].pos0.y = temp.y;
+		m_meshTriangles[i].pos0.z = temp.z;
+
+		XMStoreFloat3(&temp, XMVector3Rotate(XMLoadFloat3(&XMFLOAT3(m_meshTriangles[i].pos1.x, m_meshTriangles[i].pos1.y, m_meshTriangles[i].pos1.z)), XMLoadFloat3(&_rotation)));
+		m_meshTriangles[i].pos1.x = temp.x;
+		m_meshTriangles[i].pos1.y = temp.y;
+		m_meshTriangles[i].pos1.z = temp.z;
+
+		XMStoreFloat3(&temp, XMVector3Rotate(XMLoadFloat3(&XMFLOAT3(m_meshTriangles[i].pos2.x, m_meshTriangles[i].pos2.y, m_meshTriangles[i].pos2.z)), XMLoadFloat3(&_rotation)));
+		m_meshTriangles[i].pos2.x = temp.x;
+		m_meshTriangles[i].pos2.y = temp.y;
+		m_meshTriangles[i].pos2.z = temp.z;*/
+
+	}
+	
+
 }
 
 std::string Mesh::getTextureString()

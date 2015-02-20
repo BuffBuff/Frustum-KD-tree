@@ -21,7 +21,6 @@ using namespace DirectX;
 #define SAFE_RELEASE(x) if( x ) { (x)->Release(); (x) = NULL; }
 #define SAFE_DELETE(x) if( x ) { delete(x); (x) = NULL; }
 #define SAFE_DELETE_ARRAY(x) if( x ) { delete[](x); (x) = NULL; }
-#define PI (3.14159265358979323846f)
 
 
 //#pragma comment(lib, "d3d11.lib")
