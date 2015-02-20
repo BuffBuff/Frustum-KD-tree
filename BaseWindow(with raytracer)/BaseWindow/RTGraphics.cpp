@@ -47,7 +47,7 @@ void RTGraphics::createCBuffers()
 	cbDesc.CPUAccessFlags = 0;
 	cbDesc.MiscFlags = 0;
 
-	if (sizeof(cBuffer) % 16 < 16)
+	if (sizeof(cBuffer) % 16 > 0)
 	{
 		cbDesc.ByteWidth = (int)((sizeof(cBuffer) / 16) + 1) * 16;
 	}
@@ -59,9 +59,25 @@ void RTGraphics::createCBuffers()
 	hr = g_Device->CreateBuffer(&cbDesc, NULL, &g_cBuffer);
 	if (FAILED(hr))
 	{
-		MessageBox(NULL, "Failed Making Constant Buffer", "Create Buffer", MB_OK);
+		MessageBox(NULL, "Failed Making Constant Buffer cBuffer", "Create Buffer", MB_OK);
 	}
 	g_DeviceContext->CSSetConstantBuffers(0, 1, &g_cBuffer);
+
+	if (sizeof(cLightBuffer) % 16 > 0)
+	{
+		cbDesc.ByteWidth = (int)((sizeof(cLightBuffer) / 16) + 1) * 16;
+	}
+	else
+	{
+		cbDesc.ByteWidth = sizeof(cLightBuffer);
+	}
+
+	hr = g_Device->CreateBuffer(&cbDesc, NULL, &m_lightcBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, "Failed Making Constant Buffer lightcBuffer", "Create Buffer", MB_OK);
+	}
+	g_DeviceContext->CSSetConstantBuffers(1, 1, &m_lightcBuffer);
 
 }
 
@@ -179,17 +195,21 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 
 void RTGraphics::createLightBuffer()
 {
+
+	int rangeModifier = 2;
+	float lightRange = 2.f;
+
 	std::srand(10);
 	for (int i = 0; i < NROFLIGHTS; i++)
 	{
-		float rx = ((float)(std::rand() % 64)) - 32;
-		float ry = ((float)(std::rand() % 64)) - 32;
-		float rz = ((float)(std::rand() % 64)) - 32;
-		m_lightList[i].pos = XMFLOAT4(rx, ry, rz, 1.f);
-		m_lightList[i].ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.f);
-		m_lightList[i].diffuse = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.f);
-		m_lightList[i].range = 75.f;
-		m_lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
+		float rx = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
+		float ry = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
+		float rz = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
+		lightcb.lightList[i].pos = XMFLOAT4(rx, ry, rz, 1.f);
+		lightcb.lightList[i].ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.f);
+		lightcb.lightList[i].diffuse = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.f);
+		lightcb.lightList[i].range = lightRange;
+		lightcb.lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
 	}
 
 
@@ -225,8 +245,10 @@ void RTGraphics::Update(float _dt)
 	cb.nrOfTriangles = m_mesh.getNrOfFaces();
 	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 
+	g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
+
 	m_time += _dt;
-	static int frameCnt = 0;
+	static float frameCnt = 0;
 	static float t_base = 0.f;
 	frameCnt++;
 

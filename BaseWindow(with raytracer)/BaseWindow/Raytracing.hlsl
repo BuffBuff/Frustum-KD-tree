@@ -1,4 +1,5 @@
 #include "Collisions.fx"
+#include "Light.fx"
 
 RWTexture2D<float4> output : register(u0);
 
@@ -83,7 +84,6 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					hd.ID = triangles[Indices[i]].ID;
 					hd.t = hit.x;
 					hd.bufferpos = threadID.xy;
-					outColor = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
 				}
 			}
 
@@ -136,6 +136,13 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	
 
 	// the output picture
-	output[threadID.xy] = outColor;
+	for (int i = 0; i < NROFLIGHTS; i++)
+	{
+		//outColor = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+		outColor += float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0);
+
+	}
+
+	output[threadID.xy] = saturate(outColor);
 	//output[threadID.xy] = float4(1, 1, 0, 1);
 }

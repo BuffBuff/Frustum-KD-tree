@@ -1,3 +1,6 @@
+#ifndef _COLLISIONS_FX_
+#define _COLLISIONS_FX_
+
 #include "Buffers.fx"
 
 
@@ -248,3 +251,5 @@ float RayVSAABB(Ray _ray, NodeAABB _aabb)
 //	}
 //	return maxT[whichPlane];
 //}
+
+#endif

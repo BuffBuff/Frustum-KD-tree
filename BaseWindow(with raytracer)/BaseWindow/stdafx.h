@@ -46,6 +46,8 @@ struct cBuffer
 	XMFLOAT3 pad;
 };
 
+
+
 struct Triangle
 {
 	XMFLOAT4 pos[3];
@@ -138,7 +140,10 @@ struct Light
 	XMFLOAT3 pad;
 };
 
-
+struct cLightBuffer
+{
+	Light lightList[NROFLIGHTS];
+};
 
 
 

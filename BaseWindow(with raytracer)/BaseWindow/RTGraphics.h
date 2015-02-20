@@ -67,6 +67,7 @@ private:
 	float						m_fps;
 
 	//Light
-	Light						m_lightList[NROFLIGHTS];
+	ID3D11Buffer				*m_lightcBuffer;
+	cLightBuffer				lightcb;
 };
 

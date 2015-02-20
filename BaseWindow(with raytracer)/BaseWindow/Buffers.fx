@@ -1,3 +1,6 @@
+#ifndef _BUFFERS_FX_
+#define _BUFFERS_FX_
+
 #include "Structs.fx"
 #include "Constants.h"
 
@@ -15,3 +18,5 @@ cbuffer lights : register(c1)
 {
 	Light lightList[NROFLIGHTS];
 };
+
+#endif
