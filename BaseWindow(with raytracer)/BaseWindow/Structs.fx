@@ -26,18 +26,18 @@ struct hitData
 	float2  bufferpos; // ?
 };
 
-struct Light
-{
-	float4 pos;
-	float4 dir;
-	float4 ambient;
-	float4 diffuse;
-	float4 spec;
-	float4 att;
-	float  spotPower;
-	float  range;
-	float2 pad;
-};
+//struct Light
+//{
+//	float4 pos;
+//	float4 dir;
+//	float4 ambient;
+//	float4 diffuse;
+//	float4 spec;
+//	float4 att;
+//	float  spotPower;
+//	float  range;
+//	float2 pad;
+//};
 
 struct TriangleMat
 {

@@ -96,6 +96,7 @@
     <ClInclude Include="ButtonInput.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ComputeHelp.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="D3D11Timer.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="hrTimer.h" />

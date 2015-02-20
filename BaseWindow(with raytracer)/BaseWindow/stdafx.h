@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <fstream>
+#include "Constants.h"
 
 //#include "ComputeHelp.h"
 //#include "Mesh.h"
@@ -22,18 +23,6 @@ using namespace DirectX;
 #define SAFE_DELETE_ARRAY(x) if( x ) { delete[](x); (x) = NULL; }
 #define PI (3.14159265358979323846f)
 
-static const int CORETHREADSWIDTH = 32; // dont change
-static const int CORETHREADSHEIGHT = 32; // dont change
-static const int COREMULTIPLIERWIDTH = 25; // change to modify screen size
-static const int COREMULTIPLIERHEIGHT = 25; // change to modify screen size
-
-static const float WIDTH = CORETHREADSWIDTH * COREMULTIPLIERWIDTH;
-static const float HEIGHT = CORETHREADSHEIGHT * COREMULTIPLIERHEIGHT;
-
-static const int NROFTHREADSWIDTH = WIDTH / CORETHREADSWIDTH;
-static const int NROFTHREADSHEIGHT = HEIGHT / CORETHREADSHEIGHT;
-
-static const int NROFLIGHTS = 1;
 
 //#pragma comment(lib, "d3d11.lib")
 //#pragma comment(lib, "d3dcompiler.lib")
