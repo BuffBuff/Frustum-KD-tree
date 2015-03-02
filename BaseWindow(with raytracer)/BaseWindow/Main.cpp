@@ -128,7 +128,7 @@ HRESULT Init()
 			sprintf_s(
 				title,
 				sizeof(title),
-				"Basic d3dx%s window",
+				"Basic d3d%s window",
 				FeatureLevelToString(initiatedFeatureLevel)
 				);
 			SetWindowText(g_hWnd, title);

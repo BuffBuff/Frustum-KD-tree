@@ -299,7 +299,7 @@ void RTGraphics::Render(float _dt)
 	sprintf_s(
 		title,
 		sizeof(title),
-		"Super mega awesume project 3 - fps: %f",
+		"FCKDT Project - fps: %f",
 		m_fps
 		);
 	SetWindowText(*m_Hwnd, title);
