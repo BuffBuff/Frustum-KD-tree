@@ -44,83 +44,28 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	int nodeIndex = 0;
 
-	int nextNode = -1;
+	int nextNode = 0;
 	int nodeStack[30];
 	float3 hit = (-1.0f, -1.0f, -1.0f);
 
-	// testing
-	float2 hitTime;
-	int nearest;
-	int fartest;
-	int move;
-	int stop = 0;
-
-	while (true)
+	while (nextNode > -1)
 	{
-		if (KDtree[nodeIndex].index == -1 && stop == 0)
+		if (KDtree[nodeIndex].index == -1)
 		{
 
 			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-			//if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
-			//{
-			//	nextNode++;
-			//	nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
-
-			//}																							// 380 fps kub
-
-			//if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
-			//{
-			//	nextNode++;
-			//	nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
-
-			//}
-
-
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-			hitTime[0] = RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb);
-			hitTime[1] = RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb);
-
-			if (hitTime[0] < hitTime[1] && hitTime[0] < MAXDIST)
+			if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
 			{
-				nextNode++;
 				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
-				if (hitTime[1] < MAXDIST)
-				{
-					nextNode++;
-					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
-				}
-			}																							// 372 fps kub	//
-			else if (hitTime[1] < MAXDIST)																//				// 
-			{
 				nextNode++;
+			}																							// 380 fps kub
+
+			if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
+			{
 				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
-				if (hitTime[0] < MAXDIST)
-				{
-					nextNode++;
-					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
-				}
+				nextNode++;
 			}
-
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-			//hitTime[0] = RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb);
-			//hitTime[1] = RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb);
-
-			//if (hitTime[0] < MAXDIST)
-			//{
-			//	nextNode++;
-			//	nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
-			//}																							// 380 fps kub	// 372 without stop
-			//																							// 14 fps bunny	// 12 without stop
-			//if (hitTime[1] < MAXDIST)
-			//{
-			//	nextNode++;
-			//	nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
-			//}
-
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		}
 		else
@@ -141,56 +86,16 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				}
 			}
 
-			/*if (hit.x > -1)
-			{
-				stop = 1;
-			}*/
-			//outColor.x = 1;
 
 		}
-
-		if (nextNode > -1)
-		{
-			nodeIndex = nodeStack[nextNode];
-			nextNode--;
-			//outColor.y = 1;
-
-		}
-		else
-		{
-			break;
-		}
+		
+		nextNode--;
+		nodeIndex = nodeStack[nextNode];
 
 	}
 
-	// variable for testing the hit
-
-	//for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
-	//{
-	//	hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
-	//	if (hit.x > -1)
-	//	{
-
-	//		hd.pos = r.origin + r.dir * hit.x;
-	//		hd.normal = triangles[Indices[i]].normal;
-	//		hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
-	//		hd.ID = triangles[Indices[i]].ID;
-	//		hd.t = hit.x;
-	//		hd.bufferpos = threadID.xy;
-	//		outColor = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
-	//	}
-	//}
-	
-	/*int testIndex = KDtree[nodeIndex].left_right_nodeID[0];
-
-	if (RayVSAABB(r, KDtree[testIndex].aabb) != MAXDIST)
-	{
-		outColor.x += 1;
-	}*/
-	
-
 	// the output picture
-	for (int i = 0; i < NROFLIGHTS; i++)
+	[unroll]for (int i = 0; i < NROFLIGHTS; i++)
 	{
 		//outColor = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
 		outColor += float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0);

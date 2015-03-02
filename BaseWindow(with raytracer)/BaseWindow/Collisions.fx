@@ -89,9 +89,9 @@ float3 RayVSTriangleMat(TriangleMat p_tri, Ray p_ray, float _dist)
 	float distanceDelta = 0.001f;
 
 	float4 e1 = p_tri.pos1 - p_tri.pos0;
-		float4 e2 = p_tri.pos2 - p_tri.pos0;
-		float3 q = cross(p_ray.dir.xyz, e2.xyz);
-		float a = dot(e1.xyz, q);
+	float4 e2 = p_tri.pos2 - p_tri.pos0;
+	float3 q = cross(p_ray.dir.xyz, e2.xyz);
+	float a = dot(e1.xyz, q);
 	if (a > -0.00001f && a < 0.00001f)
 	{
 		//miss
@@ -100,7 +100,7 @@ float3 RayVSTriangleMat(TriangleMat p_tri, Ray p_ray, float _dist)
 
 	float f = 1 / a;
 	float4 s = float4(p_ray.origin.xyz - p_tri.pos0.xyz, 0);
-		float u = f *(dot(s.xyz, q));
+	float u = f *(dot(s.xyz, q));
 	if (u < 0.0f)
 	{
 		//miss
@@ -144,7 +144,7 @@ float RayVSAABB(Ray _ray, NodeAABB _aabb)
 	float3 p = AABBCenter - _ray.origin.xyz;
 
 
-	for (int i = 0; i < 3; i++)
+	[unroll]for (int i = 0; i < 3; i++)
 	{
 		float e = dot(normalizedDirs[i], p);
 		float f = dot(normalizedDirs[i], _ray.dir);
