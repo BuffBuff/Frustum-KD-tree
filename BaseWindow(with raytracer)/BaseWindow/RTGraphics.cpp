@@ -88,7 +88,7 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/Bunny.obj");
+	m_mesh.loadObj("Meshi/bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
 	m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
@@ -199,7 +199,7 @@ void RTGraphics::createLightBuffer()
 {
 
 	int rangeModifier = 15;
-	float lightRange = 15.f;
+	float lightRange = 30.f;
 
 	std::srand(10);
 	for (int i = 0; i < NROFLIGHTS; i++)

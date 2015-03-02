@@ -48,25 +48,79 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int nodeStack[30];
 	float3 hit = (-1.0f, -1.0f, -1.0f);
 
+	// testing
+	float2 hitTime;
+	int nearest;
+	int fartest;
+	int move;
+	int stop = 0;
 
 	while (true)
 	{
-		if (KDtree[nodeIndex].index == -1)
+		if (KDtree[nodeIndex].index == -1 && stop == 0)
 		{
 
-			if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			//if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
+			//{
+			//	nextNode++;
+			//	nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
+
+			//}																							// 380 fps kub
+
+			//if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
+			//{
+			//	nextNode++;
+			//	nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
+
+			//}
+
+
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			hitTime[0] = RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb);
+			hitTime[1] = RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb);
+
+			if (hitTime[0] < hitTime[1] && hitTime[0] < MAXDIST)
 			{
 				nextNode++;
 				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
-
-			}
-
-			if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
+				if (hitTime[1] < MAXDIST)
+				{
+					nextNode++;
+					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
+				}
+			}																							// 372 fps kub	//
+			else if (hitTime[1] < MAXDIST)																//				// 
 			{
 				nextNode++;
 				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
-
+				if (hitTime[0] < MAXDIST)
+				{
+					nextNode++;
+					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
+				}
 			}
+
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+			//hitTime[0] = RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb);
+			//hitTime[1] = RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb);
+
+			//if (hitTime[0] < MAXDIST)
+			//{
+			//	nextNode++;
+			//	nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
+			//}																							// 380 fps kub	// 372 without stop
+			//																							// 14 fps bunny	// 12 without stop
+			//if (hitTime[1] < MAXDIST)
+			//{
+			//	nextNode++;
+			//	nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
+			//}
+
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		}
 		else
@@ -87,10 +141,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				}
 			}
 
-			if (hit.x > -1)
+			/*if (hit.x > -1)
 			{
-				break;
-			}
+				stop = 1;
+			}*/
 			//outColor.x = 1;
 
 		}
