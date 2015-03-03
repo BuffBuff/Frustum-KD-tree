@@ -88,7 +88,7 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
 	m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
@@ -200,7 +200,8 @@ void RTGraphics::createLightBuffer()
 
 	int rangeModifier = 15;
 	float lightRange = 30.f;
-
+	float ambientMod = 0.25f;
+	float diffuseMod = 0.55f;
 	std::srand(10);
 	for (int i = 0; i < NROFLIGHTS; i++)
 	{
@@ -208,8 +209,8 @@ void RTGraphics::createLightBuffer()
 		float ry = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
 		float rz = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
 		lightcb.lightList[i].pos = XMFLOAT4(rx, ry, rz, 1.f);
-		lightcb.lightList[i].ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.f);
-		lightcb.lightList[i].diffuse = XMFLOAT4(0.15f, 0.15f, 0.15f, 1.f);
+		lightcb.lightList[i].ambient = XMFLOAT4(ambientMod, ambientMod, ambientMod, 1.f);
+		lightcb.lightList[i].diffuse = XMFLOAT4(diffuseMod, diffuseMod, diffuseMod, 1.f);
 		lightcb.lightList[i].range = lightRange;
 		lightcb.lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
 	}
