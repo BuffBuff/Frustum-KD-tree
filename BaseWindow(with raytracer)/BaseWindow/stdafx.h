@@ -139,11 +139,23 @@ struct Light
 	XMFLOAT3 pad;
 };
 
+struct Sphere
+{
+	XMFLOAT4 pos;
+	XMFLOAT4 color;
+	float radie;
+	XMFLOAT3 pad;
+};
+
 struct cLightBuffer
 {
 	Light lightList[NROFLIGHTS];
 };
 
+struct cSphereBuffer
+{
+	Sphere sphereList[NROFLIGHTS];
+};
 
 
 //////////////////////////////////////////////////////////////////////////

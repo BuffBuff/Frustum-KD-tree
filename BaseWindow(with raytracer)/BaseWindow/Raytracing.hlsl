@@ -1,5 +1,6 @@
 #include "Collisions.fx"
 #include "Light.fx"
+#include "Debug.fx"
 
 RWTexture2D<float4> output : register(u0);
 
@@ -94,12 +95,80 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	}
 
+	//////////////////////////////////
+	///Light
+	/////////////////////////////////
+
+	//resetting for light and seting new variables
+	Ray lightRay;
+	hitData lightHit;
+
+	lightHit.t = -1.0f;
+	lightHit.pos = float4(0,0,0,0);
+	lightHit.color = float4(0,0,0,0);
+	lightHit.normal = float4(0,0,0,0);
+	lightHit.ID = 0.f;
+	lightHit.bufferpos = float2(0,0);
+
+	nodeIndex = 0;
+	nextNode = 0;
+	hit = (-1.0f, -1.0f, -1.0f);
+
 	// the output picture
 	[unroll]for (int i = 0; i < NROFLIGHTS; i++)
 	{
-		//outColor = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
-		outColor += float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0);
+		float4 color = float4(0, 0, 0, 0);
+		lightRay.origin = hd.pos;
+		lightRay.dir = normalize(lightList[i].pos - hd.pos);
+		float lightLength = length(lightList[i].pos.xyz - hd.pos.xyz);
 
+		// ## MESH ## //
+		while (nextNode > -1)
+		{
+			if (KDtree[nodeIndex].index == -1)
+			{
+				if (RayVSAABB(lightRay, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
+				{
+					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
+					nextNode++;
+				}																							// 380 fps kub
+
+				if (RayVSAABB(lightRay, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
+				{
+					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
+					nextNode++;
+				}
+
+			}
+			else
+			{
+				// triangle intersect logic
+				for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
+				{
+					hit = RayVSTriangleMat(triangles[Indices[i]], lightRay, hd.t);
+					if (hit.x > -1)
+					{
+						lightHit.t = hit.x;
+					}
+				}
+			}
+
+			nextNode--;
+			nodeIndex = nodeStack[nextNode];
+
+		}
+		
+		// ## SHADOWS ## //
+		if (lightHit.t > EPSILON && lightLength > lightHit.t)
+		{
+			color = (float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0) * 0.5f);
+		}
+		else
+		{
+			color = float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0);
+		}
+
+		outColor += color;
 	}
 
 	output[threadID.xy] = saturate(outColor);

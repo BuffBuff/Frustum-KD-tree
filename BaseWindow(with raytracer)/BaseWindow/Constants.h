@@ -26,3 +26,5 @@ static const int NUMDIM = 3; // the number of dimensions our application uses
 #define MAXDIST 9999
 #define EPSILON 0.0000001
 #define PI (3.14159265358979323846f)
+#define LIGHT_POSITION_RANGEMODIFIER 15
+#define LIGHT_RANGE 40.f

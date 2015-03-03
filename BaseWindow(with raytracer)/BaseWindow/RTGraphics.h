@@ -56,7 +56,6 @@ private:
 	//blululululu
 	ComputeBuffer				*m_NodeBuffer;
 	ComputeBuffer				*m_Indices;
-
 	Node						m_rootNode;
 	
 	//HWND
@@ -69,5 +68,9 @@ private:
 	//Light
 	ID3D11Buffer				*m_lightcBuffer;
 	cLightBuffer				lightcb;
+
+	//Light sphere
+	ID3D11Buffer				*m_spherecBuffer;
+	cSphereBuffer				spherecb;
 };
 

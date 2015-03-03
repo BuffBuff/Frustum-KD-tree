@@ -23,7 +23,7 @@ struct hitData
 	float4  pos;	// position
 	float	t;		// inpact time
 	float	ID;		// triangle id
-	float2  bufferpos; // ?
+	float2  bufferpos; // used between passes
 };
 
 //struct Light

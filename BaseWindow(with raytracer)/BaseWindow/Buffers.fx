@@ -19,4 +19,9 @@ cbuffer lights : register(c1)
 	Light lightList[NROFLIGHTS];
 };
 
+cbuffer spheres : register(c2)
+{
+	Sphere sphereList[NROFLIGHTS];
+};
+
 #endif

@@ -133,6 +133,9 @@
     <FxCompile Include="Light.fx">
       <Filter>Shaders\Global</Filter>
     </FxCompile>
+    <FxCompile Include="Debug.fx">
+      <Filter>Shaders\Global</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources.hlsl">
