@@ -232,6 +232,7 @@ void RTGraphics::createLightBuffer()
 		//extra debug spheres
 		//create lightsphere
 		spherecb.sphereList[i].pos = lightcb.lightList[i].pos;
+		spherecb.sphereList[i].pos = XMFLOAT4(0,0,0,0);
 		spherecb.sphereList[i].color = XMFLOAT4(1, 0, 0, 1);
 		spherecb.sphereList[i].radie = 4.f;
 		spherecb.sphereList[i].pad = XMFLOAT3(0, 0, 0);
