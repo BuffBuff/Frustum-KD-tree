@@ -17,6 +17,7 @@ public:
 	~Graphics();
 	HRESULT Update(float _deltaTime);
 	HRESULT Render(float _deltaTime);
+	void release();
 
 
 	//---------------------------------- temporary variables for testing
@@ -38,7 +39,6 @@ private:
 	void createRasterState();
 	void createViewport();
 	void createBlendState();
-	void release();
 
 	cbWorld cbWorld;
 	ID3D11Buffer* g_cbWorld = NULL;

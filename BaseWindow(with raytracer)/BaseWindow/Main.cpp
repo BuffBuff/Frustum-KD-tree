@@ -4,7 +4,18 @@
 #include "ButtonInput.h"
 #include <vector>
 #include "Graphics.h"
+
+//#define standardrender
+//#define raytracing
+#define gpuraytracing
+
+#ifdef raytracing
 #include "RTGraphics.h"
+#endif
+
+#ifdef gpuraytracing
+#include "GPURTGraphics.h"
+#endif
 
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -31,13 +42,21 @@ ButtonInput* buttonInput = new ButtonInput();
 
 int g_Width, g_Height;
 
-#define raytracing
+
 
 #ifdef raytracing
 
 RTGraphics *graphics;
 
-#else
+#endif
+
+#ifdef gpuraytracing
+
+GPURTGraphics *graphics;
+
+#endif
+
+#ifdef standardrender
 
 Graphics *graphics;
 
@@ -141,7 +160,13 @@ HRESULT Init()
 
 #ifdef raytracing
 	graphics = new RTGraphics(&g_hWnd);
-#else
+#endif
+
+#ifdef gpuraytracing
+	graphics = new GPURTGraphics(&g_hWnd);
+#endif
+
+#ifdef standardrender
 	graphics = new Graphics();
 #endif
 

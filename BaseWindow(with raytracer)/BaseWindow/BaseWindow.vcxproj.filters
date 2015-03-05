@@ -40,6 +40,15 @@
     <Filter Include="Shaders\Global">
       <UniqueIdentifier>{593c2e1c-7aee-4b84-9397-7db058922362}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GPU Raytracer">
+      <UniqueIdentifier>{8cb72cfb-3e48-4bc7-a4d2-bc975fb43b3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GPU Raytracer">
+      <UniqueIdentifier>{73593e95-529e-4fbc-9c38-b57a30caef00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\GPU kd">
+      <UniqueIdentifier>{db63296e-481b-4cf9-8653-a2af3ba9b664}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -68,6 +77,9 @@
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GPURTGraphics.cpp">
+      <Filter>Source Files\GPU Raytracer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +122,9 @@
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GPURTGraphics.h">
+      <Filter>Header Files\GPU Raytracer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
@@ -132,6 +147,9 @@
     </FxCompile>
     <FxCompile Include="Light.fx">
       <Filter>Shaders\Global</Filter>
+    </FxCompile>
+    <FxCompile Include="createKDtree.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

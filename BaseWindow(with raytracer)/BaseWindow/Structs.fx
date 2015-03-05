@@ -53,6 +53,13 @@ struct TriangleMat
 	float4	normal;
 };
 
+struct AABB
+{
+	float4 minPoint;
+	float4 maxPoint;
+	int	triangleID;
+};
+
 struct NodeAABB
 {
 	float4 minPoint;
