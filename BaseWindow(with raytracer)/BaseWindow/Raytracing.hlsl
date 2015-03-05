@@ -173,9 +173,11 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	}
 
 	//debug code
-#ifdef debug
-	outColor += debugLightSpheres(r, hd.t);
-#endif
+	if (lightSpheres > 0)
+	{
+		outColor += debugLightSpheres(r, hd.t);
+	}
+
 	output[threadID.xy] = saturate(outColor);
 	//output[threadID.xy] = float4(1, 1, 0, 1);
 }

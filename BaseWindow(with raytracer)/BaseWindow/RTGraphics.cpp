@@ -62,7 +62,7 @@ void RTGraphics::createCBuffers()
 	hr = g_Device->CreateBuffer(&cbDesc, NULL, &g_cBuffer);
 	if (FAILED(hr))
 	{
-		MessageBox(NULL, "Failed Making Constant Buffer cBuffer", "Create Buffer", MB_OK);
+		MessageBox(NULL, "Failed Making Constant Buffer: cBuffer", "Create Buffer", MB_OK);
 	}
 	g_DeviceContext->CSSetConstantBuffers(0, 1, &g_cBuffer);
 
@@ -79,7 +79,7 @@ void RTGraphics::createCBuffers()
 	hr = g_Device->CreateBuffer(&cbDesc, NULL, &m_lightcBuffer);
 	if (FAILED(hr))
 	{
-		MessageBox(NULL, "Failed Making Constant Buffer lightcBuffer", "Create Buffer", MB_OK);
+		MessageBox(NULL, "Failed Making Constant Buffer: lightcBuffer", "Create Buffer", MB_OK);
 	}
 	g_DeviceContext->CSSetConstantBuffers(1, 1, &m_lightcBuffer);
 
@@ -96,9 +96,26 @@ void RTGraphics::createCBuffers()
 	hr = g_Device->CreateBuffer(&cbDesc, NULL, &m_spherecBuffer);
 	if (FAILED(hr))
 	{
-		MessageBox(NULL, "Failed Making Constant Buffer spherecBuffer", "Create Buffer", MB_OK);
+		MessageBox(NULL, "Failed Making Constant Buffer: spherecBuffer", "Create Buffer", MB_OK);
 	}
 	g_DeviceContext->CSSetConstantBuffers(2, 1, &m_spherecBuffer);
+
+	///Toggle cbuffer
+	if (sizeof(cToggles) % 16 > 0)
+	{
+		cbDesc.ByteWidth = (int)((sizeof(cToggles) / 16) + 1) * 16;
+	}
+	else
+	{
+		cbDesc.ByteWidth = sizeof(cToggles);
+	}
+
+	hr = g_Device->CreateBuffer(&cbDesc, NULL, &m_togglecBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, "Failed Making Constant Buffer: togglecBuffer", "Create Buffer", MB_OK);
+	}
+	g_DeviceContext->CSSetConstantBuffers(3, 1, &m_togglecBuffer);
 }
 
 void RTGraphics::createTriangleTexture()
@@ -270,6 +287,8 @@ void RTGraphics::Update(float _dt)
 	g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
 
 	g_DeviceContext->UpdateSubresource(m_spherecBuffer, 0, NULL, &spherecb, 0, 0);
+
+	g_DeviceContext->UpdateSubresource(m_togglecBuffer, 0, NULL, &togglescb, 0, 0);
 
 	m_time += _dt;
 	static float frameCnt = 0;
@@ -789,4 +808,9 @@ void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node, in
 
 }
 
+void RTGraphics::updateTogglecb(int _lightSpheres, int _placeHolder1, int _placeHolder2)
+{
+	togglescb.lightSpheres = _lightSpheres;
 
+	togglescb.togglePad = XMFLOAT3(0, 0, 0);
+}

@@ -157,6 +157,11 @@ struct cSphereBuffer
 	Sphere sphereList[NROFLIGHTS];
 };
 
+struct cToggles
+{
+	int lightSpheres;	//Toggle on debug light spheres
+	XMFLOAT3 togglePad;
+};
 
 //////////////////////////////////////////////////////////////////////////
 // to find memory leaks

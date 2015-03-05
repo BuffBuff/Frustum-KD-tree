@@ -57,6 +57,11 @@ char* FeatureLevelToString(D3D_FEATURE_LEVEL featureLevel)
 	return "Unknown";
 }
 
+void toggle()
+{
+	graphics->updateTogglecb(buttonInput->GetMPressed(), buttonInput->GetIsVPressed(), buttonInput->GetBPressed() );
+}
+
 
 HRESULT Init()
 {
@@ -189,6 +194,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			__int64 currTimeStamp = 0;
 			QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
 			float dt = (currTimeStamp - prevTimeStamp) * secsPerCnt;
+
+			toggle();
 
 			//render
 			graphics->Update(dt);
