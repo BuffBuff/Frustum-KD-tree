@@ -211,7 +211,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 
 	fillKDBuffers(_rootNode, initdata, indiceList, 0);
 
-
+	//something silly with this memory release 
 	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(NodePass2),
 											 initdata->size(),
@@ -221,6 +221,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 											 false,
 											 "Structed Buffer: Node Buffer");
 
+	//something silly with this memory release 
 	m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(int),
 											 indiceList->size(),
@@ -348,35 +349,45 @@ void RTGraphics::Render(float _dt)
 
 void releaseKdTree(Node *_node)
 {
+	//something silly with memory release 
 	if (_node->left != NULL)
 	{
 		releaseKdTree(_node->left);
 		SAFE_DELETE(_node->left);
 	}
-	else
+	/*else
 	{
-		_node->index->clear();
-	}
+		if (_node->index != NULL)
+		SAFE_DELETE(_node->index);
+	}*/
+
 	if (_node->right != NULL)
 	{
 		releaseKdTree(_node->right);
 		SAFE_DELETE(_node->right);
 	}
-	else
-	{
-		_node->index->clear();
-	}
+	//else
+	//{
+	//	if (_node->index != NULL)
+	//	SAFE_DELETE(_node->index);
+	//}
+
+	if (_node->index != NULL)
+		SAFE_DELETE(_node->index);
 }
 
 void RTGraphics::release()
 {
 	releaseKdTree(&m_rootNode);
 
+	SAFE_RELEASE(m_Indices);		//something silly with this memory release 
+	SAFE_RELEASE(m_NodeBuffer);		//something silly with this memory release 
 	SAFE_RELEASE(m_meshTexture);
 	SAFE_RELEASE(g_cBuffer);
 	SAFE_RELEASE(backbuffer);
 	SAFE_RELEASE(m_lightcBuffer);
 	SAFE_RELEASE(m_spherecBuffer);
+
 
 	SAFE_DELETE(m_meshBuffer);
 	SAFE_DELETE(raytracer);
@@ -430,6 +441,7 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 
 void assignTriangles(Node* _node, std::vector<AABB>* _AABBList)
 {
+	//something silly with this memory release 
 	_node->index = new std::vector<int>();
 
 	for (int i = 0; i < _AABBList->size(); i++)
@@ -661,6 +673,14 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
+
+	//something silly with this memory release 
+	AABBListLeft->clear();
+	SAFE_DELETE(AABBListLeft);
+
+	AABBListRight->clear();
+	SAFE_DELETE(AABBListRight);
+
 }
 
 void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
@@ -718,6 +738,13 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
+
+	//something silly with this memory release 
+	AABBListLeft->clear();
+	SAFE_DELETE(AABBListLeft);
+
+	AABBListRight->clear();
+	SAFE_DELETE(AABBListRight);
 }
 
 void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
@@ -775,6 +802,13 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
+
+	//something silly with this memory release 
+	AABBListLeft->clear();
+	SAFE_DELETE(AABBListLeft);
+
+	AABBListRight->clear();
+	SAFE_DELETE(AABBListRight);
 }
 
 void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node, int _split)

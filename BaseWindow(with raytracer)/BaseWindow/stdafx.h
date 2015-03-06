@@ -179,10 +179,10 @@ struct cToggles
 #define myMemSize(p)      _msize_dbg(p, _NORMAL_BLOCK)
 #define myNew new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #define myDelete delete  // Set to dump leaks at the program exit.
-#define myInitMemoryCheck() \
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF)
-#define myDumpMemoryLeaks() \
-	_CrtDumpMemoryLeaks()
+//#define myInitMemoryCheck() \
+//	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF)
+//#define myDumpMemoryLeaks() \
+//	_CrtDumpMemoryLeaks()
 #else
 #define myMalloc malloc
 #define myCalloc calloc

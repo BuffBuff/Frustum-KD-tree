@@ -155,8 +155,14 @@ HRESULT Init()
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
+	///Fixing with memory leaks
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
+	_CrtDumpMemoryLeaks();
+
+	//Change the number to find a specific 
+	//_crtBreakAlloc = 1585;
+	///
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 		return 0;
 
@@ -299,6 +305,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 void release()
 {
 	graphics->release();
+
+	SAFE_DELETE(graphics);
 
 	SAFE_RELEASE(g_Device);
 	SAFE_RELEASE(g_DeviceContext);
