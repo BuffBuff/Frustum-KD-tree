@@ -124,10 +124,38 @@ float3 RayVSTriangleMat(TriangleMat p_tri, Ray p_ray, float _dist)
 }
 
 
+static float3 dirs[3] = { float3(1, 0, 0), float3(0, 1, 0), float3(0, 0, 1) };
+
 // Implements support for dist later
 float RayVSAABB(Ray _ray, NodeAABB _aabb)
 {
 	float tMin = -MAXDIST;
+	float tMax = MAXDIST;
+
+	float t0 = 0;
+	float t1 = MAXDIST;
+
+	for (int i = 0; i < 3; ++i) {
+		// Update interval for _i_th bounding box slab
+		float invRayDir = 1.f / _ray.dir[i];
+		float tNear = (_aabb.minPoint[i] - _ray.origin[i]) * invRayDir;
+		float tFar = (_aabb.maxPoint[i] - _ray.origin[i]) * invRayDir;
+
+		// Update parametric interval from slab intersection $t$s
+		if (tNear > tFar)
+		{
+			float temp = tNear;
+			tNear = tFar;
+			tFar = temp;
+		}
+		t0 = tNear > t0 ? tNear : t0;
+		t1 = tFar  < t1 ? tFar : t1;
+		if (t0 > t1) 
+			return MAXDIST;
+	}
+	return t0;
+}
+	/*float tMin = -MAXDIST;
 	float tMax = MAXDIST;
 	float t1;
 	float t2;
@@ -186,9 +214,27 @@ float RayVSAABB(Ray _ray, NodeAABB _aabb)
 		return tMin;
 	else
 		return tMax;
-}
+}*/
 
-
+//bool BBox::IntersectP(const Ray &ray, float *hitt0,	float *hitt1) const 
+//{
+//	float t0 = ray.mint, t1 = ray.maxt;
+//	for (int i = 0; i < 3; ++i) {
+//		// Update interval for _i_th bounding box slab
+//		float invRayDir = 1.f / ray.d[i];
+//		float tNear = (pMin[i] - ray.o[i]) * invRayDir;
+//		float tFar = (pMax[i] - ray.o[i]) * invRayDir;
+//
+//		// Update parametric interval from slab intersection $t$s
+//		if (tNear > tFar) swap(tNear, tFar);
+//		t0 = tNear > t0 ? tNear : t0;
+//		t1 = tFar  < t1 ? tFar : t1;
+//		if (t0 > t1) return false;
+//	}
+//	if (hitt0) *hitt0 = t0;
+//	if (hitt1) *hitt1 = t1;
+//	return true;
+//}
 
 //	float maxT[NUMDIM];
 //	int inside = 1;
