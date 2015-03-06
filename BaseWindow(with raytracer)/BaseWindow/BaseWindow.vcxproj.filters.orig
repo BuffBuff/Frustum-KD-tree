@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{bc8daaaf-230b-463e-b5e2-cede670286f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externs">
+      <UniqueIdentifier>{87dcdefb-91ba-4204-8ae6-f6e9ca447223}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Normal render">
+      <UniqueIdentifier>{32db737b-fb29-45f5-8296-aefe181689fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Raytracer">
+      <UniqueIdentifier>{0047b331-11f8-40b7-a57a-cfb4429ebb3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Raytracer">
+      <UniqueIdentifier>{875cb965-3be9-42ad-a6dd-a61705018d9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Raytracer">
+      <UniqueIdentifier>{281dd022-8db7-4a17-bcd0-5968bc93e10d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Normal render">
+      <UniqueIdentifier>{480a7f08-c1c1-4ac2-98d2-ae51bd0f8c22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Normal render">
+      <UniqueIdentifier>{00cc8cb0-2355-4aa2-9a42-eeb8932b49a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Global">
+      <UniqueIdentifier>{593c2e1c-7aee-4b84-9397-7db058922362}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPU Raytracer">
+      <UniqueIdentifier>{8cb72cfb-3e48-4bc7-a4d2-bc975fb43b3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GPU Raytracer">
+      <UniqueIdentifier>{73593e95-529e-4fbc-9c38-b57a30caef00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\GPU kd">
+      <UniqueIdentifier>{db63296e-481b-4cf9-8653-a2af3ba9b664}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ButtonInput.cpp">
+      <Filter>Externs</Filter>
+    </ClCompile>
+    <ClCompile Include="ComputeHelp.cpp">
+      <Filter>Externs</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D11Timer.cpp">
+      <Filter>Externs</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Externs</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics.cpp">
+      <Filter>Source Files\Normal render</Filter>
+    </ClCompile>
+    <ClCompile Include="RTGraphics.cpp">
+      <Filter>Source Files\Raytracer</Filter>
+    </ClCompile>
+    <ClCompile Include="WICTextureLoader.cpp">
+      <Filter>Externs</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GPURTGraphics.cpp">
+      <Filter>Source Files\GPU Raytracer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ComputeHelp.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="hrTimer.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D11Timer.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="ButtonInput.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="RTGraphics.h">
+      <Filter>Header Files\Raytracer</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>Header Files\Normal render</Filter>
+    </ClInclude>
+    <ClInclude Include="PlatformHelpers.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="WICTextureLoader.h">
+      <Filter>Externs</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GPURTGraphics.h">
+      <Filter>Header Files\GPU Raytracer</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Shaders\Normal render</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Shaders\Normal render</Filter>
+    </FxCompile>
+    <FxCompile Include="Structs.fx">
+      <Filter>Shaders\Global</Filter>
+    </FxCompile>
+    <FxCompile Include="Buffers.fx">
+      <Filter>Shaders\Global</Filter>
+    </FxCompile>
+    <FxCompile Include="Raytracing.hlsl">
+      <Filter>Shaders\Raytracer</Filter>
+    </FxCompile>
+    <FxCompile Include="Collisions.fx">
+      <Filter>Shaders\Global</Filter>
+    </FxCompile>
+    <FxCompile Include="Light.fx">
+      <Filter>Shaders\Global</Filter>
+    </FxCompile>
+<<<<<<< HEAD
+    <FxCompile Include="createKDtree.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
+=======
+    <FxCompile Include="Debug.fx">
+      <Filter>Shaders\Global</Filter>
+>>>>>>> master
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

@@ -139,12 +139,29 @@ struct Light
 	XMFLOAT3 pad;
 };
 
+struct Sphere
+{
+	XMFLOAT4 pos;
+	XMFLOAT4 color;
+	float radie;
+	XMFLOAT3 pad;
+};
+
 struct cLightBuffer
 {
 	Light lightList[NROFLIGHTS];
 };
 
+struct cSphereBuffer
+{
+	Sphere sphereList[NROFLIGHTS];
+};
 
+struct cToggles
+{
+	int lightSpheres;	//Toggle on debug light spheres
+	XMFLOAT3 togglePad;
+};
 
 //////////////////////////////////////////////////////////////////////////
 // to find memory leaks
@@ -162,10 +179,10 @@ struct cLightBuffer
 #define myMemSize(p)      _msize_dbg(p, _NORMAL_BLOCK)
 #define myNew new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #define myDelete delete  // Set to dump leaks at the program exit.
-#define myInitMemoryCheck() \
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF)
-#define myDumpMemoryLeaks() \
-	_CrtDumpMemoryLeaks()
+//#define myInitMemoryCheck() \
+//	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF)
+//#define myDumpMemoryLeaks() \
+//	_CrtDumpMemoryLeaks()
 #else
 #define myMalloc malloc
 #define myCalloc calloc

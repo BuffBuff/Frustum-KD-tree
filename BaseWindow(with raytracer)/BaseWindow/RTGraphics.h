@@ -23,6 +23,8 @@ public:
 	void Render(float _dt);
 	void release();
 
+	void updateTogglecb(int _lightSpheres, int _placeHolder1, int _placeHolder2);
+
 private:
 	//Converter (sting to wstring)
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
@@ -56,7 +58,6 @@ private:
 	//blululululu
 	ComputeBuffer				*m_NodeBuffer;
 	ComputeBuffer				*m_Indices;
-
 	Node						m_rootNode;
 	
 	//HWND
@@ -66,8 +67,18 @@ private:
 	float						m_time;
 	float						m_fps;
 
+
+	//constant buffers
 	//Light
 	ID3D11Buffer				*m_lightcBuffer;
 	cLightBuffer				lightcb;
+
+	//Light sphere
+	ID3D11Buffer				*m_spherecBuffer;
+	cSphereBuffer				spherecb;
+
+	//Toggles
+	ID3D11Buffer				*m_togglecBuffer;
+	cToggles					togglescb;
 };
 

@@ -151,6 +151,9 @@
     <FxCompile Include="createKDtree.hlsl">
       <Filter>Shaders\GPU kd</Filter>
     </FxCompile>
+    <FxCompile Include="Debug.fx">
+      <Filter>Shaders\Global</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources.hlsl">

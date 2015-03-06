@@ -34,6 +34,8 @@ m_fps(0.f)
 
 	//create lights
 	createLightBuffer();
+
+
 }
 
 void RTGraphics::createCBuffers()
@@ -47,6 +49,7 @@ void RTGraphics::createCBuffers()
 	cbDesc.CPUAccessFlags = 0;
 	cbDesc.MiscFlags = 0;
 
+	///Mesh cbuffer
 	if (sizeof(cBuffer) % 16 > 0)
 	{
 		cbDesc.ByteWidth = (int)((sizeof(cBuffer) / 16) + 1) * 16;
@@ -59,10 +62,11 @@ void RTGraphics::createCBuffers()
 	hr = g_Device->CreateBuffer(&cbDesc, NULL, &g_cBuffer);
 	if (FAILED(hr))
 	{
-		MessageBox(NULL, "Failed Making Constant Buffer cBuffer", "Create Buffer", MB_OK);
+		MessageBox(NULL, "Failed Making Constant Buffer: cBuffer", "Create Buffer", MB_OK);
 	}
 	g_DeviceContext->CSSetConstantBuffers(0, 1, &g_cBuffer);
 
+	///Light cbuffer
 	if (sizeof(cLightBuffer) % 16 > 0)
 	{
 		cbDesc.ByteWidth = (int)((sizeof(cLightBuffer) / 16) + 1) * 16;
@@ -75,10 +79,43 @@ void RTGraphics::createCBuffers()
 	hr = g_Device->CreateBuffer(&cbDesc, NULL, &m_lightcBuffer);
 	if (FAILED(hr))
 	{
-		MessageBox(NULL, "Failed Making Constant Buffer lightcBuffer", "Create Buffer", MB_OK);
+		MessageBox(NULL, "Failed Making Constant Buffer: lightcBuffer", "Create Buffer", MB_OK);
 	}
 	g_DeviceContext->CSSetConstantBuffers(1, 1, &m_lightcBuffer);
 
+	///Light sphere cbuffer
+	if (sizeof(cSphereBuffer) % 16 > 0)
+	{
+		cbDesc.ByteWidth = (int)((sizeof(cSphereBuffer) / 16) + 1) * 16;
+	}
+	else
+	{
+		cbDesc.ByteWidth = sizeof(cSphereBuffer);
+	}
+
+	hr = g_Device->CreateBuffer(&cbDesc, NULL, &m_spherecBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, "Failed Making Constant Buffer: spherecBuffer", "Create Buffer", MB_OK);
+	}
+	g_DeviceContext->CSSetConstantBuffers(2, 1, &m_spherecBuffer);
+
+	///Toggle cbuffer
+	if (sizeof(cToggles) % 16 > 0)
+	{
+		cbDesc.ByteWidth = (int)((sizeof(cToggles) / 16) + 1) * 16;
+	}
+	else
+	{
+		cbDesc.ByteWidth = sizeof(cToggles);
+	}
+
+	hr = g_Device->CreateBuffer(&cbDesc, NULL, &m_togglecBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, "Failed Making Constant Buffer: togglecBuffer", "Create Buffer", MB_OK);
+	}
+	g_DeviceContext->CSSetConstantBuffers(3, 1, &m_togglecBuffer);
 }
 
 void RTGraphics::createTriangleTexture()
@@ -89,9 +126,9 @@ void RTGraphics::createTriangleTexture()
 
 	//Load OBJ-file
 	m_mesh.loadObj("Meshi/kub.obj");
-	m_mesh.setColor(XMFLOAT4(1,0,0,1));
+	m_mesh.setColor(XMFLOAT4(1,1,1,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
-	m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
+	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
 
 	createKdTree(&m_mesh);
 
@@ -174,7 +211,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 
 	fillKDBuffers(_rootNode, initdata, indiceList, 0);
 
-
+	//something silly with this memory release 
 	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(NodePass2),
 											 initdata->size(),
@@ -184,6 +221,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 											 false,
 											 "Structed Buffer: Node Buffer");
 
+	//something silly with this memory release 
 	m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(int),
 											 indiceList->size(),
@@ -197,27 +235,28 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 
 void RTGraphics::createLightBuffer()
 {
-
-	int rangeModifier = 15;
-	float lightRange = 30.f;
 	float ambientMod = 0.25f;
 	float diffuseMod = 0.55f;
 	std::srand(10);
 	for (int i = 0; i < NROFLIGHTS; i++)
 	{
-		float rx = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
-		float ry = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
-		float rz = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
+		float rx = ((float)(std::rand() % LIGHT_POSITION_RANGEMODIFIER)) - LIGHT_POSITION_RANGEMODIFIER / 2;
+		float ry = ((float)(std::rand() % LIGHT_POSITION_RANGEMODIFIER)) - LIGHT_POSITION_RANGEMODIFIER / 2;
+		float rz = ((float)(std::rand() % LIGHT_POSITION_RANGEMODIFIER)) - LIGHT_POSITION_RANGEMODIFIER / 2;
 		lightcb.lightList[i].pos = XMFLOAT4(rx, ry, rz, 1.f);
 		lightcb.lightList[i].ambient = XMFLOAT4(ambientMod, ambientMod, ambientMod, 1.f);
 		lightcb.lightList[i].diffuse = XMFLOAT4(diffuseMod, diffuseMod, diffuseMod, 1.f);
-		lightcb.lightList[i].range = lightRange;
+		lightcb.lightList[i].range = LIGHT_RANGE;
 		lightcb.lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
+
+		//extra debug spheres
+		//create lightsphere
+		spherecb.sphereList[i].pos = lightcb.lightList[i].pos;
+		spherecb.sphereList[i].pos = XMFLOAT4(0,0,0,0);
+		spherecb.sphereList[i].color = XMFLOAT4(1, 0, 0, 1);
+		spherecb.sphereList[i].radie = 4.f;
+		spherecb.sphereList[i].pad = XMFLOAT3(0, 0, 0);
 	}
-
-
-
-
 }
 
 RTGraphics::~RTGraphics()
@@ -249,6 +288,10 @@ void RTGraphics::Update(float _dt)
 	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 
 	g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
+
+	g_DeviceContext->UpdateSubresource(m_spherecBuffer, 0, NULL, &spherecb, 0, 0);
+
+	g_DeviceContext->UpdateSubresource(m_togglecBuffer, 0, NULL, &togglescb, 0, 0);
 
 	m_time += _dt;
 	static float frameCnt = 0;
@@ -308,33 +351,45 @@ void RTGraphics::Render(float _dt)
 
 void releaseKdTree(Node *_node)
 {
+	//something silly with memory release 
 	if (_node->left != NULL)
 	{
 		releaseKdTree(_node->left);
 		SAFE_DELETE(_node->left);
 	}
-	else
+	/*else
 	{
-		_node->index->clear();
-	}
+		if (_node->index != NULL)
+		SAFE_DELETE(_node->index);
+	}*/
+
 	if (_node->right != NULL)
 	{
 		releaseKdTree(_node->right);
 		SAFE_DELETE(_node->right);
 	}
-	else
-	{
-		_node->index->clear();
-	}
+	//else
+	//{
+	//	if (_node->index != NULL)
+	//	SAFE_DELETE(_node->index);
+	//}
+
+	if (_node->index != NULL)
+		SAFE_DELETE(_node->index);
 }
 
 void RTGraphics::release()
 {
 	releaseKdTree(&m_rootNode);
 
+	SAFE_RELEASE(m_Indices);		//something silly with this memory release 
+	SAFE_RELEASE(m_NodeBuffer);		//something silly with this memory release 
 	SAFE_RELEASE(m_meshTexture);
 	SAFE_RELEASE(g_cBuffer);
 	SAFE_RELEASE(backbuffer);
+	SAFE_RELEASE(m_lightcBuffer);
+	SAFE_RELEASE(m_spherecBuffer);
+
 
 	SAFE_DELETE(m_meshBuffer);
 	SAFE_DELETE(raytracer);
@@ -388,6 +443,7 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 
 void assignTriangles(Node* _node, std::vector<AABB>* _AABBList)
 {
+	//something silly with this memory release 
 	_node->index = new std::vector<int>();
 
 	for (int i = 0; i < _AABBList->size(); i++)
@@ -619,6 +675,14 @@ void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
 		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
+
+	//something silly with this memory release 
+	AABBListLeft->clear();
+	SAFE_DELETE(AABBListLeft);
+
+	AABBListRight->clear();
+	SAFE_DELETE(AABBListRight);
+
 }
 
 void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
@@ -676,6 +740,13 @@ void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
 		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
+
+	//something silly with this memory release 
+	AABBListLeft->clear();
+	SAFE_DELETE(AABBListLeft);
+
+	AABBListRight->clear();
+	SAFE_DELETE(AABBListRight);
 }
 
 void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
@@ -733,6 +804,13 @@ void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
 		_node->right->aabb = _node->aabb;
 		assignTriangles(_node->right, _AABBList);
 	}
+
+	//something silly with this memory release 
+	AABBListLeft->clear();
+	SAFE_DELETE(AABBListLeft);
+
+	AABBListRight->clear();
+	SAFE_DELETE(AABBListRight);
 }
 
 void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node, int _split)
@@ -766,4 +844,9 @@ void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node, in
 
 }
 
+void RTGraphics::updateTogglecb(int _lightSpheres, int _placeHolder1, int _placeHolder2)
+{
+	togglescb.lightSpheres = _lightSpheres;
 
+	togglescb.togglePad = XMFLOAT3(0, 0, 0);
+}

@@ -19,4 +19,15 @@ cbuffer lights : register(c1)
 	Light lightList[NROFLIGHTS];
 };
 
+cbuffer spheres : register(c2)
+{
+	Sphere sphereList[NROFLIGHTS];
+};
+
+cbuffer Toggles : register(c3)
+{
+	int lightSpheres;	//Toggle on debug light spheres
+	float3 togglePad;
+};
+
 #endif
