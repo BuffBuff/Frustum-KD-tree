@@ -123,15 +123,9 @@ float3 RayVSTriangleMat(TriangleMat p_tri, Ray p_ray, float _dist)
 	return float3(-1,0,0);
 }
 
-
-static float3 dirs[3] = { float3(1, 0, 0), float3(0, 1, 0), float3(0, 0, 1) };
-
 // Implements support for dist later
 float RayVSAABB(Ray _ray, NodeAABB _aabb)
 {
-	float tMin = -MAXDIST;
-	float tMax = MAXDIST;
-
 	float t0 = 0;
 	float t1 = MAXDIST;
 
