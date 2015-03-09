@@ -9,24 +9,12 @@
 #include <map>
 #include <fstream>
 #include "Constants.h"
-
-//#include "ComputeHelp.h"
-//#include "Mesh.h"
-
 #include <DirectXMath.h>
 using namespace DirectX;
-//#define D3DXMATRIX DirectX::XMMATRIX
-//#define D3DXVECTOR3 DirectX::XMFLOAT3
 
 #define SAFE_RELEASE(x) if( x ) { (x)->Release(); (x) = NULL; }
 #define SAFE_DELETE(x) if( x ) { delete(x); (x) = NULL; }
 #define SAFE_DELETE_ARRAY(x) if( x ) { delete[](x); (x) = NULL; }
-
-
-//#pragma comment(lib, "d3d11.lib")
-//#pragma comment(lib, "d3dcompiler.lib")
-//#pragma comment (lib,"dxerr.lib")
-
 
 struct Vertex
 {

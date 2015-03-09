@@ -42,9 +42,7 @@ private:
 	ComputeWrap *computeWrap;
 
 	ComputeShader *raytracer = NULL;
-
-	ComputeBuffer *triangleBuffer = NULL;
-
+	
 	ID3D11Buffer *g_cBuffer;
 	cBuffer cb;
 
@@ -61,7 +59,7 @@ private:
 	Node						m_rootNode;
 	
 	//HWND
-	HWND*						m_Hwnd;
+	HWND						*m_Hwnd;
 
 	//Timers
 	float						m_time;

@@ -10,12 +10,22 @@ m_fps(0.f)
 	HRESULT hr = S_OK;
 	g_timer = new D3D11Timer(g_Device, g_DeviceContext);
 
+	m_Hwnd = nullptr;
 	m_Hwnd = _hwnd;
 
+	g_cBuffer		= nullptr;
+	backbuffer		= nullptr;
+	m_meshBuffer	= nullptr;
+	m_NodeBuffer	= nullptr;
+	m_Indices		= nullptr;
+	m_lightcBuffer	= nullptr;
+
+	computeWrap = nullptr;
 	computeWrap = new ComputeWrap(g_Device,g_DeviceContext);
 
 	raytracer = computeWrap->CreateComputeShader("Raytracing");
 
+	createKDtree = nullptr;
 	createKDtree = computeWrap->CreateComputeShader("createKDtree");
 
 	ID3D11Texture2D* pBackBuffer;
@@ -299,16 +309,18 @@ void GPURTGraphics::Render(float _dt)
 
 void GPURTGraphics::release()
 {
-
 	SAFE_RELEASE(m_meshTexture);
 	SAFE_RELEASE(g_cBuffer);
 	SAFE_RELEASE(backbuffer);
+	SAFE_RELEASE(m_aabbBuffer);
+	SAFE_RELEASE(m_NodeBuffer);
+	SAFE_RELEASE(m_Indices);
+	SAFE_RELEASE(m_lightcBuffer);
 
 	SAFE_DELETE(m_meshBuffer);
 	SAFE_DELETE(raytracer);
 	SAFE_DELETE(computeWrap);
-	SAFE_DELETE(triangleBuffer);
-
+	SAFE_DELETE(g_timer);
 }
 
 void GPURTGraphics::createKdTree(Mesh *_mesh)

@@ -39,7 +39,6 @@ private:
 	ComputeShader *raytracer = NULL;
 	ComputeShader *createKDtree = NULL;
 
-	ComputeBuffer *triangleBuffer = NULL;
 	ComputeBuffer *m_aabbBuffer = NULL; // buffern för aabbs för alla trianglar
 
 	ID3D11Buffer *g_cBuffer;
@@ -59,7 +58,7 @@ private:
 	Node						m_rootNode;
 	
 	//HWND
-	HWND*						m_Hwnd;
+	HWND						*m_Hwnd;
 
 	//Timers
 	float						m_time;
@@ -69,7 +68,7 @@ private:
 	ID3D11Buffer				*m_lightcBuffer;
 	cLightBuffer				lightcb;
 
-	D3D11Timer*					g_timer = NULL;
+	D3D11Timer					*g_timer = NULL;
 
 };
 

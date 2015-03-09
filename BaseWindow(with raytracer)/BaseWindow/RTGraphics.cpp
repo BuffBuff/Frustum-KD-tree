@@ -9,8 +9,18 @@ m_fps(0.f)
 {
 	HRESULT hr = S_OK;
 
+	m_Hwnd = nullptr;
 	m_Hwnd = _hwnd;
 
+	g_cBuffer		= nullptr;
+	backbuffer		= nullptr;
+	m_meshBuffer	= nullptr;
+	m_NodeBuffer	= nullptr;
+	m_Indices		= nullptr;
+	m_lightcBuffer	= nullptr;
+	m_spherecBuffer = nullptr;
+
+	computeWrap = nullptr;
 	computeWrap = new ComputeWrap(g_Device,g_DeviceContext);
 
 	raytracer = computeWrap->CreateComputeShader("Raytracing");
@@ -235,17 +245,15 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 
 void RTGraphics::createLightBuffer()
 {
-	float ambientMod = 0.25f;
-	float diffuseMod = 0.55f;
-	std::srand(10);
+	std::srand(LIGHT_RANDOM_SEED);
 	for (int i = 0; i < NROFLIGHTS; i++)
 	{
 		float rx = ((float)(std::rand() % LIGHT_POSITION_RANGEMODIFIER)) - LIGHT_POSITION_RANGEMODIFIER / 2;
 		float ry = ((float)(std::rand() % LIGHT_POSITION_RANGEMODIFIER)) - LIGHT_POSITION_RANGEMODIFIER / 2;
 		float rz = ((float)(std::rand() % LIGHT_POSITION_RANGEMODIFIER)) - LIGHT_POSITION_RANGEMODIFIER / 2;
 		lightcb.lightList[i].pos = XMFLOAT4(rx, ry, rz, 1.f);
-		lightcb.lightList[i].ambient = XMFLOAT4(ambientMod, ambientMod, ambientMod, 1.f);
-		lightcb.lightList[i].diffuse = XMFLOAT4(diffuseMod, diffuseMod, diffuseMod, 1.f);
+		lightcb.lightList[i].ambient = XMFLOAT4(LIGHT_AMBIENT_MOD, LIGHT_AMBIENT_MOD, LIGHT_AMBIENT_MOD, 1.f);
+		lightcb.lightList[i].diffuse = XMFLOAT4(LIGHT_DIFFUSE_MOD, LIGHT_DIFFUSE_MOD, LIGHT_DIFFUSE_MOD, 1.f);
 		lightcb.lightList[i].range = LIGHT_RANGE;
 		lightcb.lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
 
@@ -388,12 +396,13 @@ void RTGraphics::release()
 	SAFE_RELEASE(backbuffer);
 	SAFE_RELEASE(m_lightcBuffer);
 	SAFE_RELEASE(m_spherecBuffer);
-
+	SAFE_RELEASE(m_togglecBuffer);
+	
+	m_mesh.~Mesh();
 
 	SAFE_DELETE(m_meshBuffer);
 	SAFE_DELETE(raytracer);
 	SAFE_DELETE(computeWrap);
-	SAFE_DELETE(triangleBuffer);
 
 }
 

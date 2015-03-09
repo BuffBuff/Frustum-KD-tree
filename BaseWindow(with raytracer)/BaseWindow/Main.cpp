@@ -188,6 +188,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	//Change the number to find a specific 
 	//_crtBreakAlloc = 1585;
 	///
+
 	if (FAILED(InitWindow(hInstance, nCmdShow)))
 		return 0;
 
