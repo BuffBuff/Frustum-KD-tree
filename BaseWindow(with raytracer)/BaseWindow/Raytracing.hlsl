@@ -43,11 +43,77 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	r.origin = cameraPos;
 	r.dir = rayDir;
 
-	int nodeIndex = 0;
+	float3 hit = (-1.0f, -1.0f, -1.0f);
 
+	int nodeIndex = 0;
 	int nextNode = 0;
 	int nodeStack[30];
-	float3 hit = (-1.0f, -1.0f, -1.0f);
+
+	int levelStart = 1;
+	int levelIndex = 0;
+	int swapMask = 0;
+	
+	//new stackless traversing 
+	while (levelStart <= 1)
+	{
+		int node = levelStart + levelIndex - 1 + swapMask - 2 * (levelIndex & swapMask);	//bitwise AND
+
+		if (KDtree[node].index == -1)
+		{
+			//Leaf node found, DO SHIT!
+			for (int i = KDtree[node].index; i < KDtree[node].nrOfTriangles + KDtree[node].index; i++)
+			{
+				hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
+				if (hit.x > -1)
+				{
+
+					hd.pos = r.origin + r.dir * hit.x;
+					hd.normal = triangles[Indices[i]].normal;
+					hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+					hd.ID = triangles[Indices[i]].ID;
+					hd.t = hit.x;
+					hd.bufferpos = threadID.xy;
+				}
+			}
+		}
+		else
+		{
+			//test aganist both childs
+			int right = RayVSAABB(r, KDtree[KDtree[node].left_right_nodeID[0]].aabb);
+			int left = RayVSAABB(r, KDtree[KDtree[node].left_right_nodeID[1]].aabb);
+			
+			//if any hit
+			if (left != MAXDIST || right != MAXDIST)
+			{
+				levelStart = levelStart << 1;	//bitwise shift left
+				levelIndex = levelIndex << 1;	//bitwise shift left
+				swapMask = swpMask << 1;	//bitwise shift left
+
+
+				//right child first
+				if (right < left )
+				{
+					swapMask = swapMask | 1;		//bitwise OR
+				}
+				//reject one child
+				if (right == MAXDIST && left != MAXDIST || left == MAXDIST && right != MAXDIST)
+				{
+					levelIndex = levelIndex + 1;
+					swapMask = swapMask ^ 1;		//bitwise XOR
+				}
+				break;
+			}
+		}
+
+		levelIndex = levelIndex + 1;
+		int up = ctz(levelIndex);		//up <- ctz(levelIndex)
+		levelStart = levelStart >> up;	//bitwise shift right
+		levelIndex = levelIndex >> up;	//bitwise shift right
+		swapMask = swapMask >> up		//bitwise shift right
+	}
+
+
+
 
 	while (nextNode > -1)
 	{
