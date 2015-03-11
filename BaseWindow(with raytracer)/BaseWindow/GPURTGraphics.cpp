@@ -316,4 +316,9 @@ void GPURTGraphics::createKdTree(Mesh *_mesh)
 
 }
 
+void GPURTGraphics::updateTogglecb(int _lightSpheres, int _placeHolder1, int _placeHolder2)
+{
+	//togglescb.lightSpheres = _lightSpheres;
 
+	//togglescb.togglePad = XMFLOAT3(0, 0, 0);
+}

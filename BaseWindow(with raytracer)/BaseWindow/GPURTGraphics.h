@@ -23,6 +23,7 @@ public:
 	void Update(float _dt);
 	void Render(float _dt);
 	void release();
+	void updateTogglecb(int _lightSpheres, int _placeHolder1, int _placeHolder2);
 
 private:
 	//Converter (sting to wstring)
@@ -49,17 +50,17 @@ private:
 
 	//MESH
 	Mesh						m_mesh;
-	ComputeBuffer				*m_meshBuffer;
-	ID3D11ShaderResourceView	*m_meshTexture;
+	ComputeBuffer				*m_meshBuffer = NULL;
+	ID3D11ShaderResourceView	*m_meshTexture = NULL;
 	
 	//blululululu
-	ComputeBuffer				*m_NodeBuffer;
-	ComputeBuffer				*m_Indices;
+	ComputeBuffer				*m_NodeBuffer = NULL;
+	ComputeBuffer				*m_Indices = NULL;
 
 	Node						m_rootNode;
 	
 	//HWND
-	HWND*						m_Hwnd;
+	HWND*						m_Hwnd = NULL;
 
 	//Timers
 	float						m_time;
