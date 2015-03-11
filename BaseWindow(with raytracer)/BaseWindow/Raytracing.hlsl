@@ -79,6 +79,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		else
 		{
 			//test aganist both childs
+			//need to recalculate the index value for the childnodes with the new system
 			int right = RayVSAABB(r, KDtree[KDtree[node].left_right_nodeID[0]].aabb);
 			int left = RayVSAABB(r, KDtree[KDtree[node].left_right_nodeID[1]].aabb);
 			
@@ -87,7 +88,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			{
 				levelStart = levelStart << 1;	//bitwise shift left
 				levelIndex = levelIndex << 1;	//bitwise shift left
-				swapMask = swpMask << 1;	//bitwise shift left
+				swapMask = swpMask << 1;		//bitwise shift left
 
 
 				//right child first

@@ -166,13 +166,13 @@ void RTGraphics::createTriangleTexture()
 
 }
 
-void fillKDBuffers(Node* _node, std::vector<NodePass2> *_initdata, std::vector<int> *_indiceList, int _index)
+void depthFillKDBuffers(Node* _node, std::vector<NodePass2> *_initdata, std::vector<int> *_indiceList, int _index)
 {
 
 	if (_node->left == NULL && _node->right == NULL)
 	{
-		_initdata->at(_index).left_right_nodeID[0] = -1;
-		_initdata->at(_index).left_right_nodeID[1] = -1;
+		//_initdata->at(_index).left_right_nodeID[0] = -1;
+		//_initdata->at(_index).left_right_nodeID[1] = -1;
 		_initdata->at(_index).index = _indiceList->size();
 		_initdata->at(_index).nrOfTriangles = _node->index->size();
 
@@ -200,10 +200,42 @@ void fillKDBuffers(Node* _node, std::vector<NodePass2> *_initdata, std::vector<i
 		_initdata->push_back(nodeRight);
 		_initdata->at(_index).left_right_nodeID[1] = _initdata->size() - 1;
 
-		fillKDBuffers(_node->left, _initdata, _indiceList, _initdata->at(_index).left_right_nodeID[0]);
-		fillKDBuffers(_node->right, _initdata, _indiceList, _initdata->at(_index).left_right_nodeID[1]);
+		depthFillKDBuffers(_node->left, _initdata, _indiceList, _initdata->at(_index).left_right_nodeID[0]);
+		depthFillKDBuffers(_node->right, _initdata, _indiceList, _initdata->at(_index).left_right_nodeID[1]);
 	}
 
+}
+
+void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, std::vector<int> *_indiceList, int _index)
+{
+	std::vector<int> nextWorkID;
+	nextWorkID.push_back(0);
+
+	std::vector<Node*> nextNode;
+	nextNode.push_back(_rootNode);
+
+	while (!nextWorkID.empty())
+	{
+		int workID = nextWorkID.at(0);
+		nextWorkID.erase(nextWorkID.begin());
+		Node *node = nextNode.at(0);
+		nextNode.erase(nextNode.begin());
+
+		if (node->left == NULL && node->right == NULL)
+		{
+			
+		}
+		else
+		{
+
+
+
+
+
+
+			//breadthFillKDBuffers();
+		}
+	}
 }
 
 void RTGraphics::createNodeBuffer(Node* _rootNode)
@@ -219,7 +251,8 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 
 	initdata->push_back(node);
 
-	fillKDBuffers(_rootNode, initdata, indiceList, 0);
+	//depthFillKDBuffers(_rootNode, initdata, indiceList, 0);
+	breadthFillKDBuffers(_rootNode, initdata, indiceList, 0);
 
 	//something silly with this memory release 
 	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
