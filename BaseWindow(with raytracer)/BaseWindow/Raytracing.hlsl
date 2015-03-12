@@ -115,7 +115,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-
+	/*
 	while (nextNode > -1)
 	{
 		if (KDtree[nodeIndex].index == -1)
@@ -161,7 +161,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		nodeIndex = nodeStack[nextNode];
 
 	}
-
+	*/
 
 	//////////////////////////////////
 	///Light

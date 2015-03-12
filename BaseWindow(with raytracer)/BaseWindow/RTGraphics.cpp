@@ -171,8 +171,8 @@ void depthFillKDBuffers(Node* _node, std::vector<NodePass2> *_initdata, std::vec
 
 	if (_node->left == NULL && _node->right == NULL)
 	{
-		//_initdata->at(_index).left_right_nodeID[0] = -1;
-		//_initdata->at(_index).left_right_nodeID[1] = -1;
+		_initdata->at(_index).left_right_nodeID[0] = -1;
+		_initdata->at(_index).left_right_nodeID[1] = -1;
 		_initdata->at(_index).index = _indiceList->size();
 		_initdata->at(_index).nrOfTriangles = _node->index->size();
 
@@ -206,35 +206,91 @@ void depthFillKDBuffers(Node* _node, std::vector<NodePass2> *_initdata, std::vec
 
 }
 
-void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, std::vector<int> *_indiceList, int _index)
+void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, std::vector<int> *_indiceList)
 {
-	std::vector<int> nextWorkID;
-	nextWorkID.push_back(0);
+	int working = 1;
 
 	std::vector<Node*> nextNode;
 	nextNode.push_back(_rootNode);
 
-	while (!nextWorkID.empty())
+	std::vector<int> nextID;
+	nextID.push_back(_initdata->size());
+
+
+	while (working > 0)
 	{
-		int workID = nextWorkID.at(0);
-		nextWorkID.erase(nextWorkID.begin());
+
 		Node *node = nextNode.at(0);
 		nextNode.erase(nextNode.begin());
 
-		if (node->left == NULL && node->right == NULL)
+		if (nextID.at(0) == -1)
 		{
-			
+			nextID.erase(nextID.begin());
+			nextID.push_back(-1);
+			nextID.push_back(-1);
+
+			NodePass2 emptyNode;
+			emptyNode.aabb = NodeAABB();
+			emptyNode.index = -1;
+			emptyNode.nrOfTriangles = 0;
+
+			_initdata->push_back(emptyNode);
+			_initdata->push_back(emptyNode);
+
+		}
+		else if (node->left == NULL && node->right == NULL)
+		{
+			//found a leaf node 
+			int initID = nextID.at(0);
+			nextID.erase(nextID.begin());
+
+			_initdata->at(initID).index = _indiceList->size();
+			_initdata->at(initID).nrOfTriangles = node->index->size();
+
+			for (int i = 0; i < node->index->size(); i++)
+			{
+				_indiceList->push_back(node->index->at(i));
+			}
+
+			nextID.push_back(-1);
+			nextID.push_back(-1);
+			working--;
 		}
 		else
 		{
+			//node with children
+			working--;
+			NodePass2 nodeRight;
+			NodePass2 nodeLeft;
+			nextID.erase(nextID.begin());
 
+			//fix left node 
+			nodeLeft.aabb = node->left->aabb;
+			nodeLeft.index = -1;
+			nodeLeft.nrOfTriangles = 0;
+			
+			nextID.push_back(_initdata->size());
+			_initdata->push_back(nodeLeft);
 
+			//fix right node
+			nodeRight.aabb = node->right->aabb;
+			nodeRight.index = -1;
+			nodeRight.nrOfTriangles = 0;
 
+			nextID.push_back(_initdata->size());
+			_initdata->push_back(nodeRight);
 
+			//add to the vector
+			nextNode.push_back(node->left);		// add the left node
+			working++;
 
+			nextNode.push_back(node->right);	// add the left node
+			working++;
 
-			//breadthFillKDBuffers();
+			
 		}
+
+
 	}
 }
 
@@ -252,7 +308,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 	initdata->push_back(node);
 
 	//depthFillKDBuffers(_rootNode, initdata, indiceList, 0);
-	breadthFillKDBuffers(_rootNode, initdata, indiceList, 0);
+	breadthFillKDBuffers(_rootNode, initdata, indiceList);
 
 	//something silly with this memory release 
 	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
