@@ -53,8 +53,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int levelIndex = 0;
 	int swapMask = 0;
 	
+	int depthIndex = 1;
+
 	//new stackless traversing 
-	while (levelStart <= 1)
+	while (levelStart >= 1)
 	{
 		int node = levelStart + levelIndex - 1 + swapMask - 2 * (levelIndex & swapMask);	//bitwise AND
 
@@ -79,16 +81,17 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		else
 		{
 			//test aganist both childs
-			//need to recalculate the index value for the childnodes with the new system
-			int right = RayVSAABB(r, KDtree[KDtree[node].left_right_nodeID[0]].aabb);
-			int left = RayVSAABB(r, KDtree[KDtree[node].left_right_nodeID[1]].aabb);
+			int childIndex = (levelStart - 1) * 2 + levelIndex;
+			float left = RayVSAABB(r, KDtree[childIndex].aabb);
+
+			float right = RayVSAABB(r, KDtree[childIndex+1].aabb);
 			
 			//if any hit
 			if (left != MAXDIST || right != MAXDIST)
 			{
 				levelStart = levelStart << 1;	//bitwise shift left
 				levelIndex = levelIndex << 1;	//bitwise shift left
-				swapMask = swpMask << 1;		//bitwise shift left
+				swapMask = swapMask << 1;		//bitwise shift left
 
 
 				//right child first
@@ -106,11 +109,23 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			}
 		}
 
+
 		levelIndex = levelIndex + 1;
-		int up = ctz(levelIndex);		//up <- ctz(levelIndex)
+
+		///////////////experiment area/////////////////
+
+		int up = 0;
+		for (int i = 5; levelIndex / i >= 1; i *= 5)
+		{
+			up += levelIndex / i;
+		}
+
+		///////////////experiment area/////////////////
+		
+		//int up = ctz(levelIndex);		//up <- ctz(levelIndex)
 		levelStart = levelStart >> up;	//bitwise shift right
 		levelIndex = levelIndex >> up;	//bitwise shift right
-		swapMask = swapMask >> up		//bitwise shift right
+		swapMask = swapMask >> up;		//bitwise shift right
 	}
 
 
@@ -166,7 +181,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	//////////////////////////////////
 	///Light
 	/////////////////////////////////
-
+	/*
 	//resetting for light and seting new variables
 	Ray lightRay;
 	hitData lightHit;
@@ -238,6 +253,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		outColor += color;
 	}
+	*/
+	outColor = float4( hd.color);
 
 	//debug code
 	if (lightSpheres > 0)

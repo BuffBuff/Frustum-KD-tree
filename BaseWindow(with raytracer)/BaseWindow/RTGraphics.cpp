@@ -165,7 +165,7 @@ void RTGraphics::createTriangleTexture()
 							 &m_meshTexture);
 
 }
-
+/*
 void depthFillKDBuffers(Node* _node, std::vector<NodePass2> *_initdata, std::vector<int> *_indiceList, int _index)
 {
 
@@ -205,6 +205,7 @@ void depthFillKDBuffers(Node* _node, std::vector<NodePass2> *_initdata, std::vec
 	}
 
 }
+*/
 
 void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, std::vector<int> *_indiceList)
 {
@@ -229,6 +230,10 @@ void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, st
 			nextID.push_back(-1);
 			nextID.push_back(-1);
 
+			Node nullNode;
+			nextNode.push_back(&nullNode);
+			nextNode.push_back(&nullNode);
+
 			NodePass2 emptyNode;
 			emptyNode.aabb = NodeAABB();
 			emptyNode.index = -1;
@@ -236,6 +241,8 @@ void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, st
 
 			_initdata->push_back(emptyNode);
 			_initdata->push_back(emptyNode);
+
+			
 
 		}
 		else if (node->left == NULL && node->right == NULL)
@@ -254,6 +261,19 @@ void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, st
 
 			nextID.push_back(-1);
 			nextID.push_back(-1);
+
+			Node nullNode;
+			nextNode.push_back(&nullNode);
+			nextNode.push_back(&nullNode);
+
+			NodePass2 emptyNode;
+			emptyNode.aabb = NodeAABB();
+			emptyNode.index = -1;
+			emptyNode.nrOfTriangles = 0;
+
+			_initdata->push_back(emptyNode);
+			_initdata->push_back(emptyNode);
+
 			working--;
 		}
 		else
