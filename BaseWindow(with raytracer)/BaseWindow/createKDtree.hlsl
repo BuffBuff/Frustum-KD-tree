@@ -6,56 +6,83 @@ StructuredBuffer<TriangleMat> triangles : register(t1);
 
 RWStructuredBuffer<AABB> aabbList : register(u0);
 
+RWStructuredBuffer<NodePass2> KDtree : register(u1); // to do skapa den fulla strukturen
+
+RWStructuredBuffer<int> indiceList : register(u2); // to do skapa append list 
+
+
+RWStructuredBuffer<int2> splittingSwap[2] : register(u3);
+
 
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
 {
 	// index of the thread in 1D buffers
-	int index = threadID.x + threadID.y * HEIGHT;
-	int workID = index;
-
-
+	int index = threadID.x + threadID.y * HEIGHT;	// the treads index
+	int workID = index;								// the triangle/AABB that the tread currently handles
+	int workingSplit = 0;							// the splitSwap currently woking on 0 - 1
+	int moveSplit = 1;								// the splitSwap to move to
 	//----------------------------------------------------------------------
+
+	AABB aabbMemReadTest;
+
+	aabbMemReadTest.minPoint.w = 0;
+	aabbMemReadTest.minPoint.w = 0;
+	aabbMemReadTest.maxPoint.w = 0;
+	aabbMemReadTest.maxPoint.w = 0;
+
+	TriangleMat triangleInWork;
+
 	// Creating the aabbs for the triangles
 	while (workID < nrOfTriangles)
 	{
-		aabbList[workID].triangleID = workID;
+		triangleInWork = triangles[workID];
 
-		aabbList[workID].minPoint.x = triangles[workID].pos0.x < triangles[workID].pos1.x ? triangles[workID].pos0.x : triangles[workID].pos1.x;
-		aabbList[workID].minPoint.x = aabbList[workID].minPoint.x < triangles[workID].pos2.x ? aabbList[workID].minPoint.x : triangles[workID].pos2.x;
-			
-		aabbList[workID].minPoint.y = triangles[workID].pos0.y < triangles[workID].pos1.y ? triangles[workID].pos0.y : triangles[workID].pos1.y;
-		aabbList[workID].minPoint.y = aabbList[workID].minPoint.y < triangles[workID].pos2.y ? aabbList[workID].minPoint.y : triangles[workID].pos2.y;
-				
-		aabbList[workID].minPoint.z = triangles[workID].pos0.z < triangles[workID].pos1.z ? triangles[workID].pos0.z : triangles[workID].pos1.z;
-		aabbList[workID].minPoint.z = aabbList[workID].minPoint.z < triangles[workID].pos2.z ? aabbList[workID].minPoint.z : triangles[workID].pos2.z;
-				
-		aabbList[workID].maxPoint.x = triangles[workID].pos0.x > triangles[workID].pos1.x ? triangles[workID].pos0.x : triangles[workID].pos1.x;
-		aabbList[workID].maxPoint.x = aabbList[workID].maxPoint.x > triangles[workID].pos2.x ? aabbList[workID].maxPoint.x : triangles[workID].pos2.x;
-				
-		aabbList[workID].maxPoint.y = triangles[workID].pos0.y > triangles[workID].pos1.y ? triangles[workID].pos0.y : triangles[workID].pos1.y;
-		aabbList[workID].maxPoint.y = aabbList[workID].maxPoint.y > triangles[workID].pos2.y ? aabbList[workID].maxPoint.y : triangles[workID].pos2.y;
-				
-		aabbList[workID].maxPoint.z = triangles[workID].pos0.z > triangles[workID].pos1.z ? triangles[workID].pos0.z : triangles[workID].pos1.z;
-		aabbList[workID].maxPoint.z = aabbList[workID].maxPoint.z > triangles[workID].pos2.z ? aabbList[workID].maxPoint.z : triangles[workID].pos2.z;
+		aabbMemReadTest.triangleID = workID;
 
-		workID += NROFTHREADSWIDTH;
+		aabbMemReadTest.minPoint.x = triangleInWork.pos0.x < triangleInWork.pos1.x ? triangleInWork.pos0.x : triangleInWork.pos1.x;
+		aabbMemReadTest.minPoint.x = aabbMemReadTest.minPoint.x < triangleInWork.pos2.x ? aabbMemReadTest.minPoint.x : triangleInWork.pos2.x;
+
+		aabbMemReadTest.minPoint.y = triangleInWork.pos0.y < triangleInWork.pos1.y ? triangleInWork.pos0.y : triangleInWork.pos1.y;
+		aabbMemReadTest.minPoint.y = aabbMemReadTest.minPoint.y < triangleInWork.pos2.y ? aabbMemReadTest.minPoint.y : triangleInWork.pos2.y;	
+
+		aabbMemReadTest.minPoint.z = triangleInWork.pos0.z < triangleInWork.pos1.z ? triangleInWork.pos0.z : triangleInWork.pos1.z;
+		aabbMemReadTest.minPoint.z = aabbMemReadTest.minPoint.z < triangleInWork.pos2.z ? aabbMemReadTest.minPoint.z : triangleInWork.pos2.z;	
+
+		aabbMemReadTest.maxPoint.x = triangleInWork.pos0.x > triangleInWork.pos1.x ? triangleInWork.pos0.x : triangleInWork.pos1.x;
+		aabbMemReadTest.maxPoint.x = aabbMemReadTest.maxPoint.x > triangleInWork.pos2.x ? aabbMemReadTest.maxPoint.x : triangleInWork.pos2.x;	
+
+		aabbMemReadTest.maxPoint.y = triangleInWork.pos0.y > triangleInWork.pos1.y ? triangleInWork.pos0.y : triangleInWork.pos1.y;
+		aabbMemReadTest.maxPoint.y = aabbMemReadTest.maxPoint.y > triangleInWork.pos2.y ? aabbMemReadTest.maxPoint.y : triangleInWork.pos2.y;
+
+		aabbMemReadTest.maxPoint.z = triangleInWork.pos0.z > triangleInWork.pos1.z ? triangleInWork.pos0.z : triangleInWork.pos1.z;
+		aabbMemReadTest.maxPoint.z = aabbMemReadTest.maxPoint.z > triangleInWork.pos2.z ? aabbMemReadTest.maxPoint.z : triangleInWork.pos2.z;
+		
+		aabbList[workID] = aabbMemReadTest;
+
+		splittingSwap[workingSplit][workID][0] = workID;
+		splittingSwap[workingSplit][workID][1] = -1;
+
+		workID += NROFTREADSKDTREECREATION;
+		
 	}
 
 
 	//----------------------------------------------------------------------
 	// Creating kd-tree
 
-	int lowIndex = 0;
-	int hightIndex = nrOfTriangles - 1;
+	int lowIndex = 0;						// the current treads low work index
+	int hightIndex = nrOfTriangles - 1;		// the current treads end work index
 
-	int splitAxis = 0;
+	int splitAxis = 0;						// the axis the slit is made in 0 = x, 1 = y, 2 = z
 
-	int depth = 0;
-	float split;
+	int depth = 0;							// the current depth of the tree;
+	float split;							// the value to use as the split value
 
-	while (depth < 7)
+	workID = lowIndex;						// setting the workID for the first pass
+
+	while (true)
 	{
 		//----------------------------------------------------------------------
 		// Chosing splitting plane
@@ -72,34 +99,34 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		int index;
 
 		// Find the largest point and sort it out
-		index = aabbList[splittCandidates[0]].maxPoint[splitAxis] > aabbList[splittCandidates[1]].maxPoint[splitAxis] ? 0 : 1;
-		index = aabbList[splittCandidates[index]].maxPoint[splittCandidates[index]] > aabbList[splittCandidates[2]].maxPoint[splitAxis] ? index : 2;
-		index = aabbList[splittCandidates[index]].maxPoint[splittCandidates[index]] > aabbList[splittCandidates[3]].maxPoint[splitAxis] ? index : 3;
-		index = aabbList[splittCandidates[index]].maxPoint[splittCandidates[index]] > aabbList[splittCandidates[4]].maxPoint[splitAxis] ? index : 4;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[0]][0]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[1]][0]].maxPoint[splitAxis] ? 0 : 1;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][0]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].maxPoint[splitAxis] ? index : 2;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][0]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[3]][0]].maxPoint[splitAxis] ? index : 3;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][0]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[4]][0]].maxPoint[splitAxis] ? index : 4;
 
 		int temp = splittCandidates[4];
 		splittCandidates[4] = splittCandidates[index];
 		splittCandidates[index] = temp;
 
 		// Find the smallest point and sort it out
-		index = aabbList[splittCandidates[0]].minPoint[splitAxis] < aabbList[splittCandidates[1]].minPoint[splitAxis] ? 0 : 1;
-		index = aabbList[splittCandidates[splittCandidates[index]]].minPoint[splitAxis] < aabbList[splittCandidates[2]].minPoint[splitAxis] ? index : 2;
-		index = aabbList[splittCandidates[splittCandidates[index]]].minPoint[splitAxis] < aabbList[splittCandidates[3]].minPoint[splitAxis] ? index : 3;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[0]][0]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[1]][0]].minPoint[splitAxis] ? 0 : 1;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][0]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].minPoint[splitAxis] ? index : 2;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][0]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[3]][0]].minPoint[splitAxis] ? index : 3;
 
 		temp = splittCandidates[0];
 		splittCandidates[0] = splittCandidates[index];
 		splittCandidates[index] = temp;
 
 		// Find the second largest point
-		index = aabbList[splittCandidates[1]].minPoint[splitAxis] > aabbList[splittCandidates[2]].minPoint[splitAxis] ? 1 : 2;
-		index = aabbList[splittCandidates[splittCandidates[index]]].minPoint[splitAxis] > aabbList[splittCandidates[3]].minPoint[splitAxis] ? index : 3;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[1]][0]].minPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].minPoint[splitAxis] ? 1 : 2;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][0]].minPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[3]][0]].minPoint[splitAxis] ? index : 3;
 
 		temp = splittCandidates[3];
 		splittCandidates[3] = splittCandidates[index];
 		splittCandidates[index] = temp;
 
 		// Find the second smallest point
-		index = aabbList[splittCandidates[1]].minPoint[splitAxis] < aabbList[splittCandidates[2]].minPoint[splitAxis] ? 1 : 2;
+		index = aabbList[splittingSwap[workingSplit][splittCandidates[1]][0]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].minPoint[splitAxis] ? 1 : 2;
 
 		temp = splittCandidates[2];
 		splittCandidates[2] = splittCandidates[index];
@@ -107,17 +134,39 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		// Deside which side of the box is the best splitt plane
 
-		float comparison = aabbList[splittCandidates[2]].minPoint[splitAxis] + aabbList[splittCandidates[2]].maxPoint[splitAxis];
+		float comparison = aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].minPoint[splitAxis] + aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].maxPoint[splitAxis];
 		comparison *= 0.5f;
 
-		split = abs(aabbList[splittCandidates[2]].minPoint[splitAxis] - comparison) < abs(aabbList[splittCandidates[2]].maxPoint[splitAxis] - comparison) ? aabbList[splittCandidates[2]].minPoint[splitAxis] : aabbList[splittCandidates[2]].maxPoint[splitAxis];
+		split = abs(aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].minPoint[splitAxis] - comparison) < abs(aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].maxPoint[splitAxis] - comparison) ? aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].minPoint[splitAxis] : aabbList[splittingSwap[workingSplit][splittCandidates[2]][0]].maxPoint[splitAxis];
+
+		//////////////////////////////////////////////////////////////////////
+		//  DONE SELECTION SPLIT
+		//////////////////////////////////////////////////////////////////////
+
+		//////////////////////////////////////////////////////////////////////
+		//	Beräkna splitsen för arbets listan
+		//////////////////////////////////////////////////////////////////////
+		while (workID < hightIndex)
+		{
+			int	aabbSplitID = splittingSwap[workingSplit][workID][0];
+
+			splittingSwap[workingSplit][workID][0] = aabbList[aabbSplitID].maxPoint[splitAxis] <= split ? aabbSplitID : -1;
+			splittingSwap[workingSplit][workID][1] = aabbList[aabbSplitID].minPoint[splitAxis] >= split ? aabbSplitID : -1;
+			
+			if (splittingSwap[workingSplit][workID][0] == -1 && splittingSwap[workingSplit][workID][1] == -1)
+			{
+				splittingSwap[workingSplit][workID][0] = aabbSplitID;
+				splittingSwap[workingSplit][workID][1] = aabbSplitID;
+			}
+			workID += NROFTREADSKDTREECREATION;
+		}
+
+		//////////////////////////////////////////////////////////////////////
+		//	Flytta splitten
+		//////////////////////////////////////////////////////////////////////
 
 
-		
-
-
-
-		depth++;
+		break;
 	}
 
 }

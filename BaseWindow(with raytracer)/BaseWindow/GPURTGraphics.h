@@ -34,6 +34,7 @@ private:
 	void createNodeBuffer(Node* _rootNode);
 	void createLightBuffer();
 	void createKdTree(Mesh *_mesh);
+	void createSwapStructures();
 
 	ComputeWrap *computeWrap;
 
@@ -56,6 +57,7 @@ private:
 	//blululululu
 	ComputeBuffer				*m_NodeBuffer = NULL;
 	ComputeBuffer				*m_Indices = NULL;
+	ComputeBuffer				*m_SwapStructure[2];
 
 	Node						m_rootNode;
 	

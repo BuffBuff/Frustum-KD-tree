@@ -18,6 +18,8 @@ static const float HEIGHT = CORETHREADSHEIGHT * COREMULTIPLIERHEIGHT;
 static const int NROFTHREADSWIDTH = WIDTH / CORETHREADSWIDTH;
 static const int NROFTHREADSHEIGHT = HEIGHT / CORETHREADSHEIGHT;
 
+static const int NROFTREADSKDTREECREATION = 1000;
+
 static const int NUMDIM = 3; // the number of dimensions our application uses
 
 #define LEFT -1

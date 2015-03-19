@@ -11,6 +11,8 @@ m_fps(0.f)
 	g_timer = new D3D11Timer(g_Device, g_DeviceContext);
 
 	m_Hwnd = _hwnd;
+	m_SwapStructure[0] = NULL;
+	m_SwapStructure[1] = NULL;
 
 	computeWrap = new ComputeWrap(g_Device,g_DeviceContext);
 
@@ -34,6 +36,9 @@ m_fps(0.f)
 
 	//creating node buffer
 	createNodeBuffer(&m_rootNode);
+
+	//creating swap buffer
+	createSwapStructures();
 
 	//create lights
 	createLightBuffer();
@@ -186,9 +191,27 @@ void GPURTGraphics::createLightBuffer()
 		lightcb.lightList[i].range = lightRange;
 		lightcb.lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
 	}
+}
 
+void GPURTGraphics::createSwapStructures()
+{
+	m_SwapStructure[0] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int)*2,
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap Structure");
 
-
+	m_SwapStructure[1] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int)*2,
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap Structure");
 
 }
 
@@ -248,9 +271,12 @@ void GPURTGraphics::Update(float _dt)
 	ID3D11UnorderedAccessView* uav1[] = { m_aabbBuffer->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav1, NULL);
 
+	ID3D11UnorderedAccessView* uav2[] = { m_SwapStructure[0]->GetUnorderedAccessView(), m_SwapStructure[1]->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, uav2,NULL);
+
 	g_timer->Start();
 
-	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NULL, NULL);
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	g_timer->Stop();
 }
