@@ -215,6 +215,16 @@ void GPURTGraphics::createSwapStructures()
 		false,
 		"Structured Buffer: Swap Structure");
 
+	m_SwapSize = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int),
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap Structure");
+
+
 }
 
 GPURTGraphics::~GPURTGraphics()

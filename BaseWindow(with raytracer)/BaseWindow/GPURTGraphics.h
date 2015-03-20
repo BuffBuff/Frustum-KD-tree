@@ -59,6 +59,7 @@ private:
 	ComputeBuffer				*m_NodeBuffer = NULL;
 	ComputeBuffer				*m_Indices = NULL;
 	ComputeBuffer				*m_SwapStructure[2];
+	ComputeBuffer				*m_SwapSize = NULL;
 
 	Node						m_rootNode;
 	

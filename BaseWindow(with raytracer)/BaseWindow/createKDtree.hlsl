@@ -13,7 +13,7 @@ RWStructuredBuffer<int> indiceList : register(u2); // to do skapa append list
 
 RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int2 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
 
-
+RWStructuredBuffer<int> splittSize : register(u4); // used for storing the size of every split and then the start values of the split
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
@@ -25,7 +25,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int moveSplit = 1;								// the splitSwap to move to
 	int nrOfSplits = 2;
 	int depth = 0;							// the current depth of the tree;
-
+	int nrOfElements = nrOfTriangles;
 	//----------------------------------------------------------------------
 	/*AABB aabbMemReadTest;
 
@@ -179,8 +179,31 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		workID = lowIndex;
 
+		int forEnd = pow(2, depth); // the amount of splits for the current depth
 
+		splittSize[0] = 0;
 
+		while (workID < forEnd) // Vilken split som ska flyttas = ränka elementen
+		{
+			int j = 0;
+			int indexSplitCount = 0; // conts the amount of AABBs that the thread ID ecuals
+
+			int leftRightSwapCount = (workID % 2) * 2; // om Index värdet ligger på en höger eller vänster gren
+
+			while (j < nrOfElements) // ränka antalet element tillhörande splitten med workID som index
+			{
+				if (splittingSwap[workingSplit][j][leftRightSwapCount] == workID)
+				{
+					indexSplitCount++;
+				}
+				j++;
+			}
+
+			splittSize[workID + 1] = indexSplitCount;
+
+			workID += NROFTREADSKDTREECREATION;
+		}
+		
 
 		break;
 	}
