@@ -20,6 +20,8 @@ m_fps(0.f)
 
 	createKDtree = computeWrap->CreateComputeShader("createKDtree");
 
+	createAABBs = computeWrap->CreateComputeShader("createAABBs");
+
 	ID3D11Texture2D* pBackBuffer;
 	hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 	if (FAILED(hr))
@@ -196,7 +198,7 @@ void GPURTGraphics::createLightBuffer()
 void GPURTGraphics::createSwapStructures()
 {
 	m_SwapStructure[0] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-		sizeof(int)*2,
+		sizeof(int)*4,
 		3000000,
 		false,
 		true,
@@ -205,7 +207,7 @@ void GPURTGraphics::createSwapStructures()
 		"Structured Buffer: Swap Structure");
 
 	m_SwapStructure[1] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-		sizeof(int)*2,
+		sizeof(int)*4,
 		3000000,
 		false,
 		true,
@@ -261,7 +263,6 @@ void GPURTGraphics::Update(float _dt)
 
 	// fill the aabb buffer
 
-	createKDtree->Set();
 
 	ID3D11ShaderResourceView *srv[] = {  m_meshBuffer->GetResourceView()};
 	g_DeviceContext->CSSetShaderResources(1, 1, srv);
@@ -274,8 +275,20 @@ void GPURTGraphics::Update(float _dt)
 	ID3D11UnorderedAccessView* uav2[] = { m_SwapStructure[0]->GetUnorderedAccessView(), m_SwapStructure[1]->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, uav2,NULL);
 
-	g_timer->Start();
 
+	// create the AABB list
+
+	createAABBs->Set();
+
+	//g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	//g_timer->Stop();
+
+	//	create the KD tree 
+	createKDtree->Set();
+
+	g_timer->Start();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	g_timer->Stop();

@@ -40,6 +40,7 @@ private:
 
 	ComputeShader *raytracer = NULL;
 	ComputeShader *createKDtree = NULL;
+	ComputeShader *createAABBs = NULL;
 
 	ComputeBuffer *triangleBuffer = NULL;
 	ComputeBuffer *m_aabbBuffer = NULL; // buffern för aabbs för alla trianglar
