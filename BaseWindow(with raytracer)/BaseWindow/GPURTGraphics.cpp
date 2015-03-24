@@ -101,7 +101,7 @@ void GPURTGraphics::createTriangleTexture()
 	m_mesh.loadObj("Meshi/bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
-	m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
+	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
 
 	createKdTree(&m_mesh);
 
@@ -222,7 +222,7 @@ void GPURTGraphics::createSwapStructures()
 		true,
 		NULL,
 		false,
-		"Structured Buffer: Swap Structure");
+		"Structured Buffer: Swap size Structure");
 
 
 }
@@ -284,6 +284,9 @@ void GPURTGraphics::Update(float _dt)
 
 	ID3D11UnorderedAccessView* uav2[] = { m_SwapStructure[0]->GetUnorderedAccessView(), m_SwapStructure[1]->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, uav2,NULL);
+
+	ID3D11UnorderedAccessView* uav3[] = { m_SwapSize->GetUnorderedAccessView()};
+	g_DeviceContext->CSSetUnorderedAccessViews(5, 1, uav3, NULL);
 
 
 	// create the AABB list

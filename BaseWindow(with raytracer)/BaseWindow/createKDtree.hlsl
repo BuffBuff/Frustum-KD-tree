@@ -13,63 +13,22 @@ RWStructuredBuffer<int> indiceList : register(u2); // to do skapa append list
 
 RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int2 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
 
-RWStructuredBuffer<int> splittSize : register(u4); // used for storing the size of every split and then the start values of the split
+RWStructuredBuffer<int> splittSize : register(u5); // used for storing the size of every split and then the start values of the split
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
 {
 	// index of the thread in 1D buffers
-	int index = threadID.x + threadID.y * HEIGHT;	// the treads index
-	int workID = index;								// the triangle/AABB that the tread currently handles
+	int threadIndex = threadID.x + threadID.y * CREATIONHEIGHT;	// the treads index
+	int workID = threadIndex;								// the triangle/AABB that the tread currently handles
 	int workingSplit = 0;							// the splitSwap currently woking on 0 - 1
 	int moveSplit = 1;								// the splitSwap to move to
 	int nrOfSplits = 2;
 	int depth = 0;							// the current depth of the tree;
 	int nrOfElements = nrOfTriangles;
-	//----------------------------------------------------------------------
-	/*AABB aabbMemReadTest;
 
-	aabbMemReadTest.minPoint.w = 0;
-	aabbMemReadTest.minPoint.w = 0;
-	aabbMemReadTest.maxPoint.w = 0;
-	aabbMemReadTest.maxPoint.w = 0;
+	splittSize[threadIndex] = 0;
 
-	TriangleMat triangleInWork;
-
-	// Creating the aabbs for the triangles
-	while (workID < nrOfTriangles)
-	{
-		triangleInWork = triangles[workID];
-
-		aabbMemReadTest.triangleID = workID;
-
-		aabbMemReadTest.minPoint.x = triangleInWork.pos0.x < triangleInWork.pos1.x ? triangleInWork.pos0.x : triangleInWork.pos1.x;
-		aabbMemReadTest.minPoint.x = aabbMemReadTest.minPoint.x < triangleInWork.pos2.x ? aabbMemReadTest.minPoint.x : triangleInWork.pos2.x;
-
-		aabbMemReadTest.minPoint.y = triangleInWork.pos0.y < triangleInWork.pos1.y ? triangleInWork.pos0.y : triangleInWork.pos1.y;
-		aabbMemReadTest.minPoint.y = aabbMemReadTest.minPoint.y < triangleInWork.pos2.y ? aabbMemReadTest.minPoint.y : triangleInWork.pos2.y;	
-
-		aabbMemReadTest.minPoint.z = triangleInWork.pos0.z < triangleInWork.pos1.z ? triangleInWork.pos0.z : triangleInWork.pos1.z;
-		aabbMemReadTest.minPoint.z = aabbMemReadTest.minPoint.z < triangleInWork.pos2.z ? aabbMemReadTest.minPoint.z : triangleInWork.pos2.z;	
-
-		aabbMemReadTest.maxPoint.x = triangleInWork.pos0.x > triangleInWork.pos1.x ? triangleInWork.pos0.x : triangleInWork.pos1.x;
-		aabbMemReadTest.maxPoint.x = aabbMemReadTest.maxPoint.x > triangleInWork.pos2.x ? aabbMemReadTest.maxPoint.x : triangleInWork.pos2.x;	
-
-		aabbMemReadTest.maxPoint.y = triangleInWork.pos0.y > triangleInWork.pos1.y ? triangleInWork.pos0.y : triangleInWork.pos1.y;
-		aabbMemReadTest.maxPoint.y = aabbMemReadTest.maxPoint.y > triangleInWork.pos2.y ? aabbMemReadTest.maxPoint.y : triangleInWork.pos2.y;
-
-		aabbMemReadTest.maxPoint.z = triangleInWork.pos0.z > triangleInWork.pos1.z ? triangleInWork.pos0.z : triangleInWork.pos1.z;
-		aabbMemReadTest.maxPoint.z = aabbMemReadTest.maxPoint.z > triangleInWork.pos2.z ? aabbMemReadTest.maxPoint.z : triangleInWork.pos2.z;
-		
-		aabbList[workID] = aabbMemReadTest;
-
-		splittingSwap[workingSplit][workID][0] = workID;
-		splittingSwap[workingSplit][workID][1] = -1;
-
-		workID += NROFTREADSKDTREECREATION;
-		
-	}*/
-	//----------------------------------------------------------------------
 	// Creating kd-tree
 
 	int lowIndex = 0;						// the current treads low work index
@@ -79,7 +38,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	float split;							// the value to use as the split value
 
-	workID = lowIndex;						// setting the workID for the first pass
+	workID = threadIndex;						// setting the workID for the first pass
 
 	while (true)
 	{
@@ -144,6 +103,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		//////////////////////////////////////////////////////////////////////
 		//	Beräkna splitsen för arbets listan
 		//////////////////////////////////////////////////////////////////////
+
 		while (workID < hightIndex)
 		{
 			int	oldSplitID = splittingSwap[workingSplit][workID][0];
@@ -153,55 +113,75 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			splittingSwap[workingSplit][workID][0] = -1;
 			splittingSwap[workingSplit][workID][2] = -1;
 
+
 			if (aabbList[aabbSplitID].maxPoint[splitAxis] <= split)
 			{
 				splittingSwap[workingSplit][workID][0] = oldSplitID;
 				splittingSwap[workingSplit][workID][1] = aabbSplitID;
+				//splittSize[oldSplitID + 1] += 1;
+				InterlockedAdd(splittSize[oldSplitID + 1], 1);
 			}
-
-			if (aabbList[aabbSplitID].minPoint[splitAxis] >= split)
+			else if (aabbList[aabbSplitID].minPoint[splitAxis] >= split)
 			{
 				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
 				splittingSwap[workingSplit][workID][3] = aabbSplitID;
+				//splittSize[oldSplitID + 2] += 1;
+				InterlockedAdd(splittSize[oldSplitID + 2], 1);
+
+
 			}
-			
-			if (splittingSwap[workingSplit][workID][0] == -1 && splittingSwap[workingSplit][workID][2] == -1)
+			//if (splittingSwap[workingSplit][workID][0] == -1 && splittingSwap[workingSplit][workID][2] == -1)
+			else
 			{
-				splittingSwap[workingSplit][workID][0] = aabbSplitID;
+				splittingSwap[workingSplit][workID][0] = oldSplitID;
 				splittingSwap[workingSplit][workID][1] = aabbSplitID;
+				//splittSize[oldSplitID + 1] += 1;
+				InterlockedAdd(splittSize[oldSplitID + 1], 1);
+
+
+
+				splittingSwap[workingSplit][workID][2] = oldSplitID+1;
+				splittingSwap[workingSplit][workID][3] = aabbSplitID;
+				//splittSize[oldSplitID + 2] += 1;
+				InterlockedAdd(splittSize[oldSplitID + 2], 1);
+
+
 			}
-			workID += NROFTREADSKDTREECREATION;
+			workID += NROFTHREADSCREATIONDISPATCHES;
 		}
 
 		//////////////////////////////////////////////////////////////////////
 		//	Flytta splitten
 		//////////////////////////////////////////////////////////////////////
 
-		workID = lowIndex;
+		workID = threadIndex;
 
 		int forEnd = pow(2, depth); // the amount of splits for the current depth
 
-		splittSize[0] = 0;
 
 		while (workID < forEnd) // Vilken split som ska flyttas = ränka elementen
 		{
-			int j = 0;
-			int indexSplitCount = 0; // conts the amount of AABBs that the thread ID ecuals
+		//	int j = 0;
+		//	//int indexSplitCount = 0; // conts the amount of AABBs that the thread ID ecuals
 
-			int leftRightSwapCount = (workID % 2) * 2; // om Index värdet ligger på en höger eller vänster gren
+		//	int leftRightSwapCount = (workID % 2) * 2; // om Index värdet ligger på en höger eller vänster gren
 
-			while (j < nrOfElements) // ränka antalet element tillhörande splitten med workID som index
-			{
-				if (splittingSwap[workingSplit][j][leftRightSwapCount] == workID)
-				{
-					indexSplitCount++;
-				}
-				j++;
-			}
+		//	splittSize[workID + 1] = 0;
 
-			splittSize[workID + 1] = indexSplitCount;
+		//	while (j < nrOfElements) // ränka antalet element tillhörande splitten med workID som index
+		//	{
+		//		if (splittingSwap[workingSplit][j][leftRightSwapCount] == workID)
+		//		{
+		//			splittSize[workID + 1] += 1;
 
-			workID += NROFTREADSKDTREECREATION;
+		//			//indexSplitCount++;
+		//		}
+		//		j++;
+		//	}
+
+		//	//splittSize[workID + 1] = indexSplitCount;
+
+		//	workID += NROFTREADSKDTREECREATION;
 		}
 		
 

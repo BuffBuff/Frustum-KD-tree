@@ -20,7 +20,7 @@ RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int2 holds x = 
 void main(uint3 threadID : SV_DispatchThreadID)
 {
 	// index of the thread in 1D buffers
-	int index = threadID.x + threadID.y * HEIGHT;	// the treads index
+	int index = threadID.x + threadID.y * CREATIONHEIGHT;	// the treads index
 	int workID = index;								// the triangle/AABB that the tread currently handles
 	int workingSplit = 0;							// the splitSwap currently woking on 0 - 1
 	int moveSplit = 1;								// the splitSwap to move to
@@ -67,7 +67,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		splittingSwap[workingSplit][workID][2] = -1;
 		splittingSwap[workingSplit][workID][3] = -1;
 
-		workID += NROFTREADSKDTREECREATION;
+		workID += NROFTHREADSCREATIONDISPATCHES;
 
 	}
 
