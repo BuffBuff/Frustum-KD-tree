@@ -34,75 +34,70 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int lowIndex = 0;						// the current treads low work index
 	int hightIndex = nrOfTriangles - 1;		// the current treads end work index
 
-	int splitAxis = 0;						// the axis the slit is made in 0 = x, 1 = y, 2 = z
-
-	float split;							// the value to use as the split value
+	//float split;							// the value to use as the split value
 
 	workID = threadIndex;						// setting the workID for the first pass
+
+
+	///////////////////////////////////////////////////////////
+	//	CALCULATE AABB FOR ROOT NODE  -- detta är just nu en bottle neck som vi behöver optimera senare
+	///////////////////////////////////////////////////////////
+
+	if (threadIndex < 6)
+	{
+		float minValue = MAXDIST;
+		float maxValue = -MAXDIST;
+		int listPart = threadIndex % 2;
+		int splitPart = threadIndex % 3;
+		for (int i = nrOfTriangles*(listPart * 0.5); i < nrOfTriangles *( 0.5 * (listPart + 1)); i++)
+		{
+			minValue = aabbList[i].minPoint[splitPart] < minValue ? aabbList[i].minPoint[splitPart] : minValue;
+			maxValue = aabbList[i].maxPoint[splitPart] > maxValue ? aabbList[i].maxPoint[splitPart] : maxValue;
+		}
+
+		KDtree[listPart].aabb.minPoint[splitPart] = minValue;
+		KDtree[listPart].aabb.maxPoint[splitPart] = maxValue;
+
+	}
+
+	if (threadIndex == 0)
+	{
+		[unroll]for (int i = 0; i < 3; i++)
+		{
+			KDtree[0].aabb.minPoint[i] = KDtree[0].aabb.minPoint[i] < KDtree[1].aabb.minPoint[i] ? KDtree[0].aabb.minPoint[i] : KDtree[1].aabb.minPoint[i];
+			KDtree[0].aabb.maxPoint[i] = KDtree[0].aabb.maxPoint[i] > KDtree[1].aabb.maxPoint[i] ? KDtree[0].aabb.minPoint[i] : KDtree[1].aabb.minPoint[i];
+		}
+
+
+		// left
+		KDtree[1].aabb.minPoint = KDtree[0].aabb.minPoint;
+		KDtree[1].aabb.maxPoint = KDtree[0].aabb.maxPoint;
+
+		KDtree[1].aabb.maxPoint.x -= (KDtree[1].aabb.maxPoint.x - KDtree[1].aabb.minPoint.x) * 0.5f;
+
+		// right
+		KDtree[2].aabb.minPoint = KDtree[0].aabb.minPoint;
+		KDtree[2].aabb.maxPoint = KDtree[0].aabb.maxPoint;
+
+		KDtree[2].aabb.minPoint.x += (KDtree[2].aabb.maxPoint.x - KDtree[2].aabb.minPoint.x) * 0.5f;
+
+		KDtree[0].split.x = 0;
+		KDtree[0].split.y = KDtree[2].aabb.minPoint.x;
+
+	}
 
 	while (true)
 	{
 		
 		//////////////////////////////////////////////////////////////////////
-		//	SPLIT SELECTION
+		//	SPLIT SELECTION		--	calculation not neded right now
 		//////////////////////////////////////////////////////////////////////
 
-		int splittCandidates[5];
-		splittCandidates[0] = lowIndex;
-		splittCandidates[1] = lowIndex + (hightIndex - lowIndex) * 0.25f;
-		splittCandidates[2] = lowIndex + (hightIndex - lowIndex) * 0.5f;
-		splittCandidates[3] = lowIndex + (hightIndex - lowIndex) * 0.75f;
-		splittCandidates[4] = hightIndex;
-
-		float minPoint;
-		float maxPoint;
-
-		int index;
-
-		// Find the largest point and sort it out
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[0]][1]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[1]][1]].maxPoint[splitAxis] ? 0 : 1;
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].maxPoint[splitAxis] ? index : 2;
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[3]][1]].maxPoint[splitAxis] ? index : 3;
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[4]][1]].maxPoint[splitAxis] ? index : 4;
-
-		int temp = splittCandidates[4];
-		splittCandidates[4] = splittCandidates[index];
-		splittCandidates[index] = temp;
-
-		// Find the smallest point and sort it out
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[0]][1]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[1]][1]].minPoint[splitAxis] ? 0 : 1;
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] ? index : 2;
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[3]][1]].minPoint[splitAxis] ? index : 3;
-
-		temp = splittCandidates[0];
-		splittCandidates[0] = splittCandidates[index];
-		splittCandidates[index] = temp;
-
-		// Find the second largest point
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[1]][1]].minPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] ? 1 : 2;
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].minPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[3]][1]].minPoint[splitAxis] ? index : 3;
-
-		temp = splittCandidates[3];
-		splittCandidates[3] = splittCandidates[index];
-		splittCandidates[index] = temp;
-
-		// Find the second smallest point
-		index = aabbList[splittingSwap[workingSplit][splittCandidates[1]][1]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] ? 1 : 2;
-
-		temp = splittCandidates[2];
-		splittCandidates[2] = splittCandidates[index];
-		splittCandidates[index] = temp;
-
-		// Deside which side of the box is the best splitt plane
-
-		float comparison = aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] + aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].maxPoint[splitAxis];
-		comparison *= 0.5f;
-
-		split = abs(aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] - comparison) < abs(aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].maxPoint[splitAxis] - comparison) ? aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] : aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].maxPoint[splitAxis];
 
 		//////////////////////////////////////////////////////////////////////
 		//	Beräkna splitsen för arbets listan
 		//////////////////////////////////////////////////////////////////////
+		int splitStart = pow(2,depth); // the start index for the kdtree
 
 		while (workID < hightIndex)
 		{
@@ -114,14 +109,14 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			splittingSwap[workingSplit][workID][2] = -1;
 
 
-			if (aabbList[aabbSplitID].maxPoint[splitAxis] <= split)
+			if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] <= KDtree[splitStart + oldSplitID].split.y)
 			{
 				splittingSwap[workingSplit][workID][0] = oldSplitID;
 				splittingSwap[workingSplit][workID][1] = aabbSplitID;
 				//splittSize[oldSplitID + 1] += 1;
 				InterlockedAdd(splittSize[oldSplitID + 1], 1);
 			}
-			else if (aabbList[aabbSplitID].minPoint[splitAxis] >= split)
+			else if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] >= KDtree[splitStart + oldSplitID].split.y)
 			{
 				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
 				splittingSwap[workingSplit][workID][3] = aabbSplitID;
@@ -189,3 +184,69 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	}
 
 }
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////
+//	OLD SPLIT SELECTION
+///////////////////////////////////////////////////////
+
+//int splittCandidates[5];
+//splittCandidates[0] = lowIndex;
+//splittCandidates[1] = lowIndex + (hightIndex - lowIndex) * 0.25f;
+//splittCandidates[2] = lowIndex + (hightIndex - lowIndex) * 0.5f;
+//splittCandidates[3] = lowIndex + (hightIndex - lowIndex) * 0.75f;
+//splittCandidates[4] = hightIndex;
+//
+//float minPoint;
+//float maxPoint;
+//
+//int index;
+//
+//// Find the largest point and sort it out
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[0]][1]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[1]][1]].maxPoint[splitAxis] ? 0 : 1;
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].maxPoint[splitAxis] ? index : 2;
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[3]][1]].maxPoint[splitAxis] ? index : 3;
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].maxPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[4]][1]].maxPoint[splitAxis] ? index : 4;
+//
+//int temp = splittCandidates[4];
+//splittCandidates[4] = splittCandidates[index];
+//splittCandidates[index] = temp;
+//
+//// Find the smallest point and sort it out
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[0]][1]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[1]][1]].minPoint[splitAxis] ? 0 : 1;
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] ? index : 2;
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[3]][1]].minPoint[splitAxis] ? index : 3;
+//
+//temp = splittCandidates[0];
+//splittCandidates[0] = splittCandidates[index];
+//splittCandidates[index] = temp;
+//
+//// Find the second largest point
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[1]][1]].minPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] ? 1 : 2;
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[index]][1]].minPoint[splitAxis] > aabbList[splittingSwap[workingSplit][splittCandidates[3]][1]].minPoint[splitAxis] ? index : 3;
+//
+//temp = splittCandidates[3];
+//splittCandidates[3] = splittCandidates[index];
+//splittCandidates[index] = temp;
+//
+//// Find the second smallest point
+//index = aabbList[splittingSwap[workingSplit][splittCandidates[1]][1]].minPoint[splitAxis] < aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] ? 1 : 2;
+//
+//temp = splittCandidates[2];
+//splittCandidates[2] = splittCandidates[index];
+//splittCandidates[index] = temp;
+//
+//// Deside which side of the box is the best splitt plane
+//
+//float comparison = aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] + aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].maxPoint[splitAxis];
+//comparison *= 0.5f;
+//
+//split = abs(aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] - comparison) < abs(aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].maxPoint[splitAxis] - comparison) ? aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].minPoint[splitAxis] : aabbList[splittingSwap[workingSplit][splittCandidates[2]][1]].maxPoint[splitAxis];
