@@ -54,13 +54,16 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int swapMask = 0;
 	
 	int depthIndex = 1;
-
+	int lol = 0;
 	//new stackless traversing 
-	while (levelStart >= 1)
+	while (true)
 	{
+		break;
 		int node = levelStart + levelIndex - 1 + swapMask - 2 * (levelIndex & swapMask);	//bitwise AND
 
-		if (KDtree[node].index == -1)
+		lol = KDtree[node].index;
+
+		if (KDtree[node].index != -1)
 		{
 			//Leaf node found, DO SHIT!
 			for (int i = KDtree[node].index; i < KDtree[node].nrOfTriangles + KDtree[node].index; i++)
@@ -75,6 +78,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					hd.ID = triangles[Indices[i]].ID;
 					hd.t = hit.x;
 					hd.bufferpos = threadID.xy;
+					break;
 				}
 			}
 		}
@@ -105,7 +109,6 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					levelIndex = levelIndex + 1;
 					swapMask = swapMask ^ 1;		//bitwise XOR
 				}
-				break;
 			}
 		}
 
@@ -126,6 +129,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		levelStart = levelStart >> up;	//bitwise shift right
 		levelIndex = levelIndex >> up;	//bitwise shift right
 		swapMask = swapMask >> up;		//bitwise shift right
+		
 	}
 
 
@@ -254,8 +258,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		outColor += color;
 	}
 	*/
-	outColor = float4( hd.color);
-
+	//outColor = float4( hd.color);
+	outColor = float4(1,0,0,1) * lol;
 	//debug code
 	if (lightSpheres > 0)
 	{

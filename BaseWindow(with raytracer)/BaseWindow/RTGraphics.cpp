@@ -304,7 +304,7 @@ void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, st
 			nextNode.push_back(node->left);		// add the left node
 			working++;
 
-			nextNode.push_back(node->right);	// add the left node
+			nextNode.push_back(node->right);	// add the right node
 			working++;
 
 			
