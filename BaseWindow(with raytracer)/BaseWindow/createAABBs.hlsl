@@ -13,6 +13,7 @@ RWStructuredBuffer<int> indiceList : register(u2); // to do skapa append list
 
 RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int2 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
 
+RWStructuredBuffer<int2> splittSize : register(u5); // used for storing the size of every split and then the start values of the split
 
 
 
@@ -20,8 +21,8 @@ RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int2 holds x = 
 void main(uint3 threadID : SV_DispatchThreadID)
 {
 	// index of the thread in 1D buffers
-	int index = threadID.x + threadID.y * CREATIONHEIGHT;	// the treads index
-	int workID = index;								// the triangle/AABB that the tread currently handles
+	int threadIndex = threadID.x + threadID.y * CREATIONHEIGHT;	// the treads index
+	int workID = threadIndex;								// the triangle/AABB that the tread currently handles
 	int workingSplit = 0;							// the splitSwap currently woking on 0 - 1
 	int moveSplit = 1;								// the splitSwap to move to
 	//----------------------------------------------------------------------
@@ -34,6 +35,30 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	aabbMemReadTest.maxPoint.w = 0;
 
 	TriangleMat triangleInWork;
+
+
+
+	while (workID < 3000000)
+	{
+		splittingSwap[0][workID][0] = -1;
+		splittingSwap[0][workID][1] = -1;
+		splittingSwap[0][workID][2] = -1;
+		splittingSwap[0][workID][3] = -1;
+
+		splittingSwap[1][workID][0] = -1;
+		splittingSwap[1][workID][1] = -1;
+		splittingSwap[1][workID][2] = -1;
+		splittingSwap[1][workID][3] = -1;
+
+		splittSize[workID][0] = 0;
+		splittSize[workID][1] = 0;
+
+		workID += NROFTHREADSCREATIONDISPATCHES;
+
+	}
+
+	workID = threadIndex;
+
 
 	// Creating the aabbs for the triangles
 	while (workID < nrOfTriangles)
@@ -65,10 +90,12 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		splittingSwap[workingSplit][workID][0] = 0;
 		splittingSwap[workingSplit][workID][1] = workID;
 		splittingSwap[workingSplit][workID][2] = -1;
-		splittingSwap[workingSplit][workID][3] = -1;
+		splittingSwap[workingSplit][workID][3] = 0;
 
 		workID += NROFTHREADSCREATIONDISPATCHES;
 
 	}
+
+	
 
 }

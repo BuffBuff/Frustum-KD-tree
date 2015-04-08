@@ -2,7 +2,7 @@
 
 
 
-StructuredBuffer<TriangleMat> triangles : register(t1);
+//StructuredBuffer<TriangleMat> triangles : register(t1);
 
 RWStructuredBuffer<AABB> aabbList : register(u0);
 
@@ -13,7 +13,16 @@ RWStructuredBuffer<int> indiceList : register(u2); // to do skapa append list
 
 RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int2 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
 
-RWStructuredBuffer<int> splittSize : register(u5); // used for storing the size of every split and then the start values of the split
+RWStructuredBuffer<int2> splittSize : register(u5); // used for storing the size of every split and then the start values of the split 0 = size of previus split, 1 = offset in current split
+
+
+
+//void moveData(int moveSplit, int offset,int workingSplit,int workID)
+//{
+//	splittingSwap[moveSplit][offset] = splittingSwap[workingSplit][workID];
+//
+//}
+
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
@@ -27,7 +36,6 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int depth = 0;							// the current depth of the tree;
 	int nrOfElements = nrOfTriangles;
 
-	splittSize[threadIndex] = 0;
 
 	// Creating kd-tree
 
@@ -37,6 +45,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	//float split;							// the value to use as the split value
 
 	workID = threadIndex;						// setting the workID for the first pass
+
 
 
 	///////////////////////////////////////////////////////////
@@ -86,7 +95,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	}
 
-	while (true)
+	while (depth < 10)
 	{
 		
 		//////////////////////////////////////////////////////////////////////
@@ -97,7 +106,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		//////////////////////////////////////////////////////////////////////
 		//	Beräkna splitsen för arbets listan
 		//////////////////////////////////////////////////////////////////////
-		int splitStart = pow(2,depth); // the start index for the kdtree
+		int splitStart = pow(2,depth); // the start index for the kdtree at the current depth
+		int nextSplitAmount = splitStart * 2; // the amount of splits for the next lvl
 
 		while (workID < hightIndex)
 		{
@@ -106,23 +116,25 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			int	aabbSplitID = splittingSwap[workingSplit][workID][1];
 
 			splittingSwap[workingSplit][workID][0] = -1;
+			splittingSwap[workingSplit][workID][1] = -1;
 			splittingSwap[workingSplit][workID][2] = -1;
+			splittingSwap[workingSplit][workID][3] = -1;
 
 
 			if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] <= KDtree[splitStart + oldSplitID].split.y)
 			{
 				splittingSwap[workingSplit][workID][0] = oldSplitID;
 				splittingSwap[workingSplit][workID][1] = aabbSplitID;
-				//splittSize[oldSplitID + 1] += 1;
-				InterlockedAdd(splittSize[oldSplitID + 1], 1);
+
+				InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
+
 			}
 			else if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] >= KDtree[splitStart + oldSplitID].split.y)
 			{
 				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
 				splittingSwap[workingSplit][workID][3] = aabbSplitID;
-				//splittSize[oldSplitID + 2] += 1;
-				InterlockedAdd(splittSize[oldSplitID + 2], 1);
 
+				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
 
 			}
 			//if (splittingSwap[workingSplit][workID][0] == -1 && splittingSwap[workingSplit][workID][2] == -1)
@@ -130,20 +142,45 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			{
 				splittingSwap[workingSplit][workID][0] = oldSplitID;
 				splittingSwap[workingSplit][workID][1] = aabbSplitID;
-				//splittSize[oldSplitID + 1] += 1;
-				InterlockedAdd(splittSize[oldSplitID + 1], 1);
+
+				InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
 
 
 
 				splittingSwap[workingSplit][workID][2] = oldSplitID+1;
 				splittingSwap[workingSplit][workID][3] = aabbSplitID;
-				//splittSize[oldSplitID + 2] += 1;
-				InterlockedAdd(splittSize[oldSplitID + 2], 1);
-
+				
+				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
 
 			}
+
 			workID += NROFTHREADSCREATIONDISPATCHES;
 		}
+
+		//////////////////////////////////////////////////////////////////////
+		//	Beräkna start index för varje split
+		//////////////////////////////////////////////////////////////////////
+
+
+		DeviceMemoryBarrierWithGroupSync();
+
+		int sum = 0;
+		workID = 1;
+		if (threadIndex == 0)
+		{
+			while (splittSize[workID][0] != 0)
+			{
+				sum += splittSize[workID][0];
+				//splittSize[workID][1] = splittSize[workID][0];
+				splittSize[workID][0] = sum;
+				workID++;
+			}
+		}
+
+		DeviceMemoryBarrierWithGroupSync();
+
+
+
 
 		//////////////////////////////////////////////////////////////////////
 		//	Flytta splitten
@@ -151,36 +188,164 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		workID = threadIndex;
 
-		int forEnd = pow(2, depth); // the amount of splits for the current depth
+		// splittingSwap[2] // swapping structure to move and create the list of indices // the int4 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
+		// splitStart // the amount of splits for the current depth
+		// moveSplit // the split to move the list to
+		// workingSplit // the split that the elements are to be split from
+		// splittSize // contains the start intex to wright to for the splits and how many has been written
 
 
-		while (workID < forEnd) // Vilken split som ska flyttas = ränka elementen
-		{
-		//	int j = 0;
-		//	//int indexSplitCount = 0; // conts the amount of AABBs that the thread ID ecuals
+		//if (workID < nextSplitAmount)
+		//{
 
-		//	int leftRightSwapCount = (workID % 2) * 2; // om Index värdet ligger på en höger eller vänster gren
+		//	int counter = 0;
 
-		//	splittSize[workID + 1] = 0;
-
-		//	while (j < nrOfElements) // ränka antalet element tillhörande splitten med workID som index
+		//	while (splittingSwap[workingSplit][counter][0] != -1 || splittingSwap[workingSplit][counter][2] != -1)
 		//	{
-		//		if (splittingSwap[workingSplit][j][leftRightSwapCount] == workID)
+		//		int leftRight = workID % 2;
+		//
+		//		if (splittingSwap[workingSplit][counter][leftRight * 2] == workID)
 		//		{
-		//			splittSize[workID + 1] += 1;
+		//			//int splitOffset = splittSize[workID][0]; // the offset to the start of the split the value belongs in
+		//			//int moveID = splittSize[workID][1]; // the id offset to move the data to
 
-		//			//indexSplitCount++;
+		//			splittingSwap[moveSplit][splittSize[workID][1]][0] = splittingSwap[workingSplit][counter][leftRight * 2];
+		//			splittingSwap[moveSplit][splittSize[workID][1]][1] = splittingSwap[workingSplit][counter][(leftRight * 2) + 1];
+		//			splittingSwap[moveSplit][splittSize[workID][1]][2] = -1;
+		//			splittingSwap[moveSplit][splittSize[workID][1]][3] = -1;
+
+		//			InterlockedAdd(splittSize[workID][1],1);
 		//		}
-		//		j++;
+
+		//		counter++;
 		//	}
 
-		//	//splittSize[workID + 1] = indexSplitCount;
+		//	workID += NROFTHREADSCREATIONDISPATCHES;
 
-		//	workID += NROFTREADSKDTREECREATION;
-		}
+		//}
+
+
+		/////////////////////////// OLD
+
+		while (splittingSwap[workingSplit][workID][0] != -1 || splittingSwap[workingSplit][workID][2] != -1)
+			{
+				int moveID; // the id to move the data to
+				int moveToSplit; // the splitID to move the data to 
+				//int splitOffset; // the offset to the start of the split the value belongs in
+
+				if (splittingSwap[workingSplit][workID][0] != -1)
+				{
+
+					moveToSplit = splittingSwap[workingSplit][workID][0];
+					//splitOffset = splittSize[moveToSplit];
+
+					InterlockedAdd(splittSize[moveToSplit][0], 1, moveID);// moveID får orginal värdet av splittSize? sen adderas alla trådarna
+
+					splittingSwap[moveSplit][moveID][0] = splittingSwap[workingSplit][workID][0];
+					splittingSwap[moveSplit][moveID][1] = splittingSwap[workingSplit][workID][1];
+					splittingSwap[moveSplit][moveID][2] = -1;
+					splittingSwap[moveSplit][moveID][3] = -1;
+				}
+				if (splittingSwap[workingSplit][workID][2] != -1)
+				{
+					moveToSplit = splittingSwap[workingSplit][workID][2];
+					//splitOffset = splittSize[moveToSplit];
+
+					InterlockedAdd(splittSize[moveToSplit][0], 1, moveID); // moveID får orginal värdet av splittSize? sen adderas alla trådarna
+
+					splittingSwap[moveSplit][moveID][0] = splittingSwap[workingSplit][workID][2];
+					splittingSwap[moveSplit][moveID][1] = splittingSwap[workingSplit][workID][3];
+					splittingSwap[moveSplit][moveID][2] = -1;
+					splittingSwap[moveSplit][moveID][3] = -1;
+				}
+
+
+				workID += NROFTHREADSCREATIONDISPATCHES;
+			}
+
+		/////////////////////////// END OLD
+
+
+			//////////////////////////////////////////////////////////////////////
+			//	Gör redo för nästa split level
+			//////////////////////////////////////////////////////////////////////
+
+		DeviceMemoryBarrierWithGroupSync();
+
+
+			// Splitta boxarna i kd-trädet -- done?
+			// Flytta vilken split som är working och move - done
+			// cleara move splitten om splitsen är bytta - tror inte denna behövs
+			// clear splitSize - done
 		
+			workID = threadIndex;
 
-		break;
+			while (workID < splitStart)
+			{
+				// splitStart // start index for the current depth and the amounts of splits in the current depth
+				int nextDepth = splitStart * 2;
+
+				if (splittSize[workID][1] > 5) // splitta boxen och skriv till nästa djup
+				{
+
+					// 0 = current depth = splitstart + workID
+					// 1 = left child = splitstart + (workID * 2)
+					// 2 = right child = splitstart + ((workID * 2) + 1)
+
+					// chose the best split axis
+					int splitAxis; // 0 = x, 1 = y, 2 = z
+					float splitLength[3];
+					splitLength[0] = KDtree[splitStart + workID].aabb.maxPoint.x - KDtree[splitStart + workID].aabb.minPoint.x;
+					splitLength[1] = KDtree[splitStart + workID].aabb.maxPoint.y - KDtree[splitStart + workID].aabb.minPoint.y;
+					splitLength[2] = KDtree[splitStart + workID].aabb.maxPoint.z - KDtree[splitStart + workID].aabb.minPoint.z;
+
+					splitAxis = splitLength[0] < splitLength[1] ? splitLength[0] : splitLength[1];
+					splitAxis = splitAxis	 < splitLength[2] ? splitAxis : splitLength[2];
+
+					// left
+					KDtree[splitStart + (workID * 2)].aabb.minPoint = KDtree[splitStart + workID].aabb.minPoint;
+					KDtree[splitStart + (workID * 2)].aabb.maxPoint = KDtree[splitStart + workID].aabb.maxPoint;
+
+					KDtree[splitStart + (workID * 2)].aabb.maxPoint[splitAxis] -= (KDtree[splitStart + (workID * 2)].aabb.maxPoint[splitAxis] - KDtree[splitStart + (workID * 2)].aabb.minPoint[splitAxis]) * 0.5f;
+
+					// right
+					KDtree[splitStart + ((workID * 2) + 1)].aabb.minPoint = KDtree[splitStart + workID].aabb.minPoint;
+					KDtree[splitStart + ((workID * 2) + 1)].aabb.maxPoint = KDtree[splitStart + workID].aabb.maxPoint;
+
+					KDtree[splitStart + ((workID * 2) + 1)].aabb.minPoint[splitAxis] += (KDtree[splitStart + ((workID * 2) + 1)].aabb.maxPoint[splitAxis] - KDtree[splitStart + ((workID * 2) + 1)].aabb.minPoint[splitAxis]) * 0.5f;
+
+					
+				}
+				else // leafNode
+				{
+
+				}
+
+				workID += NROFTHREADSCREATIONDISPATCHES;
+
+			}
+
+			workID = threadIndex;
+
+			DeviceMemoryBarrierWithGroupSync();
+
+		
+			while (workID < 3000000)
+			{
+				splittSize[workID][0] = 0;
+				splittSize[workID][1] = 0;
+
+				workID += NROFTHREADSCREATIONDISPATCHES;
+
+			}
+			
+
+			int temp = workingSplit;
+			workingSplit = moveSplit;
+			moveSplit = temp;
+
+			depth++;
+		//break;
 	}
 
 }
