@@ -293,7 +293,7 @@ void GPURTGraphics::Render(float _dt)
 
 	//present scene
 	if (FAILED(g_SwapChain->Present(0, 0)))
-		MessageBox(NULL,"Failed to present the swapchain","RT Render Error",S_OK);
+		MessageBox(NULL,"Failed to present the swapchain","GPURT Render Error",S_OK);
 
 	//Title text and FPS counter
 	char title[256];

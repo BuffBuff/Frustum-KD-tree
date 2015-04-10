@@ -54,11 +54,31 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int swapMask = 0;
 	
 	int depthIndex = 1;
-	int lol = 0;
-	//new stackless traversing 
+	int lol = 1;
+	
+	int node = 0;
+	//test
 	while (true)
 	{
-		break;
+
+		if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
+		{
+			outColor = float4(1,0,1,1);
+			break;
+		}
+		else
+		{
+			outColor = float4(1, 1, 0, 1);
+			break;
+		}
+		
+	}
+
+	//new stackless traversing 
+	/*
+	while (true)
+	{
+		//break;
 		int node = levelStart + levelIndex - 1 + swapMask - 2 * (levelIndex & swapMask);	//bitwise AND
 
 		lol = KDtree[node].index;
@@ -78,6 +98,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					hd.ID = triangles[Indices[i]].ID;
 					hd.t = hit.x;
 					hd.bufferpos = threadID.xy;
+					lol = 1;
 					break;
 				}
 			}
@@ -130,8 +151,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		levelIndex = levelIndex >> up;	//bitwise shift right
 		swapMask = swapMask >> up;		//bitwise shift right
 		
+		if (lol == 1)
+			break;
 	}
-
+	*/
 
 
 	/*
@@ -259,7 +282,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	}
 	*/
 	//outColor = float4( hd.color);
-	outColor = float4(1,0,0,1) * lol;
+	//outColor = float4(1,0,0,1) * lol;
 	//debug code
 	if (lightSpheres > 0)
 	{
