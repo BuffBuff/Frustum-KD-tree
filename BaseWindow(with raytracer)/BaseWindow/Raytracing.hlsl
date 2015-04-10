@@ -53,7 +53,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int levelIndex = 0;
 	int swapMask = 0;
 	
-	int depthIndex = 1;
+	int depth = 0;
 	int lol = 1;
 	
 	int node = 0;
@@ -71,11 +71,28 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			//nej-> gå vidare
 			if (KDtree[node].index != -1)
 			{
-				outColor = float4(0, 0, 1, 1);
+				for (int i = KDtree[node].index; i < KDtree[node].nrOfTriangles + KDtree[node].index; i++)
+				{
+					hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
+					if (hit.x > -1)
+					{
+
+						hd.pos = r.origin + r.dir * hit.x;
+						hd.normal = triangles[Indices[i]].normal;
+						hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+						hd.ID = triangles[Indices[i]].ID;
+						hd.t = hit.x;
+						hd.bufferpos = threadID.xy;
+					}
+				}
+				//outColor = float4(0, 0, 1, 1);
 				break;
 			}
 			//ta fram childIDs
-			int childIndex = (levelStart - 1) * 2 + levelIndex; //problem
+
+			// childIndex = (currentDepth * 2) + (levelIndex * 2)
+
+			int childIndex = (depth * 2) + (levelIndex * 2);
 			float left = RayVSAABB(r, KDtree[childIndex].aabb);
 
 			float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
@@ -83,27 +100,22 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			//vänster, höger eller båda
 			//ja-> gå till vänster
 			//sätt ny node
-			if (left != MAXDIST && right != MAXDIST)
+			levelIndex *= 2;
+
+			if (left != MAXDIST)
 			{
 				node = childIndex;
-			}
+			}	
 			//nej-> gå till den som vi träffade
 			//sätt ny node
-			else if (left != MAXDIST || right != MAXDIST)
+			else
 			{
-
+				node = childIndex + 1;
+				levelIndex++;
 			}
-
-
-
-
-
-
-
-
-
+			
+			depth++;
 			//outColor = float4(1, 1, 0, 1);
-			//break;
 
 
 		}
@@ -316,7 +328,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		outColor += color;
 	}
 	*/
-	//outColor = float4( hd.color);
+	outColor = float4( hd.color);
 	//outColor = float4(1,0,0,1) * lol;
 	//debug code
 	if (lightSpheres > 0)
