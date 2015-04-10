@@ -98,7 +98,7 @@ void GPURTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/bunny.obj");
+	m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
@@ -224,6 +224,23 @@ void GPURTGraphics::createSwapStructures()
 		false,
 		"Structured Buffer: Swap size Structure");
 
+	m_IndiceBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int),
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
+	m_KDTreeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(NodePass2),
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
 
 }
 
@@ -279,8 +296,8 @@ void GPURTGraphics::Update(float _dt)
 
 	
 
-	ID3D11UnorderedAccessView* uav1[] = { m_aabbBuffer->GetUnorderedAccessView() };
-	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav1, NULL);
+	ID3D11UnorderedAccessView* uav1[] = { m_aabbBuffer->GetUnorderedAccessView(), m_KDTreeBuffer->GetUnorderedAccessView(), m_IndiceBuffer->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 3, uav1, NULL);
 
 	ID3D11UnorderedAccessView* uav2[] = { m_SwapStructure[0]->GetUnorderedAccessView(), m_SwapStructure[1]->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, uav2,NULL);
@@ -293,18 +310,18 @@ void GPURTGraphics::Update(float _dt)
 
 	createAABBs->Set();
 
-	//g_timer->Start();
-	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-	g_DeviceContext->Flush();
-	//g_timer->Stop();
-
-	//	create the KD tree 
-	createKDtree->Set();
-
 	g_timer->Start();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	g_timer->Stop();
+
+	//	create the KD tree 
+	createKDtree->Set();
+
+	//g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	//g_timer->Stop();
 }
 
 void GPURTGraphics::Render(float _dt)

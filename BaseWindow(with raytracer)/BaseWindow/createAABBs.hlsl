@@ -53,11 +53,15 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		splittSize[workID][0] = 0;
 		splittSize[workID][1] = 0;
 
+		indiceList[workID] = -1;
+
+
 		workID += NROFTHREADSCREATIONDISPATCHES;
 
 	}
 
 	workID = threadIndex;
+	DeviceMemoryBarrierWithGroupSync();
 
 
 	// Creating the aabbs for the triangles
@@ -96,6 +100,58 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	}
 
-	
+	DeviceMemoryBarrierWithGroupSync();
+
+	///////////////////////////////////////////////////////////
+	//	CALCULATE AABB FOR ROOT NODE  -- detta är just nu en bottle neck som vi behöver optimera senare
+	///////////////////////////////////////////////////////////
+
+
+
+
+	if (threadIndex < 6)
+	{
+		float minValue = MAXDIST;
+		float maxValue = -MAXDIST;
+		int listPart = threadIndex % 2;
+		int splitPart = threadIndex % 3;
+		for (int i = nrOfTriangles*(listPart * 0.5); i < nrOfTriangles *(0.5 * (listPart + 1)); i++)
+		{
+			minValue = aabbList[i].minPoint[splitPart] < minValue ? aabbList[i].minPoint[splitPart] : minValue;
+			maxValue = aabbList[i].maxPoint[splitPart] > maxValue ? aabbList[i].maxPoint[splitPart] : maxValue;
+		}
+
+		KDtree[listPart].aabb.minPoint[splitPart] = minValue;
+		KDtree[listPart].aabb.maxPoint[splitPart] = maxValue;
+
+	}
+
+	if (threadIndex == 0)
+	{
+		[unroll]for (int i = 0; i < 3; i++)
+		{
+			KDtree[0].aabb.minPoint[i] = KDtree[0].aabb.minPoint[i] < KDtree[1].aabb.minPoint[i] ? KDtree[0].aabb.minPoint[i] : KDtree[1].aabb.minPoint[i];
+			KDtree[0].aabb.maxPoint[i] = KDtree[0].aabb.maxPoint[i] > KDtree[1].aabb.maxPoint[i] ? KDtree[0].aabb.maxPoint[i] : KDtree[1].aabb.maxPoint[i];
+		}
+
+
+		// left
+		KDtree[1].aabb.minPoint = KDtree[0].aabb.minPoint;
+		KDtree[1].aabb.maxPoint = KDtree[0].aabb.maxPoint;
+
+		KDtree[1].aabb.maxPoint.x -= (KDtree[1].aabb.maxPoint.x - KDtree[1].aabb.minPoint.x) * 0.5f;
+
+		// right
+		KDtree[2].aabb.minPoint = KDtree[0].aabb.minPoint;
+		KDtree[2].aabb.maxPoint = KDtree[0].aabb.maxPoint;
+
+		KDtree[2].aabb.minPoint.x += (KDtree[2].aabb.maxPoint.x - KDtree[2].aabb.minPoint.x) * 0.5f;
+
+		KDtree[0].split.x = 0;
+		KDtree[0].split.y = KDtree[2].aabb.minPoint.x;
+
+		KDtree[0].index = -1;
+
+	}
 
 }

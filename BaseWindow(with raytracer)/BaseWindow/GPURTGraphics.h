@@ -60,6 +60,8 @@ private:
 	ComputeBuffer				*m_Indices = NULL;
 	ComputeBuffer				*m_SwapStructure[2];
 	ComputeBuffer				*m_SwapSize = NULL;
+	ComputeBuffer				*m_IndiceBuffer = NULL;
+	ComputeBuffer				*m_KDTreeBuffer = NULL;
 
 	Node						m_rootNode;
 	
