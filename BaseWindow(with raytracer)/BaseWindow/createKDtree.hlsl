@@ -50,7 +50,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-	while (depth < 2)
+	while (depth < 3)
 	{
 		
 		//////////////////////////////////////////////////////////////////////
@@ -253,9 +253,9 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					// chose the best split axis
 					int splitAxis; // 0 = x, 1 = y, 2 = z
 					float splitLength[3];
-					splitLength[0] = KDtree[splitStart + workID].aabb.maxPoint.x - KDtree[splitStart + workID].aabb.minPoint.x;
-					splitLength[1] = KDtree[splitStart + workID].aabb.maxPoint.y - KDtree[splitStart + workID].aabb.minPoint.y;
-					splitLength[2] = KDtree[splitStart + workID].aabb.maxPoint.z - KDtree[splitStart + workID].aabb.minPoint.z;
+					splitLength[0] = KDtree[startIndexThisDepth + workID].aabb.maxPoint.x - KDtree[startIndexThisDepth + workID].aabb.minPoint.x;
+					splitLength[1] = KDtree[startIndexThisDepth + workID].aabb.maxPoint.y - KDtree[startIndexThisDepth + workID].aabb.minPoint.y;
+					splitLength[2] = KDtree[startIndexThisDepth + workID].aabb.maxPoint.z - KDtree[startIndexThisDepth + workID].aabb.minPoint.z;
 
 					splitAxis = splitLength[0] > splitLength[1] ? 0 : 1;
 					splitAxis = splitLength[splitAxis]	 > splitLength[2] ? splitAxis : 2;
