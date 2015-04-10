@@ -58,20 +58,55 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	
 	int node = 0;
 	//test
-	while (true)
+	if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
 	{
+		outColor = float4(1, 0, 1, 1);
+	}
+	else
+	{
+		while (true)
+		{
+			//lövnode?
+			//ja-> gör träff beräkning
+			//nej-> gå vidare
+			if (KDtree[node].index != -1)
+			{
+				outColor = float4(0, 0, 1, 1);
+				break;
+			}
+			//ta fram childIDs
+			int childIndex = (levelStart - 1) * 2 + levelIndex; //problem
+			float left = RayVSAABB(r, KDtree[childIndex].aabb);
 
-		if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
-		{
-			outColor = float4(1,0,1,1);
-			break;
+			float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
+			//vilket barn träffar vi?
+			//vänster, höger eller båda
+			//ja-> gå till vänster
+			//sätt ny node
+			if (left != MAXDIST && right != MAXDIST)
+			{
+				node = childIndex;
+			}
+			//nej-> gå till den som vi träffade
+			//sätt ny node
+			else if (left != MAXDIST || right != MAXDIST)
+			{
+
+			}
+
+
+
+
+
+
+
+
+
+			//outColor = float4(1, 1, 0, 1);
+			//break;
+
+
 		}
-		else
-		{
-			outColor = float4(1, 1, 0, 1);
-			break;
-		}
-		
 	}
 
 	//new stackless traversing 
