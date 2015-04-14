@@ -45,32 +45,37 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	float3 hit = (-1.0f, -1.0f, -1.0f);
 
-	int nodeIndex = 0;
-	int nextNode = 0;
-	int nodeStack[30];
+	//int nodeIndex = 0;
+	//int nextNode = 0;
+	//int nodeStack[30];
 
-	int levelStart = 1;
-	int levelIndex = 0;
-	int swapMask = 0;
+	//int levelStart = 1;
+	//int swapMask = 0;
 	
+	int node = 0;	
 	int depth = 0;
-	int lol = 1;
+	int levelIndex = 0;
+	int childIndex = 0;
+	int missedAllTriangles = 0;
+	int lastVisitedNode = 0;
+	int wasRightChildNode = 0;
 	
-	int node = 0;
-	//test
+	//super mega awesome iteration of doom and destruction!
 	if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
 	{
 		outColor = float4(1, 0, 1, 1);
 	}
 	else
-	{
+	{		
 		while (true)
 		{
+			missedAllTriangles = 0;
 			//lövnode?
 			//ja-> gör träff beräkning
 			//nej-> gå vidare
 			if (KDtree[node].index != -1)
 			{
+
 				for (int i = KDtree[node].index; i < KDtree[node].nrOfTriangles + KDtree[node].index; i++)
 				{
 					hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
@@ -79,178 +84,92 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 						hd.pos = r.origin + r.dir * hit.x;
 						hd.normal = triangles[Indices[i]].normal;
-						hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+						hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color - float4(1,0,0,0);
 						hd.ID = triangles[Indices[i]].ID;
 						hd.t = hit.x;
 						hd.bufferpos = threadID.xy;
+						missedAllTriangles++;
+
 					}
 				}
-				//outColor = float4(0, 0, 1, 1);
-				break;
-			}
-			//ta fram childIDs
-
-			// childIndex = (currentDepth * 2) + (levelIndex * 2)
-
-			int childIndex = (depth * 2) + (levelIndex * 2);
-			float left = RayVSAABB(r, KDtree[childIndex].aabb);
-
-			float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
-			//vilket barn träffar vi?
-			//vänster, höger eller båda
-			//ja-> gå till vänster
-			//sätt ny node
-			levelIndex *= 2;
-
-			if (left != MAXDIST)
-			{
-				node = childIndex;
-			}	
-			//nej-> gå till den som vi träffade
-			//sätt ny node
-			else
-			{
-				node = childIndex + 1;
-				levelIndex++;
-			}
-			
-			depth++;
-			//outColor = float4(1, 1, 0, 1);
-
-
-		}
-	}
-
-	//new stackless traversing 
-	/*
-	while (true)
-	{
-		//break;
-		int node = levelStart + levelIndex - 1 + swapMask - 2 * (levelIndex & swapMask);	//bitwise AND
-
-		lol = KDtree[node].index;
-
-		if (KDtree[node].index != -1)
-		{
-			//Leaf node found, DO SHIT!
-			for (int i = KDtree[node].index; i < KDtree[node].nrOfTriangles + KDtree[node].index; i++)
-			{
-				hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
-				if (hit.x > -1)
+				//outColor = float4(1, 1, 0, 1);
+				
+				if (missedAllTriangles == 0)
 				{
-
-					hd.pos = r.origin + r.dir * hit.x;
-					hd.normal = triangles[Indices[i]].normal;
-					hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
-					hd.ID = triangles[Indices[i]].ID;
-					hd.t = hit.x;
-					hd.bufferpos = threadID.xy;
-					lol = 1;
 					break;
 				}
+				////Back up one more level and check a new node
+				//if (missedAllTriangles != 1)
+				//{
+				//	int childNodeOffset = childIndex % 2;
+				//	levelIndex = childIndex - childNodeOffset;
+				//	levelIndex = levelIndex * 0.5f;
+				//	depth--;
+				//	lastVisitedNode = childIndex;
+				//	wasRightChildNode = 0;
+				//	if (childNodeOffset == 1)
+				//	{
+				//		wasRightChildNode = 1;
+				//	}
+				//}
+				////Hit a triangle in the leafnode
+				//else
+				//{
+				//	//outColor = float4(0, 0, 1, 1);
+				//	break;
+				//}
 			}
-		}
-		else
-		{
-			//test aganist both childs
-			int childIndex = (levelStart - 1) * 2 + levelIndex;
-			float left = RayVSAABB(r, KDtree[childIndex].aabb);
+			else
+			{
+				if (wasRightChildNode == 1)
+				{
+					int childNodeOffset = childIndex % 2;
+					levelIndex = childIndex - childNodeOffset;
+					levelIndex = levelIndex * 0.5f;
+					depth--;
+					lastVisitedNode = childIndex;
+					wasRightChildNode = 0;
+					if (childNodeOffset == 1)
+					{
+						wasRightChildNode = 1;
+					}
+				}
+				else
+				{
+					//ta fram childIDs
 
-			float right = RayVSAABB(r, KDtree[childIndex+1].aabb);
+					// childIndex = (currentDepth * 2) + (levelIndex * 2)
+
+					childIndex = (depth * 2) + (levelIndex * 2);
+					float left = RayVSAABB(r, KDtree[childIndex].aabb);
+
+					float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
+					//vilket barn träffar vi?
+					//vänster, höger eller båda
+					//ja-> gå till vänster
+					//sätt ny node
+					levelIndex *= 2;
+
+					if (left != MAXDIST && lastVisitedNode != childIndex)
+					{
+						node = childIndex;
+					}	
+					//nej-> gå till den som vi träffade
+					//sätt ny node
+					else
+					{
+						node = childIndex + 1;
+						levelIndex++;
+					}
 			
-			//if any hit
-			if (left != MAXDIST || right != MAXDIST)
-			{
-				levelStart = levelStart << 1;	//bitwise shift left
-				levelIndex = levelIndex << 1;	//bitwise shift left
-				swapMask = swapMask << 1;		//bitwise shift left
+					depth++;
+					//outColor = float4(1, 1, 0, 1);
 
-
-				//right child first
-				if (right < left )
-				{
-					swapMask = swapMask | 1;		//bitwise OR
-				}
-				//reject one child
-				if (right == MAXDIST && left != MAXDIST || left == MAXDIST && right != MAXDIST)
-				{
-					levelIndex = levelIndex + 1;
-					swapMask = swapMask ^ 1;		//bitwise XOR
 				}
 			}
 		}
-
-
-		levelIndex = levelIndex + 1;
-
-		///////////////experiment area/////////////////
-
-		int up = 0;
-		for (int i = 5; levelIndex / i >= 1; i *= 5)
-		{
-			up += levelIndex / i;
-		}
-
-		///////////////experiment area/////////////////
-		
-		//int up = ctz(levelIndex);		//up <- ctz(levelIndex)
-		levelStart = levelStart >> up;	//bitwise shift right
-		levelIndex = levelIndex >> up;	//bitwise shift right
-		swapMask = swapMask >> up;		//bitwise shift right
-		
-		if (lol == 1)
-			break;
 	}
-	*/
 
-
-	/*
-	while (nextNode > -1)
-	{
-		if (KDtree[nodeIndex].index == -1)
-		{
-
-			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-			if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
-			{
-				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
-				nextNode++;
-			}																							// 380 fps kub
-
-			if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
-			{
-				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
-				nextNode++;
-			}
-
-		}
-		else
-		{
-			// triangle intersect logic
-			for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
-			{
-				hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
-				if (hit.x > -1)
-				{
-
-					hd.pos = r.origin + r.dir * hit.x;
-					hd.normal = triangles[Indices[i]].normal;
-					hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
-					hd.ID = triangles[Indices[i]].ID;
-					hd.t = hit.x;
-					hd.bufferpos = threadID.xy;
-				}
-			}
-
-
-		}
-		
-		nextNode--;
-		nodeIndex = nodeStack[nextNode];
-
-	}
-	*/
 
 	//////////////////////////////////
 	///Light
