@@ -84,7 +84,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 						hd.pos = r.origin + r.dir * hit.x;
 						hd.normal = triangles[Indices[i]].normal;
-						hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color - float4(1,0,0,0);
+						hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
 						hd.ID = triangles[Indices[i]].ID;
 						hd.t = hit.x;
 						hd.bufferpos = threadID.xy;
@@ -94,30 +94,31 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				}
 				//outColor = float4(1, 1, 0, 1);
 				
-				if (missedAllTriangles == 0)
+				/*if (missedAllTriangles == 0)
 				{
 					break;
+				}*/
+				//back up one more level and check a new node
+				if (missedAllTriangles < 1)
+				{
+					
+					int childNodeOffset = childIndex % 2;
+					levelIndex = childIndex - childNodeOffset;
+					levelIndex = levelIndex * 0.5f;
+					depth--;
+					lastVisitedNode = childIndex;
+					childNodeOffset = 0;
+					if (childNodeOffset == 1)
+					{
+						wasRightChildNode = 1;
+					}
 				}
-				////Back up one more level and check a new node
-				//if (missedAllTriangles != 1)
-				//{
-				//	int childNodeOffset = childIndex % 2;
-				//	levelIndex = childIndex - childNodeOffset;
-				//	levelIndex = levelIndex * 0.5f;
-				//	depth--;
-				//	lastVisitedNode = childIndex;
-				//	wasRightChildNode = 0;
-				//	if (childNodeOffset == 1)
-				//	{
-				//		wasRightChildNode = 1;
-				//	}
-				//}
-				////Hit a triangle in the leafnode
-				//else
-				//{
-				//	//outColor = float4(0, 0, 1, 1);
-				//	break;
-				//}
+				//hit a triangle in the leafnode
+				else
+				{
+					//outColor = float4(0, 0, 1, 1);
+					break;
+				}
 			}
 			else
 			{
@@ -133,6 +134,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					{
 						wasRightChildNode = 1;
 					}
+					outColor = float4(0, 0, 1, 1);
+					break;
 				}
 				else
 				{
@@ -153,6 +156,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					if (left != MAXDIST && lastVisitedNode != childIndex)
 					{
 						node = childIndex;
+						
 					}	
 					//nej-> gå till den som vi träffade
 					//sätt ny node
@@ -247,7 +251,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		outColor += color;
 	}
 	*/
-	outColor = float4( hd.color);
+	//outColor = float4( hd.color);
 	//outColor = float4(1,0,0,1) * lol;
 	//debug code
 	if (lightSpheres > 0)
