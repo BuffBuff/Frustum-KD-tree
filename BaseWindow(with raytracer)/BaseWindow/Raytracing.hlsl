@@ -59,6 +59,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int missedAllTriangles = 0;
 	int lastVisitedNode = 0;
 	int wasRightChildNode = 0;
+
+
 	
 	//super mega awesome iteration of doom and destruction!
 	if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
@@ -66,8 +68,9 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		outColor = float4(1, 0, 1, 1);
 	}
 	else
-	{		
-		while (true)
+	{
+		int i;
+		for (i = 0; i < 100; i++)
 		{
 			missedAllTriangles = 0;
 			//lövnode?
@@ -101,17 +104,21 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				//back up one more level and check a new node
 				if (missedAllTriangles < 1)
 				{
-					
-					int childNodeOffset = childIndex % 2;
-					levelIndex = childIndex - childNodeOffset;
+					//outColor = float4(0, 0, 1, 1);
+					//break;
+					int childNodeOffset = 1 - node % 2;
+					levelIndex = levelIndex - childNodeOffset;
 					levelIndex = levelIndex * 0.5f;
 					depth--;
-					lastVisitedNode = childIndex;
-					childNodeOffset = 0;
+					lastVisitedNode = node;
+					childIndex = node;
+					wasRightChildNode = 0;
 					if (childNodeOffset == 1)
 					{
 						wasRightChildNode = 1;
 					}
+					//Set to the parentnode
+					node = ((1 << depth) - 1) + levelIndex;
 				}
 				//hit a triangle in the leafnode
 				else
@@ -124,18 +131,21 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			{
 				if (wasRightChildNode == 1)
 				{
-					int childNodeOffset = childIndex % 2;
-					levelIndex = childIndex - childNodeOffset;
+					if (node == 0)
+						break;
+					int childNodeOffset = 1 - node % 2;
+					levelIndex = levelIndex - childNodeOffset;
 					levelIndex = levelIndex * 0.5f;
 					depth--;
-					lastVisitedNode = childIndex;
+					lastVisitedNode = node;
+					childIndex = node;
 					wasRightChildNode = 0;
 					if (childNodeOffset == 1)
 					{
 						wasRightChildNode = 1;
 					}
-					outColor = float4(0, 0, 1, 1);
-					break;
+					//Set to the parentnode
+					node = ((1 << depth) - 1) + levelIndex;
 				}
 				else
 				{
@@ -143,7 +153,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					// childIndex = (currentDepth * 2) + (levelIndex * 2)
 
-					childIndex = (depth * 2) + (levelIndex * 2);
+					//childIndex = (depth * 2) + (levelIndex * 2);
+					childIndex = ((1 << depth + 1) - 1) + (levelIndex * 2);
 					float left = RayVSAABB(r, KDtree[childIndex].aabb);
 
 					float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
@@ -155,23 +166,25 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					if (left != MAXDIST && lastVisitedNode != childIndex)
 					{
-						node = childIndex;
 						
 					}	
 					//nej-> gå till den som vi träffade
 					//sätt ny node
 					else
 					{
-						node = childIndex + 1;
+						childIndex++;
 						levelIndex++;
 					}
-			
+
+					node = childIndex;
 					depth++;
 					//outColor = float4(1, 1, 0, 1);
 
 				}
 			}
 		}
+		if (i == 100)
+			hd.color = float4(0.5f, 1, 0, 1);
 	}
 
 
@@ -251,7 +264,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		outColor += color;
 	}
 	*/
-	//outColor = float4( hd.color);
+	outColor = float4( hd.color);
 	//outColor = float4(1,0,0,1) * lol;
 	//debug code
 	if (lightSpheres > 0)

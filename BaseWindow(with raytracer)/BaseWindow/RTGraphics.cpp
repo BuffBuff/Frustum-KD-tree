@@ -350,6 +350,8 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 											 false,
 											 "Structed Buffer: Indice Buffer");
 
+	delete initdata;
+	delete indiceList;
 }
 
 void RTGraphics::createLightBuffer()
@@ -515,6 +517,57 @@ void RTGraphics::release()
 
 }
 
+void checkTriangleInAABB(TriangleMat const& triangle, NodeAABB const& aabb)
+{
+	NodeAABB triangleAABB;
+	triangleAABB.minPoint.x = min(triangle.pos0.x, min(triangle.pos1.x, triangle.pos2.x));
+	triangleAABB.minPoint.y = min(triangle.pos0.y, min(triangle.pos1.y, triangle.pos2.y));
+	triangleAABB.minPoint.z = min(triangle.pos0.z, min(triangle.pos1.z, triangle.pos2.z));
+
+	triangleAABB.maxPoint.x = max(triangle.pos0.x, max(triangle.pos1.x, triangle.pos2.x));
+	triangleAABB.maxPoint.y = max(triangle.pos0.y, max(triangle.pos1.y, triangle.pos2.y));
+	triangleAABB.maxPoint.z = max(triangle.pos0.z, max(triangle.pos1.z, triangle.pos2.z));
+
+	if (triangleAABB.maxPoint.x < aabb.minPoint.x ||
+		triangleAABB.maxPoint.y < aabb.minPoint.y ||
+		triangleAABB.maxPoint.z < aabb.minPoint.z ||
+		triangleAABB.minPoint.x > aabb.maxPoint.x ||
+		triangleAABB.minPoint.y > aabb.maxPoint.y ||
+		triangleAABB.minPoint.z > aabb.maxPoint.z)
+	{
+		OutputDebugStringA("NOT ");
+	}
+}
+
+void checkTree(Node const* node, std::vector<TriangleMat> const& triangles)
+{
+	static int nodeNum = 0;
+	char buffer[1024];
+	sprintf(buffer, "Node %d\n", nodeNum++);
+	OutputDebugStringA(buffer);
+	if (node->left != nullptr)
+		checkTree(node->left, triangles);
+	if (node->right != nullptr)
+		checkTree(node->right, triangles);
+	sprintf(buffer, "AABB: (%f, %f, %f)-(%f, %f, %f)\n",
+		node->aabb.minPoint.x, node->aabb.minPoint.y, node->aabb.minPoint.z,
+		node->aabb.maxPoint.x, node->aabb.maxPoint.y, node->aabb.maxPoint.z);
+	OutputDebugStringA(buffer);
+	if (node->index != nullptr)
+	{
+		for (int idx : *node->index)
+		{
+			TriangleMat const& triangle = triangles[idx];
+			checkTriangleInAABB(triangle, node->aabb);
+			sprintf(buffer, "Triangle %d (%f, %f, %f) (%f, %f, %f) (%f, %f, %f)\n", idx,
+				triangle.pos0.x, triangle.pos0.y, triangle.pos0.z,
+				triangle.pos1.x, triangle.pos1.y, triangle.pos1.z,
+				triangle.pos2.x, triangle.pos2.y, triangle.pos2.z);
+			OutputDebugStringA(buffer);
+		}
+	}
+}
+
 void RTGraphics::createKdTree(Mesh *_mesh)
 {
 	std::vector<TriangleMat> *triangleList = _mesh->getTriangleList();
@@ -554,6 +607,8 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 	}
 
 	createKDNodeSplit(&aabbList,&m_rootNode,1);
+
+	checkTree(&m_rootNode, *triangleList);
 
 	int breakStop = 0;
 }
