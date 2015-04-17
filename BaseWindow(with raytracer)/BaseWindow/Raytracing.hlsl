@@ -59,8 +59,9 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int missedAllTriangles = 0;
 	int lastVisitedNode = 0;
 	int wasRightChildNode = 0;
-
-
+	int nextArray[20];
+	int readFrom = 0;
+	nextArray[0] = 0;
 	
 	//super mega awesome iteration of doom and destruction!
 	if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
@@ -97,10 +98,6 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				}
 				//outColor = float4(1, 1, 0, 1);
 				
-				/*if (missedAllTriangles == 0)
-				{
-					break;
-				}*/
 				//back up one more level and check a new node
 				if (missedAllTriangles < 1)
 				{
@@ -158,6 +155,17 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					float left = RayVSAABB(r, KDtree[childIndex].aabb);
 
 					float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
+
+					if (left != MAXDIST && right != MAXDIST)
+					{
+						if (left > right)
+						{
+							nextArray[readFrom] = childIndex;
+							//pilla med readFrom
+						}
+					}
+					
+
 					//vilket barn träffar vi?
 					//vänster, höger eller båda
 					//ja-> gå till vänster
