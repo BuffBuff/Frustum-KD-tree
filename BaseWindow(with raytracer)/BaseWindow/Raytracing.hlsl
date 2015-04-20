@@ -70,8 +70,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	}
 	else
 	{
-		int i;
-		for (i = 0; i < 100; i++)
+		int j;
+		for (j = 0; j < 100; j++)
 		{
 			missedAllTriangles = 0;
 			//lövnode?
@@ -98,11 +98,17 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				}
 				//outColor = float4(1, 1, 0, 1);
 				
-				//back up one more level and check a new node
 				if (missedAllTriangles < 1)
 				{
 					//outColor = float4(0, 0, 1, 1);
 					//break;
+					
+				}
+
+				/*
+				//back up one more level and check a new node
+				if (missedAllTriangles < 1)
+				{
 					int childNodeOffset = 1 - node % 2;
 					levelIndex = levelIndex - childNodeOffset;
 					levelIndex = levelIndex * 0.5f;
@@ -117,6 +123,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					//Set to the parentnode
 					node = ((1 << depth) - 1) + levelIndex;
 				}
+				*/
 				//hit a triangle in the leafnode
 				else
 				{
@@ -147,51 +154,68 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				else
 				{
 					//ta fram childIDs
-
-					// childIndex = (currentDepth * 2) + (levelIndex * 2)
-
-					//childIndex = (depth * 2) + (levelIndex * 2);
+					//(1^(depth+1)-1)+(levelIndex*2)
 					childIndex = ((1 << depth + 1) - 1) + (levelIndex * 2);
 					float left = RayVSAABB(r, KDtree[childIndex].aabb);
 
 					float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
+					
+					//modify the levelIndex
+					levelIndex *= 2;
 
+					//if both children are hit
 					if (left != MAXDIST && right != MAXDIST)
 					{
 						if (left > right)
 						{
+							//add left node first
+							readFrom++;
 							nextArray[readFrom] = childIndex;
-							//pilla med readFrom
+							//add right node
+							readFrom++;
+							nextArray[readFrom] = childIndex + 1;
+							levelIndex++; // HALP?!! hur den ska behandlas
+						}
+						else
+						{
+							//add right node first
+							readFrom++;
+							nextArray[readFrom] = childIndex + 1;
+							//add left node
+							readFrom++;
+							nextArray[readFrom] = childIndex;
 						}
 					}
-					
 
-					//vilket barn träffar vi?
-					//vänster, höger eller båda
-					//ja-> gå till vänster
-					//sätt ny node
-					levelIndex *= 2;
-
-					if (left != MAXDIST && lastVisitedNode != childIndex)
-					{
-						
-					}	
-					//nej-> gå till den som vi träffade
-					//sätt ny node
+					//bara en träffades
 					else
 					{
-						childIndex++;
-						levelIndex++;
+						readFrom++;
+						if (left != MAXDIST)
+						{
+							nextArray[readFrom] = childIndex;
+						}
+						else
+						{
+							nextArray[readFrom] = childIndex + 1;
+							levelIndex++;
+						}						
 					}
 
-					node = childIndex;
+					//check if going to read outside the array
+					if (readFrom < 0)
+					{
+						break;
+					}
+					node = nextArray[readFrom];
+					readFrom--;
 					depth++;
 					//outColor = float4(1, 1, 0, 1);
 
 				}
 			}
 		}
-		if (i == 100)
+		if (j == 100)
 			hd.color = float4(0.5f, 1, 0, 1);
 	}
 
