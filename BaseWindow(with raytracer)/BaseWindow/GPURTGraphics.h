@@ -62,6 +62,8 @@ private:
 	ComputeBuffer				*m_SwapSize = NULL;
 	ComputeBuffer				*m_IndiceBuffer = NULL;
 	ComputeBuffer				*m_KDTreeBuffer = NULL;
+	ComputeBuffer				*m_indexingCountBuffer = NULL;
+	ComputeBuffer				*m_mutex = NULL;
 
 	Node						m_rootNode;
 	

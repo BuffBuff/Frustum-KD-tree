@@ -15,6 +15,9 @@ RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int2 holds x = 
 
 RWStructuredBuffer<int2> splittSize : register(u5); // used for storing the size of every split and then the start values of the split
 
+RWStructuredBuffer<int> indexingCount : register(u6); // using this struct to designate which index in the indiceList to wright the leaf node to
+
+RWStructuredBuffer<int> mutex : register(u7);	// Used in the custom interlocking function
 
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
@@ -36,7 +39,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	TriangleMat triangleInWork;
 
-
+	indexingCount[0] = 0;
 
 	while (workID < 3000000)
 	{
@@ -55,6 +58,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		indiceList[workID] = -1;
 
+		mutex[workID] = 0;
 
 		workID += NROFTHREADSCREATIONDISPATCHES;
 
@@ -133,24 +137,21 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			KDtree[0].aabb.minPoint[i] = KDtree[0].aabb.minPoint[i] < KDtree[1].aabb.minPoint[i] ? KDtree[0].aabb.minPoint[i] : KDtree[1].aabb.minPoint[i];
 			KDtree[0].aabb.maxPoint[i] = KDtree[0].aabb.maxPoint[i] > KDtree[1].aabb.maxPoint[i] ? KDtree[0].aabb.maxPoint[i] : KDtree[1].aabb.maxPoint[i];
 		}
-
+		KDtree[0].index = -1;
 
 		// left
-		KDtree[1].aabb.minPoint = KDtree[0].aabb.minPoint;
-		KDtree[1].aabb.maxPoint = KDtree[0].aabb.maxPoint;
+		KDtree[1] = KDtree[0];
 
 		KDtree[1].aabb.maxPoint.x -= (KDtree[1].aabb.maxPoint.x - KDtree[1].aabb.minPoint.x) * 0.5f;
 
 		// right
-		KDtree[2].aabb.minPoint = KDtree[0].aabb.minPoint;
-		KDtree[2].aabb.maxPoint = KDtree[0].aabb.maxPoint;
+		KDtree[2] = KDtree[0];
 
 		KDtree[2].aabb.minPoint.x += (KDtree[2].aabb.maxPoint.x - KDtree[2].aabb.minPoint.x) * 0.5f;
 
 		KDtree[0].split.x = 0;
 		KDtree[0].split.y = KDtree[2].aabb.minPoint.x;
 
-		KDtree[0].index = -1;
 
 	}
 

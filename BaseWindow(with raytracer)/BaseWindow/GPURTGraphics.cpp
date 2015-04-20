@@ -242,6 +242,25 @@ void GPURTGraphics::createSwapStructures()
 		false,
 		"Structured Buffer: Swap size Structure");
 
+	m_indexingCountBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int),
+		2,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
+	
+	m_mutex = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int),
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
 }
 
 GPURTGraphics::~GPURTGraphics()
@@ -305,23 +324,28 @@ void GPURTGraphics::Update(float _dt)
 	ID3D11UnorderedAccessView* uav3[] = { m_SwapSize->GetUnorderedAccessView()};
 	g_DeviceContext->CSSetUnorderedAccessViews(5, 1, uav3, NULL);
 
+	ID3D11UnorderedAccessView* uav4[] = { m_indexingCountBuffer->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(6, 1, uav4, NULL);
+	
+	ID3D11UnorderedAccessView* uav5[] = { m_mutex->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(7, 1, uav5, NULL);
 
 	// create the AABB list
 
 	createAABBs->Set();
 
-	g_timer->Start();
-	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-	g_DeviceContext->Flush();
-	g_timer->Stop();
-
-	//	create the KD tree 
-	createKDtree->Set();
-
 	//g_timer->Start();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	//g_timer->Stop();
+
+	//	create the KD tree 
+	createKDtree->Set();
+
+	g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	g_timer->Stop();
 }
 
 void GPURTGraphics::Render(float _dt)
