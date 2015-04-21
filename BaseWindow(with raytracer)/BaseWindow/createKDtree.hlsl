@@ -43,9 +43,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	int stop = 0;
 
+	int q;
 
-
-	while (depth < 2)
+	//while (depth < 2)
+	for ( ; depth < 3;)
 	{
 
 		while (workID < 3000000)
@@ -107,7 +108,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-				splittingSwap[workingSplit][workID][2] = oldSplitID+1;
+				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
 				splittingSwap[workingSplit][workID][3] = aabbSplitID;
 				
 				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
@@ -253,11 +254,17 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis] -= middleOffset;
 
+					KDtree[startIndexNextDepth + (workID * 2)].split = splitAxis;
+					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis];
+
 					// right
 					KDtree[startIndexNextDepth + ((workID * 2) + 1)] = KDtree[startIndexThisDepth + workID];
 					KDtree[startIndexNextDepth + ((workID * 2) + 1)].index = -1;
 
 					KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis] += middleOffset;
+
+					KDtree[startIndexNextDepth + (workID * 2)].split = splitAxis;
+					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis];
 
 				}
 				else if (splittSize[workID][0] > 0)// leafNode
