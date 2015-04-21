@@ -59,9 +59,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int missedAllTriangles = 0;
 	int lastVisitedNode = 0;
 	int wasRightChildNode = 0;
-	int nextArray[20];
+	int2 nextArray[20];
 	int readFrom = 0;
-	nextArray[0] = 0;
+	nextArray[0][0] = 0;
+	nextArray[0][1] = 0;
 	
 	//super mega awesome iteration of doom and destruction!
 	if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
@@ -96,123 +97,93 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					}
 				}
-				//outColor = float4(1, 1, 0, 1);
-				
+				//outColor = float4(1, 1, 0, 1);				
 				if (missedAllTriangles < 1)
 				{
-					//outColor = float4(0, 0, 1, 1);
+					//hd.color = float4(0, 0, 1, 1);
 					//break;
+					readFrom--;
+					node = nextArray[readFrom][0];
+					depth = nextArray[readFrom][1];
 					
+					//keep an eye on this
+					int onePowDepth = 1 << depth;
+					levelIndex = node - onePowDepth;
 				}
-
-				/*
-				//back up one more level and check a new node
-				if (missedAllTriangles < 1)
-				{
-					int childNodeOffset = 1 - node % 2;
-					levelIndex = levelIndex - childNodeOffset;
-					levelIndex = levelIndex * 0.5f;
-					depth--;
-					lastVisitedNode = node;
-					childIndex = node;
-					wasRightChildNode = 0;
-					if (childNodeOffset == 1)
-					{
-						wasRightChildNode = 1;
-					}
-					//Set to the parentnode
-					node = ((1 << depth) - 1) + levelIndex;
-				}
-				*/
 				//hit a triangle in the leafnode
 				else
 				{
-					//outColor = float4(0, 0, 1, 1);
+					//hd.color = float4(0, 0, 1, 1);
 					break;
 				}
 			}
 			else
-			{
-				if (wasRightChildNode == 1)
-				{
-					if (node == 0)
-						break;
-					int childNodeOffset = 1 - node % 2;
-					levelIndex = levelIndex - childNodeOffset;
-					levelIndex = levelIndex * 0.5f;
-					depth--;
-					lastVisitedNode = node;
-					childIndex = node;
-					wasRightChildNode = 0;
-					if (childNodeOffset == 1)
-					{
-						wasRightChildNode = 1;
-					}
-					//Set to the parentnode
-					node = ((1 << depth) - 1) + levelIndex;
-				}
-				else
-				{
-					//ta fram childIDs
-					//(1^(depth+1)-1)+(levelIndex*2)
-					childIndex = ((1 << depth + 1) - 1) + (levelIndex * 2);
-					float left = RayVSAABB(r, KDtree[childIndex].aabb);
+		{				
+				//calculate the childIDs
+				//(1^(depth+1)-1)+(levelIndex*2)					
 
-					float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
+				childIndex = ((1 << depth + 1) - 1) + (levelIndex * 2);
+				float left = RayVSAABB(r, KDtree[childIndex].aabb);
+
+				float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
 					
-					//modify the levelIndex
-					levelIndex *= 2;
+				//modify the levelIndex
+				levelIndex *= 2;
 
-					//if both children are hit
-					if (left != MAXDIST && right != MAXDIST)
+				//if both children are hit
+				if (left != MAXDIST && right != MAXDIST)
+				{
+					if (left > right)
 					{
-						if (left > right)
-						{
-							//add left node first
-							readFrom++;
-							nextArray[readFrom] = childIndex;
-							//add right node
-							readFrom++;
-							nextArray[readFrom] = childIndex + 1;
-							levelIndex++; // HALP?!! hur den ska behandlas
-						}
-						else
-						{
-							//add right node first
-							readFrom++;
-							nextArray[readFrom] = childIndex + 1;
-							//add left node
-							readFrom++;
-							nextArray[readFrom] = childIndex;
-						}
+						//add left node first
+						readFrom++;
+						nextArray[readFrom][0] = childIndex;
+						nextArray[readFrom][1] = depth + 1;
+						//add right node
+						readFrom++;
+						nextArray[readFrom][0] = childIndex + 1;
+						nextArray[readFrom][1] = depth + 1;
+						levelIndex++; // HALP?!! hur den ska behandlas
 					}
-
-					//bara en träffades
 					else
 					{
+						//add right node first
 						readFrom++;
-						if (left != MAXDIST)
-						{
-							nextArray[readFrom] = childIndex;
-						}
-						else
-						{
-							nextArray[readFrom] = childIndex + 1;
-							levelIndex++;
-						}						
+						nextArray[readFrom][0] = childIndex + 1;
+						nextArray[readFrom][1] = depth + 1;
+						//add left node
+						readFrom++;
+						nextArray[readFrom][0] = childIndex;
+						nextArray[readFrom][1] = depth + 1;
 					}
-
-					//check if going to read outside the array
-					if (readFrom < 0)
-					{
-						break;
-					}
-					node = nextArray[readFrom];
-					readFrom--;
-					depth++;
-					//outColor = float4(1, 1, 0, 1);
-
 				}
+
+				//bara en träffades
+				else
+				{
+					readFrom++;
+					if (left != MAXDIST)
+					{
+						nextArray[readFrom][0] = childIndex;
+						nextArray[readFrom][1] = depth + 1;
+					}
+					else
+					{
+						nextArray[readFrom][0] = childIndex + 1;
+						nextArray[readFrom][1] = depth + 1;
+						levelIndex++;
+					}						
+				}
+
+				//check if going to read outside the array
+				if (readFrom < 0)
+				{
+					break;
+				}
+				node = nextArray[readFrom][0];
+				readFrom--;
+				depth++;
+				//hd.color = float4(1, 1, 0, 1);				
 			}
 		}
 		if (j == 100)
