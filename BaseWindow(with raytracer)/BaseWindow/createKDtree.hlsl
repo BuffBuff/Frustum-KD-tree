@@ -46,7 +46,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int q;
 
 	//while (depth < 2)
-	for ( ; depth < 3;)
+	for ( ; depth < 1;)
 	{
 
 		while (workID < 3000000)
@@ -221,7 +221,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 				
 
-				if (splittSize[workID][0] > 6) // splitta boxen och skriv till nästa djup
+				if (splittSize[workID][1] > 10) // splitta boxen och skriv till nästa djup
 				{
 
 					// 0 = current depth = splitstart + workID
@@ -267,7 +267,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis];
 
 				}
-				else if (splittSize[workID][0] > 0)// leafNode
+				else// if (splittSize[workID][0] > 0)// leafNode
 				{
 					// KDtree index				-	index to start reading triangle indexes from
 					// KDtree nrOfTriangles		-	the amount to read
@@ -288,26 +288,26 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					int wrightLocation;
 					InterlockedAdd(indexingCount[0], nrOfTrianglesInSplit, wrightLocation);
 
-					//KDtree[startIndexNextDepth + workID].index = wrightLocation;
-					//KDtree[startIndexNextDepth + workID].nrOfTriangles = nrOfTrianglesInSplit;
+					KDtree[startIndexThisDepth + workID].index = wrightLocation;
+					KDtree[startIndexThisDepth + workID].nrOfTriangles = nrOfTrianglesInSplit;
 
-					KDtree[startIndexNextDepth + workID].split[0] = depth;
-					KDtree[startIndexNextDepth + workID].split[1] = 50;
+					//KDtree[startIndexThisDepth + workID].split[0] = depth;
+					//KDtree[startIndexThisDepth + workID].split[1] = 50;
 
 					for (int i = 0; i < nrOfTrianglesInSplit; i++)
 					{
-						indiceList[wrightLocation + i] = aabbList[splittingSwap[workingSplit][splittingSwapStartLocation + i][1]].triangleID;
-						splittingSwap[workingSplit][splittingSwapStartLocation + i][0] = -1;  // KAN GÅ HELT ÅT SKOGEN ATT SÄTTA DEM TILL -1 HÄR -----------------------------------------------------------------
-						splittingSwap[workingSplit][splittingSwapStartLocation + i][1] = -1;
+						indiceList[wrightLocation + i] = aabbList[splittingSwap[moveSplit][splittingSwapStartLocation + i][1]].triangleID;
+						splittingSwap[moveSplit][splittingSwapStartLocation + i][0] = -1;  // KAN GÅ HELT ÅT SKOGEN ATT SÄTTA DEM TILL -1 HÄR -----------------------------------------------------------------
+						splittingSwap[moveSplit][splittingSwapStartLocation + i][1] = -1;
 					}
 
 				
 				}
-				else
+				/*else
 				{
 					KDtree[startIndexNextDepth + workID].split[0] = depth;
 					KDtree[startIndexNextDepth + workID].split[1] = 99;
-				}
+				}*/
 
 				workID += NROFTHREADSCREATIONDISPATCHES;
 
