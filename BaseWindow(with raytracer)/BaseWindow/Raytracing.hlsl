@@ -72,7 +72,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	else
 	{
 		int j;
-		for (j = 0; j < 100; j++)
+		for (j = 0; j < 40; j++)
 		{
 			missedAllTriangles = 0;
 			//lövnode?
@@ -102,17 +102,19 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				{
 					//hd.color = float4(0, 0, 1, 1);
 					//break;
-					readFrom--;
+					
 					node = nextArray[readFrom][0];
 					depth = nextArray[readFrom][1];
-					
+					readFrom--;
+
 					//keep an eye on this
-					int onePowDepth = 1 << depth;
+					int onePowDepth = (1 << depth) - 1;
 					levelIndex = node - onePowDepth;
 				}
 				//hit a triangle in the leafnode
 				else
 				{
+					//add the closest box we hit and check 
 					//hd.color = float4(0, 0, 1, 1);
 					break;
 				}
@@ -186,7 +188,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				//hd.color = float4(1, 1, 0, 1);				
 			}
 		}
-		if (j == 100)
+		if (j == 40)
 			hd.color = float4(0.5f, 1, 0, 1);
 	}
 
