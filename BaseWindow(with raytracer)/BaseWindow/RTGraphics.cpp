@@ -224,6 +224,7 @@ void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, st
 		Node *node = nextNode.at(0);
 		nextNode.erase(nextNode.begin());
 
+		//if fillernode
 		if (nextID.at(0) == -1)
 		{
 			nextID.erase(nextID.begin());
@@ -245,6 +246,7 @@ void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, st
 			
 
 		}
+		//if leafnode
 		else if (node->left == NULL && node->right == NULL)
 		{
 			//found a leaf node 
@@ -500,8 +502,8 @@ void RTGraphics::release()
 {
 	releaseKdTree(&m_rootNode);
 
-	SAFE_RELEASE(m_Indices);		//something silly with this memory release 
-	SAFE_RELEASE(m_NodeBuffer);		//something silly with this memory release 
+	SAFE_RELEASE(m_Indices);		
+	SAFE_RELEASE(m_NodeBuffer);		
 	SAFE_RELEASE(m_meshTexture);
 	SAFE_RELEASE(g_cBuffer);
 	SAFE_RELEASE(backbuffer);
@@ -608,7 +610,8 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 
 	createKDNodeSplit(&aabbList,&m_rootNode,1);
 
-	checkTree(&m_rootNode, *triangleList);
+	//debug to check the KDTree
+	//checkTree(&m_rootNode, *triangleList);
 
 	int breakStop = 0;
 }

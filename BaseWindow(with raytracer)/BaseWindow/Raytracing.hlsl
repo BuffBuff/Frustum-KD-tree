@@ -63,6 +63,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int readFrom = 0;
 	nextArray[0][0] = 0;
 	nextArray[0][1] = 0;
+
+	hd.t = MAXDIST;
 	
 	//super mega awesome iteration of doom and destruction!
 	if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
@@ -84,7 +86,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				for (int i = KDtree[node].index; i < KDtree[node].nrOfTriangles + KDtree[node].index; i++)
 				{
 					hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
-					if (hit.x > -1)
+					if (hit.x > -1 && hit.x < hd.t)
 					{
 
 						hd.pos = r.origin + r.dir * hit.x;
@@ -97,7 +99,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					}
 				}
-				//outColor = float4(1, 1, 0, 1);				
+				outColor = float4(1, 1, 0, 1);				
 				if (missedAllTriangles < 1)
 				{
 					//hd.color = float4(0, 0, 1, 1);
@@ -118,6 +120,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					//hd.color = float4(0, 0, 1, 1);
 					break;
 				}
+
+
 			}
 			else
 		{				
@@ -145,7 +149,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 						readFrom++;
 						nextArray[readFrom][0] = childIndex + 1;
 						nextArray[readFrom][1] = depth + 1;
-						levelIndex++; // HALP?!! hur den ska behandlas
+						levelIndex++;
 					}
 					else
 					{
@@ -177,17 +181,21 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					}						
 				}
 
-				//check if going to read outside the array
-				if (readFrom < 0)
-				{
-					break;
-				}
+				
 				node = nextArray[readFrom][0];
 				readFrom--;
 				depth++;
 				//hd.color = float4(1, 1, 0, 1);				
 			}
+
+			//check if going to read outside the array
+			if (readFrom < 0)
+			{
+				break;
+			}
+
 		}
+
 		if (j == 40)
 			hd.color = float4(0.5f, 1, 0, 1);
 	}
