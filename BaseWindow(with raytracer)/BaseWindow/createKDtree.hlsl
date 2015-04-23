@@ -33,6 +33,9 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int nrOfElements = nrOfTriangles;
 
 
+	int MAXDEPTH = 2;
+
+
 	// Creating kd-tree
 
 	int lowIndex = 0;						// the current treads low work index
@@ -46,7 +49,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int q;
 
 	//while (depth < 2)
-	for ( ; depth < 10;)
+	for (; depth < MAXDEPTH;)
 	{
 
 		while (workID < 3000000)
@@ -221,7 +224,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 				
 
-				if (splittSize[workID][1] > 6) // splitta boxen och skriv till nästa djup
+				if (splittSize[workID][1] > 8 && MAXDEPTH - 1 != depth) // splitta boxen och skriv till nästa djup
 				{
 
 					// 0 = current depth = splitstart + workID

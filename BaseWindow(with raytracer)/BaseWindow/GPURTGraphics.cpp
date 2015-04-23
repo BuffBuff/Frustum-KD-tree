@@ -368,7 +368,7 @@ void GPURTGraphics::Render(float _dt)
 
 	//set textures
 	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView(),
-										m_NodeBuffer->GetResourceView(), m_Indices->GetResourceView()};
+		m_KDTreeBuffer->GetResourceView(), m_IndiceBuffer->GetResourceView() };
 	g_DeviceContext->CSSetShaderResources(0, 4, srv);
 
 	//dispatch
@@ -413,7 +413,7 @@ void GPURTGraphics::release()
 	SAFE_DELETE(m_meshBuffer);
 	SAFE_DELETE(raytracer);
 	SAFE_DELETE(computeWrap);
-	SAFE_DELETE(g_timer);
+	//SAFE_DELETE(g_timer);
 }
 
 void GPURTGraphics::createKdTree(Mesh *_mesh)

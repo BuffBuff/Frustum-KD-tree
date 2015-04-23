@@ -7,8 +7,8 @@ RWTexture2D<float4> output : register(u0);
 Texture2D MeshTexture : register(t0);
 StructuredBuffer<TriangleMat> triangles : register(t1);
 
-StructuredBuffer<NodePass2> KDtree : register(t2);
-StructuredBuffer<int> Indices : register(t3);
+RWStructuredBuffer<NodePass2> KDtree : register(t2);
+RWStructuredBuffer<int> Indices : register(t3);
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
@@ -74,7 +74,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	else
 	{
 		int j;
-		for (j = 0; j < 40; j++)
+		for (j = 0; j < 40; )
 		{
 			missedAllTriangles = 0;
 			//lövnode?

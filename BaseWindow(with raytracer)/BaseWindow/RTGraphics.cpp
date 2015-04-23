@@ -136,7 +136,7 @@ void RTGraphics::createTriangleTexture()
 
 	//Load OBJ-file
 	m_mesh.loadObj("Meshi/kub.obj");
-	m_mesh.setColor(XMFLOAT4(0,0,0,1));
+	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
 
