@@ -3,43 +3,18 @@
 
 #include <windows.h>
 #include <D3D11.h>
-<<<<<<< HEAD
-//#include <D3DX11.h>
-=======
->>>>>>> origin/master
 #include <d3dCompiler.h>
 #include <string>
 #include <vector>
 #include <map>
 #include <fstream>
-
-#include "Mesh.h"
-
+#include "Constants.h"
 #include <DirectXMath.h>
 using namespace DirectX;
-//#define D3DXMATRIX DirectX::XMMATRIX
-//#define D3DXVECTOR3 DirectX::XMFLOAT3
 
 #define SAFE_RELEASE(x) if( x ) { (x)->Release(); (x) = NULL; }
 #define SAFE_DELETE(x) if( x ) { delete(x); (x) = NULL; }
 #define SAFE_DELETE_ARRAY(x) if( x ) { delete[](x); (x) = NULL; }
-#define PI (3.14159265358979323846f)
-
-static const int CORETHREADSWIDTH = 32; // dont change
-static const int CORETHREADSHEIGHT = 32; // dont change
-static const int COREMULTIPLIERWIDTH = 25; // change to modify screen size
-static const int COREMULTIPLIERHEIGHT = 25; // change to modify screen size
-
-static const float WIDTH = CORETHREADSWIDTH * COREMULTIPLIERWIDTH;
-static const float HEIGHT = CORETHREADSHEIGHT * COREMULTIPLIERHEIGHT;
-
-static const int NROFTHREADSWIDTH = WIDTH / CORETHREADSWIDTH;
-static const int NROFTHREADSHEIGHT = HEIGHT / CORETHREADSHEIGHT;
-
-//#pragma comment(lib, "d3d11.lib")
-//#pragma comment(lib, "d3dcompiler.lib")
-//#pragma comment (lib,"dxerr.lib")
-
 
 struct Vertex
 {
@@ -54,8 +29,11 @@ struct cBuffer
 	XMFLOAT4 cameraPos;
 	XMFLOAT4X4 IP;
 	XMFLOAT4X4 IV;
-	//ObjTriangle objTriangle[12];
+	int nrOfTriangles;
+	XMFLOAT3 pad;
 };
+
+
 
 struct Triangle
 {
@@ -103,15 +81,79 @@ struct COLOR
 	operator const FLOAT* () { return (FLOAT*)this; }
 };
 
+struct AABB
+{
+	XMFLOAT4 minPoint;
+	XMFLOAT4 maxPoint;
+	int triangleIndex;
+};
 
+struct NodeAABB
+{
+	XMFLOAT4 minPoint;
+	XMFLOAT4 maxPoint;
+};
 
+struct Node
+{
+	Node *right = NULL;
+	Node *left = NULL;
+	NodeAABB aabb;
+	std::vector<int> *index;
+};
 
+struct NodePass1
+{
+	int index;					//index to start indices
+	int nrOfTriangles;			//how many indices to read
+	int parent;					//parent id
+	int left_right_bool;		//0 == left child node; 1 == right child node
+};
 
+struct NodePass2
+{
+	int index;					//index to start indices
+	int nrOfTriangles;			//how many indices to read
+<<<<<<< HEAD
+	//int left_right_nodeID[2];	//0 == left child node, 1 == right child node
+=======
+	XMFLOAT2 split;				//0 == splitAxis, 1 == splitValue
+>>>>>>> origin/GPUkd
+	NodeAABB aabb;				//AABB collisionbox
+};
 
+struct Light
+{
+	XMFLOAT4 pos;
+	XMFLOAT4 ambient;
+	XMFLOAT4 diffuse;
+	float range;
+	XMFLOAT3 pad;
+};
 
+struct Sphere
+{
+	XMFLOAT4 pos;
+	XMFLOAT4 color;
+	float radie;
+	XMFLOAT3 pad;
+};
 
+struct cLightBuffer
+{
+	Light lightList[NROFLIGHTS];
+};
 
+struct cSphereBuffer
+{
+	Sphere sphereList[NROFLIGHTS];
+};
 
+struct cToggles
+{
+	int lightSpheres;	//Toggle on debug light spheres
+	XMFLOAT3 togglePad;
+};
 
 //////////////////////////////////////////////////////////////////////////
 // to find memory leaks
@@ -129,10 +171,10 @@ struct COLOR
 #define myMemSize(p)      _msize_dbg(p, _NORMAL_BLOCK)
 #define myNew new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #define myDelete delete  // Set to dump leaks at the program exit.
-#define myInitMemoryCheck() \
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF)
-#define myDumpMemoryLeaks() \
-	_CrtDumpMemoryLeaks()
+//#define myInitMemoryCheck() \
+//	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF)
+//#define myDumpMemoryLeaks() \
+//	_CrtDumpMemoryLeaks()
 #else
 #define myMalloc malloc
 #define myCalloc calloc

@@ -1,12 +1,19 @@
 #include "Collisions.fx"
+#include "Light.fx"
+#include "Debug.fx"
 
 RWTexture2D<float4> output : register(u0);
 
-StructuredBuffer<TriangleMat> triangles : register(t0);
+Texture2D MeshTexture : register(t0);
+StructuredBuffer<TriangleMat> triangles : register(t1);
+
+StructuredBuffer<NodePass2> KDtree : register(t2);
+StructuredBuffer<int> Indices : register(t3);
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
 {
+<<<<<<< HEAD
 	// initiating the output color for the pixel computed
 	float4 outColor = float4(0, 0, 0, 1);
 	
@@ -37,90 +44,417 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	r.origin = cameraPos;
 	r.dir = rayDir;
 
-	// variable for testing the hit
-	float hit = -1.0f;
+	float3 hit = (-1.0f, -1.0f, -1.0f);
 
-<<<<<<< HEAD
-	for (int i = 0; i < nrOfTriangles; i++)
+	//int nodeIndex = 0;
+	//int nextNode = 0;
+	//int nodeStack[30];
+
+	//int levelStart = 1;
+	//int swapMask = 0;
+	
+	int node = 0;	
+	int depth = 0;
+	int levelIndex = 0;
+	int childIndex = 0;
+	int missedAllTriangles = 0;
+	int lastVisitedNode = 0;
+	int wasRightChildNode = 0;
+	int2 nextArray[20];
+	int readFrom = 0;
+	nextArray[0][0] = 0;
+	nextArray[0][1] = 0;
+
+	hd.t = MAXDIST;
+	
+	//super mega awesome iteration of doom and destruction!
+	if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
 	{
-		hit = RayVSTriangle(triangles[i], r, hd.t);
-		if (hit > -1)
+		outColor = float4(1, 0, 1, 1);
+	}
+	else
+	{
+		int j;
+		for (j = 0; j < 40; j++)
 		{
-			hd.pos = r.origin + r.dir * hit;
-			hd.normal = triangles[i].normal;
-			hd.color = triangles[i].color;
-			hd.ID = triangles[i].ID;
-			hd.t = hit;
-			hd.bufferpos = threadID.xy;
-			outColor = hd.color;
+			missedAllTriangles = 0;
+			//lövnode?
+			//ja-> gör träff beräkning
+			//nej-> gå vidare
+			if (KDtree[node].index != -1)
+			{
+
+				for (int i = KDtree[node].index; i < KDtree[node].nrOfTriangles + KDtree[node].index; i++)
+				{
+					hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
+					if (hit.x > -1 && hit.x < hd.t)
+					{
+
+						hd.pos = r.origin + r.dir * hit.x;
+						hd.normal = triangles[Indices[i]].normal;
+						hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+						hd.ID = triangles[Indices[i]].ID;
+						hd.t = hit.x;
+						hd.bufferpos = threadID.xy;
+						missedAllTriangles++;
+
+					}
+				}
+				outColor = float4(1, 1, 0, 1);				
+				if (missedAllTriangles < 1)
+				{
+					//hd.color = float4(0, 0, 1, 1);
+					//break;
+					
+					node = nextArray[readFrom][0];
+					depth = nextArray[readFrom][1];
+					readFrom--;
+
+					//keep an eye on this
+					int onePowDepth = (1 << depth) - 1;
+					levelIndex = node - onePowDepth;
+				}
+				//hit a triangle in the leafnode
+				else
+				{
+					//add the closest box we hit and check 
+					//hd.color = float4(0, 0, 1, 1);
+					break;
+				}
+
+
+			}
+			else
+		{				
+				//calculate the childIDs
+				//(1^(depth+1)-1)+(levelIndex*2)					
+
+				childIndex = ((1 << depth + 1) - 1) + (levelIndex * 2);
+				float left = RayVSAABB(r, KDtree[childIndex].aabb);
+
+				float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
+					
+				//modify the levelIndex
+				levelIndex *= 2;
+
+				//if both children are hit
+				if (left != MAXDIST && right != MAXDIST)
+				{
+					if (left > right)
+					{
+						//add left node first
+						readFrom++;
+						nextArray[readFrom][0] = childIndex;
+						nextArray[readFrom][1] = depth + 1;
+						//add right node
+						readFrom++;
+						nextArray[readFrom][0] = childIndex + 1;
+						nextArray[readFrom][1] = depth + 1;
+						levelIndex++;
+					}
+					else
+					{
+						//add right node first
+						readFrom++;
+						nextArray[readFrom][0] = childIndex + 1;
+						nextArray[readFrom][1] = depth + 1;
+						//add left node
+						readFrom++;
+						nextArray[readFrom][0] = childIndex;
+						nextArray[readFrom][1] = depth + 1;
+					}
+				}
+
+				//bara en träffades
+				else
+				{
+					readFrom++;
+					if (left != MAXDIST)
+					{
+						nextArray[readFrom][0] = childIndex;
+						nextArray[readFrom][1] = depth + 1;
+					}
+					else
+					{
+						nextArray[readFrom][0] = childIndex + 1;
+						nextArray[readFrom][1] = depth + 1;
+						levelIndex++;
+					}						
+				}
+
+				
+				node = nextArray[readFrom][0];
+				readFrom--;
+				depth++;
+				//hd.color = float4(1, 1, 0, 1);				
+			}
+
+			//check if going to read outside the array
+			if (readFrom < 0)
+			{
+				break;
+			}
+
 		}
-=======
 
-
-	//------------------------------- single triangle test
-	//Triangle tri;
-	//tri.pos[0] = float4(0, 0, 1, 0);
-	//tri.pos[1] = float4(-1, 0, 1, 0);
-	//tri.pos[2] = float4(0, 1, 1, 0);
-	//tri.color = float4(0, 0, 1, 1);
-	//tri.normal = float4(0, 0, 1, 1);
-	//tri.ID = 0;
-	//tri.pad = float3(0,0,0);
-
-	//// test tri collision
-	//hit = RayVSTriangle(tri, r, hd.t);
-	//if (hit > -1)
-	//{
-	//	hd.pos = r.origin + r.dir * hit;
-	//	hd.normal = tri.normal;
-	//	hd.color = tri.color;
-	//	hd.ID = tri.ID;
-	//	hd.t = hit;
-	//	hd.bufferpos = threadID.xy;
-	//	outColor = hd.color;
-	//}
-
-	//outColor += triangles[0].pos[0];
-	//outColor += triangles[0].pos[1];
-	//outColor += triangles[0].pos[2];
-
-
-
-	hit = RayVSTriangle(triangles[0], r, hd.t);
-	if (hit > -1)
-	{
-		outColor -= float4(1, 0, 0, 0);
-		hd.pos = r.origin + r.dir * hit;
-		hd.normal = triangles[0].normal;
-		hd.color = triangles[0].color;
-		hd.ID = triangles[0].ID;
-		hd.t = hit;
-		hd.bufferpos = threadID.xy;
-		outColor = hd.color;
->>>>>>> origin/master
+		if (j == 40)
+			hd.color = float4(0.5f, 1, 0, 1);
 	}
 
-	//outColor = triangles[0].color;
 
-	//  basic triangle collision
-	/*for (int i = 0; i < NRTRIANGLES; i++)		
-	{
-		float3 nopp = tri[i].pad;
-			hit = RayVSTriangle(tri[i], r, hd.t);
+	//////////////////////////////////
+	///Light
+	/////////////////////////////////
+	/*
+	//resetting for light and seting new variables
+	Ray lightRay;
+	hitData lightHit;
 
-		if (hit > -1)
-		{
-			hd.pos = r.origin + r.dir * hit;
-			hd.normal = tri[i].normal;
-			hd.color = tri[i].color;
-			hd.ID = tri[i].ID;
-			hd.t = hit;
-			hd.bufferpos = threadID.xy;
+	lightHit.t = -1.0f;
+	lightHit.pos = float4(0,0,0,0);
+	lightHit.color = float4(0,0,0,0);
+	lightHit.normal = float4(0,0,0,0);
+	lightHit.ID = 0.f;
+	lightHit.bufferpos = float2(0,0);
 
-		}
-	}*/
+	nodeIndex = 0;
+	nextNode = 0;
+	hit = (-1.0f, -1.0f, -1.0f);
 
 	// the output picture
-	output[threadID.xy] = outColor;
+	[unroll]for (int i = 0; i < NROFLIGHTS; i++)
+	{
+		float4 color = float4(0, 0, 0, 0);
+		lightRay.origin = hd.pos;
+		lightRay.dir = normalize(lightList[i].pos - hd.pos);
+		float lightLength = length(lightList[i].pos.xyz - hd.pos.xyz);
+
+		// ## MESH ## //
+		while (nextNode > -1)
+		{
+			if (KDtree[nodeIndex].index == -1)
+			{
+				if (RayVSAABB(lightRay, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
+				{
+					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
+					nextNode++;
+				}																							// 380 fps kub
+
+				if (RayVSAABB(lightRay, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
+				{
+					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
+					nextNode++;
+				}
+
+			}
+			else
+			{
+				// triangle intersect logic
+				for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
+				{
+					hit = RayVSTriangleMat(triangles[Indices[i]], lightRay, hd.t);
+					if (hit.x > -1)
+					{
+						lightHit.t = hit.x;
+					}
+				}
+			}
+
+			nextNode--;
+			nodeIndex = nodeStack[nextNode];
+
+		}
+		
+		// ## SHADOWS ## //
+		if (lightHit.t > EPSILON && lightLength > lightHit.t)
+		{
+			color = (float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0) * 0.5f);
+		}
+		else
+		{
+			color = float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0);
+		}
+
+		outColor += color;
+	}
+	*/
+	outColor = float4( hd.color);
+	//outColor = float4(1,0,0,1) * lol;
+	//debug code
+	if (lightSpheres > 0)
+	{
+		outColor += debugLightSpheres(r, hd.t);
+	}
+
+	output[threadID.xy] = saturate(outColor);
 	//output[threadID.xy] = float4(1, 1, 0, 1);
+=======
+	//// initiating the output color for the pixel computed
+	//float4 outColor = float4(0, 0, 0, 1);
+	//
+	//// index of the thread in 1D buffers
+	//int index = threadID.x + threadID.y * HEIGHT;
+
+	//// init hitData
+	//hitData hd;
+	//hd.t = -1;
+	//hd.color = outColor;
+	//hd.pos = float4(0, 0, 0, 0);
+	//hd.normal = float4(0, 0, 0, 0);
+	//hd.bufferpos = float2(0, 0);
+
+	//// xy dir of the primary ray
+	//float norm_X, norm_Y;
+	//norm_X = ((threadID.x / WIDTH) * 2) - 1.0f;
+	//norm_Y = ((1.0f - (threadID.y / HEIGHT)) * 2) - 1.0f;
+
+	//// init primary ray
+	//Ray r;
+	//float4 rayDir = float4(norm_X, norm_Y, 1, 1);
+	//rayDir = mul(rayDir, IP);
+	//rayDir = rayDir / rayDir.w;
+	//rayDir = mul(rayDir, IV);
+	//rayDir = rayDir - cameraPos;
+	//rayDir = normalize(rayDir);
+	//r.origin = cameraPos;
+	//r.dir = rayDir;
+
+	//int nodeIndex = 0;
+
+	//int nextNode = 0;
+	//int nodeStack[30];
+	//float3 hit = (-1.0f, -1.0f, -1.0f);
+
+	////while (nextNode > -1)
+	////{
+	////	if (KDtree[nodeIndex].index == -1)
+	////	{
+
+	////		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	////		if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
+	////		{
+	////			nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
+	////			nextNode++;
+	////		}																							// 380 fps kub
+
+	////		if (RayVSAABB(r, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
+	////		{
+	////			nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
+	////			nextNode++;
+	////		}
+
+	////	}
+	////	else
+	////	{
+	////		// triangle intersect logic
+	////		for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
+	////		{
+	////			hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
+	////			if (hit.x > -1)
+	////			{
+
+	////				hd.pos = r.origin + r.dir * hit.x;
+	////				hd.normal = triangles[Indices[i]].normal;
+	////				hd.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+	////				hd.ID = triangles[Indices[i]].ID;
+	////				hd.t = hit.x;
+	////				hd.bufferpos = threadID.xy;
+	////			}
+	////		}
+
+
+	////	}
+	////	
+	////	nextNode--;
+	////	nodeIndex = nodeStack[nextNode];
+
+	////}
+
+
+	////////////////////////////////////
+	/////Light
+	///////////////////////////////////
+
+	////resetting for light and seting new variables
+	//Ray lightRay;
+	//hitData lightHit;
+
+	//lightHit.t = -1.0f;
+	//lightHit.pos = float4(0,0,0,0);
+	//lightHit.color = float4(0,0,0,0);
+	//lightHit.normal = float4(0,0,0,0);
+	//lightHit.ID = 0.f;
+	//lightHit.bufferpos = float2(0,0);
+
+	//nodeIndex = 0;
+	//nextNode = 0;
+	//hit = (-1.0f, -1.0f, -1.0f);
+
+	//// the output picture
+	//[unroll]for (int i = 0; i < NROFLIGHTS; i++)
+	//{
+	//	float4 color = float4(0, 0, 0, 0);
+	//	lightRay.origin = hd.pos;
+	//	lightRay.dir = normalize(lightList[i].pos - hd.pos);
+	//	float lightLength = length(lightList[i].pos.xyz - hd.pos.xyz);
+
+	//	// ## MESH ## //
+	//	while (nextNode > -1)
+	//	{
+	//		if (KDtree[nodeIndex].index == -1)
+	//		{
+	//			if (RayVSAABB(lightRay, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
+	//			{
+	//				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
+	//				nextNode++;
+	//			}																							// 380 fps kub
+
+	//			if (RayVSAABB(lightRay, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
+	//			{
+	//				nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
+	//				nextNode++;
+	//			}
+
+	//		}
+	//		else
+	//		{
+	//			// triangle intersect logic
+	//			for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
+	//			{
+	//				hit = RayVSTriangleMat(triangles[Indices[i]], lightRay, hd.t);
+	//				if (hit.x > -1)
+	//				{
+	//					lightHit.t = hit.x;
+	//				}
+	//			}
+	//		}
+
+	//		nextNode--;
+	//		nodeIndex = nodeStack[nextNode];
+
+	//	}
+	//	
+	//	// ## SHADOWS ## //
+	//	if (lightHit.t > EPSILON && lightLength > lightHit.t)
+	//	{
+	//		color = (float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0) * 0.5f);
+	//	}
+	//	else
+	//	{
+	//		color = float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0);
+	//	}
+
+	//	outColor += color;
+	//}
+
+	////debug code
+	//if (lightSpheres > 0)
+	//{
+	//	outColor += debugLightSpheres(r, hd.t);
+	//}
+
+	//output[threadID.xy] = saturate(outColor);
+	////output[threadID.xy] = float4(1, 1, 0, 1);
+>>>>>>> origin/GPUkd
 }

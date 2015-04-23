@@ -12,6 +12,8 @@ m_fps(0.f)
 
 	m_Hwnd = nullptr;
 	m_Hwnd = _hwnd;
+	m_SwapStructure[0] = NULL;
+	m_SwapStructure[1] = NULL;
 
 	g_cBuffer		= nullptr;
 	backbuffer		= nullptr;
@@ -27,6 +29,8 @@ m_fps(0.f)
 
 	createKDtree = nullptr;
 	createKDtree = computeWrap->CreateComputeShader("createKDtree");
+
+	createAABBs = computeWrap->CreateComputeShader("createAABBs");
 
 	ID3D11Texture2D* pBackBuffer;
 	hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
@@ -44,6 +48,9 @@ m_fps(0.f)
 
 	//creating node buffer
 	createNodeBuffer(&m_rootNode);
+
+	//creating swap buffer
+	createSwapStructures();
 
 	//create lights
 	createLightBuffer();
@@ -101,10 +108,10 @@ void GPURTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/bunny.obj");
+	m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
-	m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
+	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
 
 	createKdTree(&m_mesh);
 
@@ -196,9 +203,73 @@ void GPURTGraphics::createLightBuffer()
 		lightcb.lightList[i].range = lightRange;
 		lightcb.lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
 	}
+}
 
+void GPURTGraphics::createSwapStructures()
+{
+	m_SwapStructure[0] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int)*4,
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap Structure");
 
+	m_SwapStructure[1] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int)*4,
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap Structure");
 
+	m_SwapSize = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int)*2,
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
+	m_IndiceBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int),
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
+	m_KDTreeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(NodePass2),
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
+	m_indexingCountBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int),
+		2,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
+	
+	m_mutex = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(int),
+		3000000,
+		false,
+		true,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
 
 }
 
@@ -248,19 +319,41 @@ void GPURTGraphics::Update(float _dt)
 
 	// fill the aabb buffer
 
-	createKDtree->Set();
 
 	ID3D11ShaderResourceView *srv[] = {  m_meshBuffer->GetResourceView()};
 	g_DeviceContext->CSSetShaderResources(1, 1, srv);
 
 	
 
-	ID3D11UnorderedAccessView* uav1[] = { m_aabbBuffer->GetUnorderedAccessView() };
-	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav1, NULL);
+	ID3D11UnorderedAccessView* uav1[] = { m_aabbBuffer->GetUnorderedAccessView(), m_KDTreeBuffer->GetUnorderedAccessView(), m_IndiceBuffer->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 3, uav1, NULL);
+
+	ID3D11UnorderedAccessView* uav2[] = { m_SwapStructure[0]->GetUnorderedAccessView(), m_SwapStructure[1]->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, uav2,NULL);
+
+	ID3D11UnorderedAccessView* uav3[] = { m_SwapSize->GetUnorderedAccessView()};
+	g_DeviceContext->CSSetUnorderedAccessViews(5, 1, uav3, NULL);
+
+	ID3D11UnorderedAccessView* uav4[] = { m_indexingCountBuffer->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(6, 1, uav4, NULL);
+	
+	ID3D11UnorderedAccessView* uav5[] = { m_mutex->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(7, 1, uav5, NULL);
+
+	// create the AABB list
+
+	createAABBs->Set();
+
+	//g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	//g_timer->Stop();
+
+	//	create the KD tree 
+	createKDtree->Set();
 
 	g_timer->Start();
-
-	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NULL, NULL);
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	g_timer->Stop();
 }
@@ -328,4 +421,9 @@ void GPURTGraphics::createKdTree(Mesh *_mesh)
 
 }
 
+void GPURTGraphics::updateTogglecb(int _lightSpheres, int _placeHolder1, int _placeHolder2)
+{
+	//togglescb.lightSpheres = _lightSpheres;
 
+	//togglescb.togglePad = XMFLOAT3(0, 0, 0);
+}

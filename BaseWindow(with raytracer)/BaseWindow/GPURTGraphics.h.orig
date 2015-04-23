@@ -67,7 +67,11 @@ private:
 	Node						m_rootNode;
 	
 	//HWND
+<<<<<<< HEAD
+	HWND						*m_Hwnd;
+=======
 	HWND*						m_Hwnd = NULL;
+>>>>>>> origin/GPUkd
 
 	//Timers
 	float						m_time;
