@@ -15,9 +15,9 @@ void main(uint3 threadID : SV_DispatchThreadID)
 {
 	// initiating the output color for the pixel computed
 	float4 outColor = float4(0, 0, 0, 1);
-	
-	// index of the thread in 1D buffers
-	int index = threadID.x + threadID.y * HEIGHT;
+
+		// index of the thread in 1D buffers
+		int index = threadID.x + threadID.y * HEIGHT;
 
 	// init hitData
 	hitData hd;
@@ -35,7 +35,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	// init primary ray
 	Ray r;
 	float4 rayDir = float4(norm_X, norm_Y, 1, 1);
-	rayDir = mul(rayDir, IP);
+		rayDir = mul(rayDir, IP);
 	rayDir = rayDir / rayDir.w;
 	rayDir = mul(rayDir, IV);
 	rayDir = rayDir - cameraPos;
@@ -45,48 +45,37 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	float3 hit = (-1.0f, -1.0f, -1.0f);
 
-	//int nodeIndex = 0;
-	//int nextNode = 0;
-	//int nodeStack[30];
-
-	//int levelStart = 1;
-	//int swapMask = 0;
-	
-	int node = 0;	
+		//Setting up for the traversal of the kd-tree
+		int node = 0;
 	int depth = 0;
 	int levelIndex = 0;
 	int childIndex = 0;
 	int missedAllTriangles = 0;
-	int lastVisitedNode = 0;
-	int wasRightChildNode = 0;
 	int2 nextArray[20];
 	int readFrom = 0;
 	nextArray[0][0] = 0;
 	nextArray[0][1] = 0;
 
-	hd.t = MAXDIST;
-	
 	//super mega awesome iteration of doom and destruction!
 	if (RayVSAABB(r, KDtree[0].aabb) == MAXDIST)
 	{
-		outColor = float4(1, 0, 1, 1);
+		//outColor = float4(1, 0, 1, 1);
 	}
 	else
 	{
 		int j;
-		for (j = 0; j < 40; j++)
+		for (j = 0; j < 40;)
 		{
 			missedAllTriangles = 0;
-			//lövnode?
-			//ja-> gör träff beräkning
-			//nej-> gå vidare
+
+			//if leafnode
 			if (KDtree[node].index != -1)
 			{
-
+				//check the triangles in the leafnode
 				for (int i = KDtree[node].index; i < KDtree[node].nrOfTriangles + KDtree[node].index; i++)
 				{
 					hit = RayVSTriangleMat(triangles[Indices[i]], r, hd.t);
-					if (hit.x > -1 && hit.x < hd.t)
+					if (hit.x > -1)
 					{
 
 						hd.pos = r.origin + r.dir * hit.x;
@@ -99,32 +88,27 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					}
 				}
-				outColor = float4(1, 1, 0, 1);				
+				//if all the triangles where missed
 				if (missedAllTriangles < 1)
 				{
-					//hd.color = float4(0, 0, 1, 1);
-					//break;
-					
 					node = nextArray[readFrom][0];
 					depth = nextArray[readFrom][1];
 					readFrom--;
 
-					//keep an eye on this
 					int onePowDepth = (1 << depth) - 1;
 					levelIndex = node - onePowDepth;
 				}
 				//hit a triangle in the leafnode
 				else
 				{
-					//add the closest box we hit and check 
 					//hd.color = float4(0, 0, 1, 1);
 					break;
 				}
-
-
 			}
+			//if not a leafnode
+			//step in the kd-tree
 			else
-		{				
+			{
 				//calculate the childIDs
 				//(1^(depth+1)-1)+(levelIndex*2)					
 
@@ -132,13 +116,14 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				float left = RayVSAABB(r, KDtree[childIndex].aabb);
 
 				float right = RayVSAABB(r, KDtree[childIndex + 1].aabb);
-					
+
 				//modify the levelIndex
 				levelIndex *= 2;
 
 				//if both children are hit
 				if (left != MAXDIST && right != MAXDIST)
 				{
+					//right child hit first
 					if (left > right)
 					{
 						//add left node first
@@ -151,6 +136,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 						nextArray[readFrom][1] = depth + 1;
 						levelIndex++;
 					}
+					//left child hit first
 					else
 					{
 						//add right node first
@@ -163,25 +149,25 @@ void main(uint3 threadID : SV_DispatchThreadID)
 						nextArray[readFrom][1] = depth + 1;
 					}
 				}
-
-				//bara en träffades
+				//only one child hit
 				else
 				{
 					readFrom++;
+					//left child
 					if (left != MAXDIST)
 					{
 						nextArray[readFrom][0] = childIndex;
 						nextArray[readFrom][1] = depth + 1;
 					}
+					//right child
 					else
 					{
 						nextArray[readFrom][0] = childIndex + 1;
 						nextArray[readFrom][1] = depth + 1;
 						levelIndex++;
-					}						
+					}
 				}
-
-				
+				//finish up for a new round in the loop
 				node = nextArray[readFrom][0];
 				readFrom--;
 				depth++;
@@ -195,7 +181,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			}
 
 		}
-
+		//debug check if the loop got to a max
+		//instead of crashing, add a color on the broken part
 		if (j == 40)
 			hd.color = float4(0.5f, 1, 0, 1);
 	}
@@ -204,68 +191,170 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	//////////////////////////////////
 	///Light
 	/////////////////////////////////
-	/*
-	//resetting for light and seting new variables
+
+	//resetting for light and setting new variables
 	Ray lightRay;
-	hitData lightHit;
+	hitData lightHitData;
 
-	lightHit.t = -1.0f;
-	lightHit.pos = float4(0,0,0,0);
-	lightHit.color = float4(0,0,0,0);
-	lightHit.normal = float4(0,0,0,0);
-	lightHit.ID = 0.f;
-	lightHit.bufferpos = float2(0,0);
+	lightHitData.t = -1.0f;
+	lightHitData.pos = float4(0, 0, 0, 0);
+	lightHitData.color = float4(0, 0, 0, 0);
+	lightHitData.normal = float4(0, 0, 0, 0);
+	lightHitData.ID = 0.f;
+	lightHitData.bufferpos = float2(0, 0);
 
-	nodeIndex = 0;
-	nextNode = 0;
+	node = 0;
+	depth = 0;
+	levelIndex = 0;
+	childIndex = 0;
+	missedAllTriangles = 0;
+	readFrom = 0;
+	nextArray[0][0] = 0;
+	nextArray[0][1] = 0;
+
 	hit = (-1.0f, -1.0f, -1.0f);
 
-	// the output picture
-	[unroll]for (int i = 0; i < NROFLIGHTS; i++)
+	for (int i = 0; i < NROFLIGHTS; i++)
 	{
+
 		float4 color = float4(0, 0, 0, 0);
 		lightRay.origin = hd.pos;
 		lightRay.dir = normalize(lightList[i].pos - hd.pos);
 		float lightLength = length(lightList[i].pos.xyz - hd.pos.xyz);
 
-		// ## MESH ## //
-		while (nextNode > -1)
+		// the output picture
+		if (RayVSAABB(lightRay, KDtree[0].aabb) == MAXDIST)
 		{
-			if (KDtree[nodeIndex].index == -1)
+			//outColor = float4(1, 0, 1, 1);
+		}
+		else
+		{
+			int j;
+			for (j = 0; j < 40;)
 			{
-				if (RayVSAABB(lightRay, KDtree[KDtree[nodeIndex].left_right_nodeID[0]].aabb) != MAXDIST)
-				{
-					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[0];
-					nextNode++;
-				}																							// 380 fps kub
+				missedAllTriangles = 0;
 
-				if (RayVSAABB(lightRay, KDtree[KDtree[nodeIndex].left_right_nodeID[1]].aabb) != MAXDIST)
+				//if leafnode
+				if (KDtree[node].index != -1)
 				{
-					nodeStack[nextNode] = KDtree[nodeIndex].left_right_nodeID[1];
-					nextNode++;
-				}
-
-			}
-			else
-			{
-				// triangle intersect logic
-				for (int i = KDtree[nodeIndex].index; i < KDtree[nodeIndex].nrOfTriangles + KDtree[nodeIndex].index; i++)
-				{
-					hit = RayVSTriangleMat(triangles[Indices[i]], lightRay, hd.t);
-					if (hit.x > -1)
+					//check the triangles in the leafnode
+					for (int i = KDtree[node].index; i < KDtree[node].nrOfTriangles + KDtree[node].index; i++)
 					{
-						lightHit.t = hit.x;
+						hit = RayVSTriangleMat(triangles[Indices[i]], lightRay, lightHitData.t);
+						if (hit.x > -1)
+						{
+
+							lightHitData.pos = lightRay.origin + lightRay.dir * hit.x;
+							lightHitData.normal = triangles[Indices[i]].normal;
+							lightHitData.color = MeshTexture[hit.yz*512.f] + triangles[Indices[i]].color;
+							lightHitData.ID = triangles[Indices[i]].ID;
+							lightHitData.t = hit.x;
+							lightHitData.bufferpos = threadID.xy;
+							missedAllTriangles++;
+
+						}
+					}
+					//if all the triangles where missed
+					if (missedAllTriangles < 1)
+					{
+						node = nextArray[readFrom][0];
+						depth = nextArray[readFrom][1];
+						readFrom--;
+
+						int onePowDepth = (1 << depth) - 1;
+						levelIndex = node - onePowDepth;
+					}
+					//hit a triangle in the leafnode
+					else
+					{
+						//hd.color = float4(0, 0, 1, 1);
+						break;
 					}
 				}
+				//if not a leafnode
+				//step in the kd-tree
+				else
+				{
+					//calculate the childIDs
+					//(1^(depth+1)-1)+(levelIndex*2)					
+
+					childIndex = ((1 << depth + 1) - 1) + (levelIndex * 2);
+					float left = RayVSAABB(lightRay, KDtree[childIndex].aabb);
+
+					float right = RayVSAABB(lightRay, KDtree[childIndex + 1].aabb);
+
+					//modify the levelIndex
+					levelIndex *= 2;
+
+					//if both children are hit
+					if (left != MAXDIST && right != MAXDIST)
+					{
+						//right child hit first
+						if (left > right)
+						{
+							//add left node first
+							readFrom++;
+							nextArray[readFrom][0] = childIndex;
+							nextArray[readFrom][1] = depth + 1;
+							//add right node
+							readFrom++;
+							nextArray[readFrom][0] = childIndex + 1;
+							nextArray[readFrom][1] = depth + 1;
+							levelIndex++;
+						}
+						//left child hit first
+						else
+						{
+							//add right node first
+							readFrom++;
+							nextArray[readFrom][0] = childIndex + 1;
+							nextArray[readFrom][1] = depth + 1;
+							//add left node
+							readFrom++;
+							nextArray[readFrom][0] = childIndex;
+							nextArray[readFrom][1] = depth + 1;
+						}
+					}
+					//only one child hit
+					else
+					{
+						readFrom++;
+						//left child
+						if (left != MAXDIST)
+						{
+							nextArray[readFrom][0] = childIndex;
+							nextArray[readFrom][1] = depth + 1;
+						}
+						//right child
+						else
+						{
+							nextArray[readFrom][0] = childIndex + 1;
+							nextArray[readFrom][1] = depth + 1;
+							levelIndex++;
+						}
+					}
+					//finish up for a new round in the loop
+					node = nextArray[readFrom][0];
+					readFrom--;
+					depth++;
+					//hd.color = float4(1, 1, 0, 1);				
+				}
+
+				//check if going to read outside the array
+				if (readFrom < 0)
+				{
+					break;
+				}
+
 			}
-
-			nextNode--;
-			nodeIndex = nodeStack[nextNode];
-
+			//debug check if the loop got to a max
+			//instead of crashing, add a color on the broken part
+			if (j == 40)
+				hd.color = float4(0.5f, 1, 0, 1);
 		}
-		
+
 		// ## SHADOWS ## //
-		if (lightHit.t > EPSILON && lightLength > lightHit.t)
+		if (lightHitData.t > EPSILON && lightLength > lightHitData.t)
 		{
 			color = (float4(PointLightR(hd.pos, hd.normal, hd.color, lightList[i]), 0) * 0.5f);
 		}
@@ -276,9 +365,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		outColor += color;
 	}
-	*/
-	outColor = float4( hd.color);
-	//outColor = float4(1,0,0,1) * lol;
+
+
+	//outColor = float4( hd.color);
+
 	//debug code
 	if (lightSpheres > 0)
 	{
@@ -286,5 +376,4 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	}
 
 	output[threadID.xy] = saturate(outColor);
-	//output[threadID.xy] = float4(1, 1, 0, 1);
 }
