@@ -46,7 +46,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int q;
 
 	//while (depth < 2)
-	for ( ; depth < 1;)
+	for ( ; depth < 10;)
 	{
 
 		while (workID < 3000000)
@@ -221,7 +221,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 				
 
-				if (splittSize[workID][1] > 10) // splitta boxen och skriv till nästa djup
+				if (splittSize[workID][1] > 6) // splitta boxen och skriv till nästa djup
 				{
 
 					// 0 = current depth = splitstart + workID
@@ -267,7 +267,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis];
 
 				}
-				else// if (splittSize[workID][0] > 0)// leafNode
+				else if (splittSize[workID][0] > 0)// leafNode
 				{
 					// KDtree index				-	index to start reading triangle indexes from
 					// KDtree nrOfTriangles		-	the amount to read
@@ -305,8 +305,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				}
 				/*else
 				{
-					KDtree[startIndexNextDepth + workID].split[0] = depth;
-					KDtree[startIndexNextDepth + workID].split[1] = 99;
+					KDtree[startIndexNextDepth + workID].split[0] = -1;
+					KDtree[startIndexNextDepth + workID].split[1] = -1;
 				}*/
 
 				workID += NROFTHREADSCREATIONDISPATCHES;
