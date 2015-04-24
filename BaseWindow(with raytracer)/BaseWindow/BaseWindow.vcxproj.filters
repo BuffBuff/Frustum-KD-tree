@@ -49,6 +49,12 @@
     <Filter Include="Shaders\GPU kd">
       <UniqueIdentifier>{db63296e-481b-4cf9-8653-a2af3ba9b664}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Frustum Raytracer">
+      <UniqueIdentifier>{7f318899-932d-470b-ac3c-827655130059}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Frustum Raytracer">
+      <UniqueIdentifier>{70925b19-42f5-4e8f-a058-a31f160eeb97}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -80,6 +86,9 @@
     </ClCompile>
     <ClCompile Include="GPURTGraphics.cpp">
       <Filter>Source Files\GPU Raytracer</Filter>
+    </ClCompile>
+    <ClCompile Include="FRTGraphics.cpp">
+      <Filter>Source Files\Frustum Raytracer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="GPURTGraphics.h">
       <Filter>Header Files\GPU Raytracer</Filter>
+    </ClInclude>
+    <ClInclude Include="FRTGraphics.h">
+      <Filter>Header Files\Frustum Raytracer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

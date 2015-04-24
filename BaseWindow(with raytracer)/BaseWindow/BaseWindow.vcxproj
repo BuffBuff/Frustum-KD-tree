@@ -86,6 +86,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ComputeHelp.cpp" />
     <ClCompile Include="D3D11Timer.cpp" />
+    <ClCompile Include="FRTGraphics.cpp" />
     <ClCompile Include="GPURTGraphics.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="ComputeHelp.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="D3D11Timer.h" />
+    <ClInclude Include="FRTGraphics.h" />
     <ClInclude Include="GPURTGraphics.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="hrTimer.h" />

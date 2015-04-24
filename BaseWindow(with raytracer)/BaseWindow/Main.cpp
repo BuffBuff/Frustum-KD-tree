@@ -7,7 +7,8 @@
 
 //#define standardrender
 //#define raytracing
-#define gpuraytracing
+//#define gpuraytracing
+#define fraytracing
 
 #ifdef raytracing
 #include "RTGraphics.h"
@@ -15,6 +16,10 @@
 
 #ifdef gpuraytracing
 #include "GPURTGraphics.h"
+#endif
+
+#ifdef fraytracing
+#include "FRTGraphics.h"
 #endif
 
 #define _CRTDBG_MAP_ALLOC
@@ -53,6 +58,12 @@ RTGraphics *graphics;
 #ifdef gpuraytracing
 
 GPURTGraphics *graphics;
+
+#endif
+
+#ifdef fraytracing
+
+FRTGraphics *graphics;
 
 #endif
 
@@ -169,6 +180,10 @@ HRESULT Init()
 
 #ifdef gpuraytracing
 	graphics = new GPURTGraphics(&g_hWnd);
+#endif
+
+#ifdef fraytracing
+	graphics = new FRTGraphics(&g_hWnd);
 #endif
 
 #ifdef standardrender
