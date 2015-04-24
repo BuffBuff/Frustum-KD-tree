@@ -57,6 +57,9 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			splittSize[workID][0] = 0;
 			splittSize[workID][1] = 0;
 
+	/*		splittingSwap[moveSplit][workID][0] = -1;
+			splittingSwap[moveSplit][workID][1] = -1;*/
+
 			workID += NROFTHREADSCREATIONDISPATCHES;
 
 		}
@@ -232,7 +235,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					// 2 = right child = splitstart + ((workID * 2) + 1)
 
 					// add to continue splitting
-					InterlockedAdd(indexingCount[1],1);
+					InterlockedAdd(indexingCount[1], indexingCount[1] + 1, indexingCount[2]);
 
 
 					// chose the best split axis

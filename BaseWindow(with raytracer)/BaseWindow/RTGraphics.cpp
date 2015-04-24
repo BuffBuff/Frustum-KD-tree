@@ -336,8 +336,8 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(NodePass2),
 											 initdata->size(),
-											 true,
 											 false,
+											 true,
 											 initdata->data(),
 											 false,
 											 "Structed Buffer: Node Buffer");
@@ -346,8 +346,8 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 	m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(int),
 											 indiceList->size(),
-											 true,
 											 false,
+											 true,
 											 indiceList->data(),
 											 false,
 											 "Structed Buffer: Indice Buffer");
@@ -437,9 +437,14 @@ void RTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(0,1,&backbuffer,NULL);
 
 	//set textures
-	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView(),
-										m_NodeBuffer->GetResourceView(), m_Indices->GetResourceView()};
-	g_DeviceContext->CSSetShaderResources(0, 4, srv);
+	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView() };//,
+										//m_NodeBuffer->GetResourceView(), m_Indices->GetResourceView()};
+	g_DeviceContext->CSSetShaderResources(0, 2, srv);
+
+
+	ID3D11UnorderedAccessView* uav1[] = { m_NodeBuffer->GetUnorderedAccessView(), m_Indices->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(2, 2, uav1, NULL);
+
 
 	//dispatch
 	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);

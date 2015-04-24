@@ -111,7 +111,7 @@ void GPURTGraphics::createTriangleTexture()
 	m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
-	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
+	m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
 
 	createKdTree(&m_mesh);
 
@@ -189,8 +189,8 @@ void GPURTGraphics::createLightBuffer()
 
 	int rangeModifier = 15;
 	float lightRange = 30.f;
-	float ambientMod = 0.25f;
-	float diffuseMod = 0.55f;
+	float ambientMod = 0.55f;
+	float diffuseMod = 0.85f;
 	std::srand(10);
 	for (int i = 0; i < NROFLIGHTS; i++)
 	{
@@ -367,9 +367,11 @@ void GPURTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(0,1,&backbuffer,NULL);
 
 	//set textures
-	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView(),
-		m_KDTreeBuffer->GetResourceView(), m_IndiceBuffer->GetResourceView() };
-	g_DeviceContext->CSSetShaderResources(0, 4, srv);
+	ID3D11ShaderResourceView *srv[] = { m_meshTexture, m_meshBuffer->GetResourceView() };
+	g_DeviceContext->CSSetShaderResources(0, 2, srv);
+
+	ID3D11UnorderedAccessView* uav1[] = { m_KDTreeBuffer->GetUnorderedAccessView(), m_IndiceBuffer->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(2, 2, uav1, NULL);
 
 	//dispatch
 	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
