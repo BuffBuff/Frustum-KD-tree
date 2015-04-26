@@ -15,7 +15,7 @@ RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int2 holds x = 
 
 RWStructuredBuffer<int2> splittSize : register(u5); // used for storing the size of every split and then the start values of the split
 
-RWStructuredBuffer<int> indexingCount : register(u6); // using this struct to designate which index in the indiceList to wright the leaf node to
+RWStructuredBuffer<int> indexingCount : register(u6); // using this struct to designate which index in the indiceList to wright the leaf node to, index 1 is the depth value of the current depth
 
 RWStructuredBuffer<int> mutex : register(u7);	// Used in the custom interlocking function
 
@@ -40,6 +40,13 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	TriangleMat triangleInWork;
 
 	indexingCount[0] = 0;
+	indexingCount[1] = 0;
+	indexingCount[2] = nrOfTriangles;
+	indexingCount[3] = 0;
+	indexingCount[4] = 1;
+
+
+
 
 	while (workID < 3000000)
 	{

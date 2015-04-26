@@ -157,6 +157,15 @@
     <FxCompile Include="createAABBs.hlsl">
       <Filter>Shaders\GPU kd</Filter>
     </FxCompile>
+    <FxCompile Include="prepKDtree.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
+    </FxCompile>
+    <FxCompile Include="splitCalcKDtree.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
+    </FxCompile>
+    <FxCompile Include="moveKDtree.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources.hlsl">

@@ -32,6 +32,13 @@ m_fps(0.f)
 
 	createAABBs = computeWrap->CreateComputeShader("createAABBs");
 
+
+	splitCalcKDtree = computeWrap->CreateComputeShader("splitCalcKDtree");
+	moveKDtree = computeWrap->CreateComputeShader("moveKDtree");
+	prepKDtree = computeWrap->CreateComputeShader("prepKDtree");
+
+
+
 	ID3D11Texture2D* pBackBuffer;
 	hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 	if (FAILED(hr))
@@ -254,7 +261,7 @@ void GPURTGraphics::createSwapStructures()
 
 	m_indexingCountBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(int),
-		2,
+		100,
 		false,
 		true,
 		NULL,
@@ -344,18 +351,35 @@ void GPURTGraphics::Update(float _dt)
 
 	createAABBs->Set();
 
-	//g_timer->Start();
-	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-	g_DeviceContext->Flush();
-	//g_timer->Stop();
-
-	//	create the KD tree 
-	createKDtree->Set();
-
 	g_timer->Start();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	g_timer->Stop();
+
+	//	create the KD tree 
+
+	/*createKDtree->Set();
+
+	g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	g_timer->Stop();*/
+
+	for (int i = 0; i < MAXDEPTH; i++)
+	{
+
+		splitCalcKDtree->Set();
+		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+
+		moveKDtree->Set();
+		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+
+		prepKDtree->Set();
+		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	}
+
+
+
 }
 
 void GPURTGraphics::Render(float _dt)

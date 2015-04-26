@@ -101,8 +101,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				//hit a triangle in the leafnode
 				else
 				{
-					if (node == 1)
-						hd.color = float4(0, 0, 1, 1);
+					//if (node == 1)
+					//	hd.color = float4(0, 0, 1, 1);
 
 					break;
 				}
