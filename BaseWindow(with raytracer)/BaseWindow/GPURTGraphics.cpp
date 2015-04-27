@@ -358,25 +358,25 @@ void GPURTGraphics::Update(float _dt)
 
 	//	create the KD tree 
 
-	/*createKDtree->Set();
+	createKDtree->Set();
 
 	g_timer->Start();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
-	g_timer->Stop();*/
+	g_timer->Stop();
 
-	for (int i = 0; i < MAXDEPTH; i++)
-	{
+	//for (int i = 0; i < MAXDEPTH; i++)
+	//{
 
-		splitCalcKDtree->Set();
-		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	//	splitCalcKDtree->Set();
+	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 
-		moveKDtree->Set();
-		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	//	moveKDtree->Set();
+	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 
-		prepKDtree->Set();
-		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-	}
+	//	prepKDtree->Set();
+	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	//}
 
 
 
