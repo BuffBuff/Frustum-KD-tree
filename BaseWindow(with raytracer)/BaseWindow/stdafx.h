@@ -99,7 +99,7 @@ struct Node
 	Node *right = NULL;
 	Node *left = NULL;
 	NodeAABB aabb;
-	std::vector<int> *index;
+	std::vector<int> index;
 };
 
 struct NodePass1

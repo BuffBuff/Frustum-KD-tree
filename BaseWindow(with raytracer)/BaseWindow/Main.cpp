@@ -6,8 +6,8 @@
 #include "Graphics.h"
 
 //#define standardrender
-//#define raytracing
-#define gpuraytracing
+#define raytracing
+//#define gpuraytracing
 
 #ifdef raytracing
 #include "RTGraphics.h"
@@ -186,7 +186,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	_CrtDumpMemoryLeaks();
 
 	//Change the number to find a specific 
-	//_crtBreakAlloc = 1585;
+	//_crtBreakAlloc = 199;
 	///
 
 	if (FAILED(InitWindow(hInstance, nCmdShow)))

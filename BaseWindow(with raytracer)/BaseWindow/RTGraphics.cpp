@@ -138,7 +138,7 @@ void RTGraphics::createTriangleTexture()
 	m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
-	m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
+	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
 
 	createKdTree(&m_mesh);
 
@@ -254,11 +254,11 @@ void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, st
 			nextID.erase(nextID.begin());
 
 			_initdata->at(initID).index = _indiceList->size();
-			_initdata->at(initID).nrOfTriangles = node->index->size();
+			_initdata->at(initID).nrOfTriangles = node->index.size();
 
-			for (int i = 0; i < node->index->size(); i++)
+			for (int i = 0; i < node->index.size(); i++)
 			{
-				_indiceList->push_back(node->index->at(i));
+				_indiceList->push_back(node->index.at(i));
 			}
 
 			nextID.push_back(-1);
@@ -499,8 +499,8 @@ void releaseKdTree(Node *_node)
 	//	SAFE_DELETE(_node->index);
 	//}
 
-	if (_node->index != NULL)
-		SAFE_DELETE(_node->index);
+	/*if (_node->index != NULL)
+		SAFE_DELETE(_node->index);*/
 }
 
 void RTGraphics::release()
@@ -546,33 +546,54 @@ void checkTriangleInAABB(TriangleMat const& triangle, NodeAABB const& aabb)
 	}
 }
 
-void checkTree(Node const* node, std::vector<TriangleMat> const& triangles)
+//void checkTree(Node const* node, std::vector<TriangleMat> const& triangles)
+//{
+//	static int nodeNum = 0;
+//	char buffer[1024];
+//	sprintf(buffer, "Node %d\n", nodeNum++);
+//	OutputDebugStringA(buffer);
+//	if (node->left != nullptr)
+//		checkTree(node->left, triangles);
+//	if (node->right != nullptr)
+//		checkTree(node->right, triangles);
+//	sprintf(buffer, "AABB: (%f, %f, %f)-(%f, %f, %f)\n",
+//		node->aabb.minPoint.x, node->aabb.minPoint.y, node->aabb.minPoint.z,
+//		node->aabb.maxPoint.x, node->aabb.maxPoint.y, node->aabb.maxPoint.z);
+//	OutputDebugStringA(buffer);
+//	if (node->index != nullptr)
+//	{
+//		for (int idx : *node.index)
+//		{
+//			TriangleMat const& triangle = triangles[idx];
+//			checkTriangleInAABB(triangle, node->aabb);
+//			sprintf(buffer, "Triangle %d (%f, %f, %f) (%f, %f, %f) (%f, %f, %f)\n", idx,
+//				triangle.pos0.x, triangle.pos0.y, triangle.pos0.z,
+//				triangle.pos1.x, triangle.pos1.y, triangle.pos1.z,
+//				triangle.pos2.x, triangle.pos2.y, triangle.pos2.z);
+//			OutputDebugStringA(buffer);
+//		}
+//	}
+//}
+
+void createNodeAABB(Node* _node, std::vector<AABB>* _AABBList)
 {
-	static int nodeNum = 0;
-	char buffer[1024];
-	sprintf(buffer, "Node %d\n", nodeNum++);
-	OutputDebugStringA(buffer);
-	if (node->left != nullptr)
-		checkTree(node->left, triangles);
-	if (node->right != nullptr)
-		checkTree(node->right, triangles);
-	sprintf(buffer, "AABB: (%f, %f, %f)-(%f, %f, %f)\n",
-		node->aabb.minPoint.x, node->aabb.minPoint.y, node->aabb.minPoint.z,
-		node->aabb.maxPoint.x, node->aabb.maxPoint.y, node->aabb.maxPoint.z);
-	OutputDebugStringA(buffer);
-	if (node->index != nullptr)
+	XMFLOAT4 max = _AABBList->at(0).maxPoint;
+	XMFLOAT4 min = _AABBList->at(0).minPoint;;
+
+	for (int i = 1; i < _AABBList->size(); i++)
 	{
-		for (int idx : *node->index)
-		{
-			TriangleMat const& triangle = triangles[idx];
-			checkTriangleInAABB(triangle, node->aabb);
-			sprintf(buffer, "Triangle %d (%f, %f, %f) (%f, %f, %f) (%f, %f, %f)\n", idx,
-				triangle.pos0.x, triangle.pos0.y, triangle.pos0.z,
-				triangle.pos1.x, triangle.pos1.y, triangle.pos1.z,
-				triangle.pos2.x, triangle.pos2.y, triangle.pos2.z);
-			OutputDebugStringA(buffer);
-		}
+		max.x = (_AABBList->at(i).maxPoint.x > max.x) ? _AABBList->at(i).maxPoint.x : max.x;
+		max.y = (_AABBList->at(i).maxPoint.y > max.y) ? _AABBList->at(i).maxPoint.y : max.y;
+		max.z = (_AABBList->at(i).maxPoint.z > max.z) ? _AABBList->at(i).maxPoint.z : max.z;
+
+		min.x = (_AABBList->at(i).minPoint.x < min.x) ? _AABBList->at(i).minPoint.x : min.x;
+		min.y = (_AABBList->at(i).minPoint.y < min.y) ? _AABBList->at(i).minPoint.y : min.y;
+		min.z = (_AABBList->at(i).minPoint.z < min.z) ? _AABBList->at(i).minPoint.z : min.z;
 	}
+
+	_node->aabb.maxPoint = max;
+	_node->aabb.minPoint = min;
+
 }
 
 void RTGraphics::createKdTree(Mesh *_mesh)
@@ -613,7 +634,9 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 		aabbList.push_back(aabb);
 	}
 
-	createKDNodeSplit(&aabbList,&m_rootNode,1);
+	createNodeAABB(&m_rootNode,&aabbList);
+
+	createKDNodeSplit(&aabbList,&m_rootNode);
 
 	//debug to check the KDTree
 	//checkTree(&m_rootNode, *triangleList);
@@ -624,402 +647,223 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 void assignTriangles(Node* _node, std::vector<AABB>* _AABBList)
 {
 	//something silly with this memory release 
-	_node->index = new std::vector<int>();
+	//_node->index = new std::vector<int>();
 
 	for (int i = 0; i < _AABBList->size(); i++)
 	{
-		_node->index->push_back(_AABBList->at(i).triangleIndex);
+		_node->index.push_back(_AABBList->at(i).triangleIndex);
 	}
 }
 
-void sortAABBX(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
+
+int nodeAABBSplit(Node* _node)
 {
-	float pivotValue;
-	int pivotIndex;
 
-	int highIndex = _highIndex;
-	int lowIndex = _lowIndex;
+	// select split axis
+	int splitAxis;
+	float length[3];
+	length[0] = _node->aabb.maxPoint.x - _node->aabb.minPoint.x;
+	length[1] = _node->aabb.maxPoint.y - _node->aabb.minPoint.y;
+	length[2] = _node->aabb.maxPoint.z - _node->aabb.minPoint.z;
 
-	pivotValue = (_AABBList->at(_highIndex).minPoint.x + _AABBList->at(_highIndex).maxPoint.x) * 0.5f;
-	pivotIndex = _highIndex;
+	splitAxis = length[0] > length[1] ? 0 : 1;
+	splitAxis = length[splitAxis] > length[2] ? splitAxis : 2;
 
-	_highIndex--;
+	// create the new nodes
+	_node->left = new Node();
+	_node->right = new Node();
 
-	while (lowIndex < highIndex)
+	// split the aabb for the new nodes
+	float median = length[splitAxis] * 0.5f;
+
+	if (splitAxis == 0)
 	{
-		float highValue = (_AABBList->at(highIndex).minPoint.x + _AABBList->at(highIndex).maxPoint.x) * 0.5f;
-		float lowValue = (_AABBList->at(lowIndex).minPoint.x + _AABBList->at(lowIndex).maxPoint.x) * 0.5f;
-
-		if (highValue < pivotValue && lowValue > pivotValue) //Time to swap = highIndex value lower than pivotValue and lowIndex value higher than pivotValue
-		{
-			AABB temp = _AABBList->at(lowIndex);
-			_AABBList->at(lowIndex) = _AABBList->at(highIndex);
-			_AABBList->at(highIndex) = temp;
-			lowIndex++;
-		}
-		else if (lowValue <= pivotValue) //lowIndex value smaler than pivotValue
-		{
-			lowIndex++;
-		}
-		else if (highValue >= pivotValue) //highIndex value higher than pivotValue
-		{
-			highIndex--;
-		}
-	}
-
-	AABB temp = _AABBList->at(highIndex);
-	_AABBList->at(highIndex) = _AABBList->at(pivotIndex);  //swapping the pivot element to the right place
-	_AABBList->at(pivotIndex) = temp;
-
-	if (lowIndex - 1 - _lowIndex > 2)
-	{
-		sortAABBX(_AABBList, _lowIndex, lowIndex - 1); // left sub sort
-	}
-	if (_highIndex - lowIndex > 2)
-	{
-		sortAABBX(_AABBList, lowIndex, _highIndex); // right sub sort
-	}
-}
-
-void sortAABBY(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
-{
-	float pivotValue;
-	int pivotIndex;
-
-	int highIndex = _highIndex;
-	int lowIndex = _lowIndex;
-
-	pivotValue = (_AABBList->at(_highIndex).minPoint.y + _AABBList->at(_highIndex).maxPoint.y) * 0.5f;
-	pivotIndex = _highIndex;
-
-	_highIndex--;
-
-	while (lowIndex < highIndex)
-	{
-		float highValue = (_AABBList->at(highIndex).minPoint.y + _AABBList->at(highIndex).maxPoint.y) * 0.5f;
-		float lowValue = (_AABBList->at(lowIndex).minPoint.y + _AABBList->at(lowIndex).maxPoint.y) * 0.5f;
-
-		if (highValue < pivotValue && lowValue > pivotValue) //Time to swap = highIndex value lower than pivotValue and lowIndex value higher than pivotValue
-		{
-			AABB temp = _AABBList->at(lowIndex);
-			_AABBList->at(lowIndex) = _AABBList->at(highIndex);
-			_AABBList->at(highIndex) = temp;
-			lowIndex++;
-		}
-		else if (lowValue <= pivotValue) //lowIndex value smaler than pivotValue
-		{
-			lowIndex++;
-		}
-		else if (highValue >= pivotValue) //highIndex value higher than pivotValue
-		{
-			highIndex--;
-		}
-	}
-
-	AABB temp = _AABBList->at(highIndex);
-	_AABBList->at(highIndex) = _AABBList->at(pivotIndex);  //swapping the pivot element to the right place
-	_AABBList->at(pivotIndex) = temp;
-
-	if (lowIndex - 1 - _lowIndex > 2)
-	{
-		sortAABBY(_AABBList, _lowIndex, lowIndex - 1); // left sub sort
-	}
-	if (_highIndex - lowIndex > 2)
-	{
-		sortAABBY(_AABBList, lowIndex, _highIndex); // right sub sort
-	}
-}
-
-void sortAABBZ(std::vector<AABB>* _AABBList, int _lowIndex, int _highIndex)
-{
-	float pivotValue;
-	int pivotIndex;
-
-	int highIndex = _highIndex;
-	int lowIndex = _lowIndex;
-
-	pivotValue = (_AABBList->at(_highIndex).minPoint.z + _AABBList->at(_highIndex).maxPoint.z) * 0.5f;
-	pivotIndex = _highIndex;
-
-	_highIndex--;
-
-	while (lowIndex < highIndex)
-	{
-		float highValue = (_AABBList->at(highIndex).minPoint.z + _AABBList->at(highIndex).maxPoint.z) * 0.5f;
-		float lowValue = (_AABBList->at(lowIndex).minPoint.z + _AABBList->at(lowIndex).maxPoint.z) * 0.5f;
-
-		if (highValue < pivotValue && lowValue > pivotValue) //Time to swap = highIndex value lower than pivotValue and lowIndex value higher than pivotValue
-		{
-			AABB temp = _AABBList->at(lowIndex);
-			_AABBList->at(lowIndex) = _AABBList->at(highIndex);
-			_AABBList->at(highIndex) = temp;
-			lowIndex++;
-		}
-		else if (lowValue <= pivotValue) //lowIndex value smaler than pivotValue
-		{
-			lowIndex++;
-		}
-		else if (highValue >= pivotValue) //highIndex value higher than pivotValue
-		{
-			highIndex--;
-		}
-	}
-
-	AABB temp = _AABBList->at(highIndex);
-	_AABBList->at(highIndex) = _AABBList->at(pivotIndex);  //swapping the pivot element to the right place
-	_AABBList->at(pivotIndex) = temp;
-
-	if (lowIndex - 1 - _lowIndex > 1)
-	{
-		sortAABBZ(_AABBList, _lowIndex, lowIndex - 1); // left sub sort
-	}
-	if (_highIndex - lowIndex > 1)
-	{
-		sortAABBZ(_AABBList, lowIndex, _highIndex); // right sub sort
-	}
-}
-
-void createNodeAABB(Node* _node, std::vector<AABB>* _AABBList)
-{
-	XMFLOAT4 max = _AABBList->at(0).maxPoint;
-	XMFLOAT4 min = _AABBList->at(0).minPoint;;
-	
-	for (int i = 1; i < _AABBList->size(); i++)
-	{
-		max.x = (_AABBList->at(i).maxPoint.x > max.x) ? _AABBList->at(i).maxPoint.x : max.x;
-		max.y = (_AABBList->at(i).maxPoint.y > max.y) ? _AABBList->at(i).maxPoint.y : max.y;
-		max.z = (_AABBList->at(i).maxPoint.z > max.z) ? _AABBList->at(i).maxPoint.z : max.z;
-
-		min.x = (_AABBList->at(i).minPoint.x < min.x) ? _AABBList->at(i).minPoint.x : min.x;
-		min.y = (_AABBList->at(i).minPoint.y < min.y) ? _AABBList->at(i).minPoint.y : min.y;
-		min.z = (_AABBList->at(i).minPoint.z < min.z) ? _AABBList->at(i).minPoint.z : min.z;
-	}
-
-	_node->aabb.maxPoint = max;
-	_node->aabb.minPoint = min;
-
-}
-
-void RTGraphics::splitListX(Node* _node, std::vector<AABB>* _AABBList)
-{
-	int medianIndex = _AABBList->size() / 2;
-	float medianValue = (_AABBList->at(medianIndex).maxPoint.x + _AABBList->at(medianIndex).minPoint.x)*0.5f;
-
-	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
-	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
-
-	for (int i = 0; i < _AABBList->size(); i++)
-	{
-		if (_AABBList->at(i).maxPoint.x < medianValue)
-		{
-			AABBListLeft->push_back(_AABBList->at(i));
-		}
-		else if (_AABBList->at(i).minPoint.x > medianValue)
-		{
-			AABBListRight->push_back(_AABBList->at(i));
-		}
-		else
-		{
-			AABBListLeft->push_back(_AABBList->at(i));
-			AABBListRight->push_back(_AABBList->at(i));
-		}
-	}
-
-	// SPLITT LIST OR CREATE LEAF NODE
-	if (AABBListLeft->size() < _AABBList->size() && AABBListLeft->size() > 0)
-	{
-		_node->left = new Node();
-
-		createKDNodeSplit(AABBListLeft, _node->left, 2);
-	}
-	else if (AABBListLeft->size() == _AABBList->size() && AABBListRight->size() == _AABBList->size())
-	{
-		return;
-	}
-	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
-	{
-		_node->left = new Node();
 		_node->left->aabb = _node->aabb;
-		assignTriangles(_node->left, _AABBList);
-	}
+		_node->left->aabb.maxPoint.x -= median;
 
-	if (AABBListRight->size() < _AABBList->size() && AABBListRight->size() > 0)
-	{
-		_node->right = new Node();
-
-		createKDNodeSplit(AABBListRight, _node->right, 2);
-	}
-	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
-	{
-		_node->right = new Node();
 		_node->right->aabb = _node->aabb;
-		assignTriangles(_node->right, _AABBList);
+		_node->right->aabb.minPoint.x += median;
 	}
-
-	//something silly with this memory release 
-	AABBListLeft->clear();
-	SAFE_DELETE(AABBListLeft);
-
-	AABBListRight->clear();
-	SAFE_DELETE(AABBListRight);
-
-}
-
-void RTGraphics::splitListY(Node* _node, std::vector<AABB>* _AABBList)
-{
-	int medianIndex = _AABBList->size() / 2;
-	float medianValue = (_AABBList->at(medianIndex).maxPoint.y + _AABBList->at(medianIndex).minPoint.y)*0.5f;
-
-	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
-	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
-
-	for (int i = 0; i < _AABBList->size(); i++)
+	else if (splitAxis == 1)
 	{
-		if (_AABBList->at(i).maxPoint.y < medianValue)
-		{
-			AABBListLeft->push_back(_AABBList->at(i));
-		}
-		else if (_AABBList->at(i).minPoint.y > medianValue)
-		{
-			AABBListRight->push_back(_AABBList->at(i));
-		}
-		else
-		{
-			AABBListLeft->push_back(_AABBList->at(i));
-			AABBListRight->push_back(_AABBList->at(i));
-		}
-	}
-
-	// SPLITT LIST OR CREATE LEAF NODE
-	if (AABBListLeft->size() < _AABBList->size() && AABBListLeft->size() > 0)
-	{
-		_node->left = new Node();
-
-		createKDNodeSplit(AABBListLeft, _node->left, 3);
-	}
-	else if (AABBListLeft->size() == _AABBList->size() && AABBListRight->size() == _AABBList->size())
-	{
-		return;
-	}
-	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
-	{
-		_node->left = new Node();
 		_node->left->aabb = _node->aabb;
-		assignTriangles(_node->left, _AABBList);
-	}
+		_node->left->aabb.maxPoint.y -= median;
 
-	if (AABBListRight->size() < _AABBList->size() && AABBListRight->size() > 0)
-	{
-		_node->right = new Node();
-
-		createKDNodeSplit(AABBListRight, _node->right, 3);
-	}
-	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
-	{
-		_node->right = new Node();
 		_node->right->aabb = _node->aabb;
-		assignTriangles(_node->right, _AABBList);
+		_node->right->aabb.minPoint.y += median;
 	}
-
-	//something silly with this memory release 
-	AABBListLeft->clear();
-	SAFE_DELETE(AABBListLeft);
-
-	AABBListRight->clear();
-	SAFE_DELETE(AABBListRight);
-}
-
-void RTGraphics::splitListZ(Node* _node, std::vector<AABB>* _AABBList)
-{
-	int medianIndex = _AABBList->size() / 2;
-	float medianValue = (_AABBList->at(medianIndex).maxPoint.z + _AABBList->at(medianIndex).minPoint.z)*0.5f;
-
-	std::vector<AABB>* AABBListLeft = new std::vector<AABB>();
-	std::vector<AABB>* AABBListRight = new std::vector<AABB>();
-
-	for (int i = 0; i < _AABBList->size(); i++)
+	else if (splitAxis == 2)
 	{
-		if (_AABBList->at(i).maxPoint.z < medianValue)
-		{
-			AABBListLeft->push_back(_AABBList->at(i));
-		}
-		else if (_AABBList->at(i).minPoint.z > medianValue)
-		{
-			AABBListRight->push_back(_AABBList->at(i));
-		}
-		else
-		{
-			AABBListLeft->push_back(_AABBList->at(i));
-			AABBListRight->push_back(_AABBList->at(i));
-		}
-	}
-
-	// SPLITT LIST OR CREATE LEAF NODE
-	if (AABBListLeft->size() < _AABBList->size() && AABBListLeft->size() > 0)
-	{
-		_node->left = new Node();
-
-		createKDNodeSplit(AABBListLeft, _node->left, 1);
-	}
-	else if (AABBListLeft->size() == _AABBList->size() && AABBListRight->size() == _AABBList->size())
-	{
-		return;
-	}
-	else if (AABBListLeft->size() == _AABBList->size() || AABBListLeft->size() == 0)
-	{
-		_node->left = new Node();
 		_node->left->aabb = _node->aabb;
-		assignTriangles(_node->left, _AABBList);
-	}
+		_node->left->aabb.maxPoint.z -= median;
 
-	if (AABBListRight->size() < _AABBList->size() && AABBListRight->size() > 0)
-	{
-		_node->right = new Node();
-
-		createKDNodeSplit(AABBListRight, _node->right, 1);
-	}
-	else if (AABBListRight->size() == _AABBList->size() || AABBListRight->size() == 0)
-	{
-		_node->right = new Node();
 		_node->right->aabb = _node->aabb;
-		assignTriangles(_node->right, _AABBList);
+		_node->right->aabb.minPoint.z += median;
 	}
 
-	//something silly with this memory release 
-	AABBListLeft->clear();
-	SAFE_DELETE(AABBListLeft);
-
-	AABBListRight->clear();
-	SAFE_DELETE(AABBListRight);
+	return splitAxis;
 }
 
-void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node, int _split)
+bool aabbCollision(NodeAABB* _aabb1, AABB* _aabb2)
+{
+	float size1[3];
+	size1[0] = (_aabb1->maxPoint.x - _aabb1->minPoint.x)*0.5f;
+	size1[1] = (_aabb1->maxPoint.y - _aabb1->minPoint.y)*0.5f;
+	size1[2] = (_aabb1->maxPoint.z - _aabb1->minPoint.z)*0.5f;
+
+	float size2[3];
+	size2[0] = (_aabb2->maxPoint.x - _aabb2->minPoint.x)*0.5f;
+	size2[1] = (_aabb2->maxPoint.y - _aabb2->minPoint.y)*0.5f;
+	size2[2] = (_aabb2->maxPoint.z - _aabb2->minPoint.z)*0.5f;
+
+	if (abs(_aabb1->minPoint.x - _aabb2->minPoint.x) <= size1[0] + size2[0])
+	{
+		if (abs(_aabb1->minPoint.y - _aabb2->minPoint.y) <= size1[1] + size2[1])
+		{
+			if (abs(_aabb1->minPoint.z - _aabb2->minPoint.z) <= size1[2] + size2[2])
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+
+}
+
+void RTGraphics::splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int splitAxis)
+{
+	std::vector<AABB> AABBListLeft;
+	std::vector<AABB> AABBListRight;
+
+	// split value
+	float splitMedian;
+	if (splitAxis == 0)
+		splitMedian = _node->left->aabb.maxPoint.x;
+	else if (splitAxis == 1)
+		splitMedian = _node->left->aabb.maxPoint.y;
+	else if (splitAxis == 2)
+		splitMedian = _node->left->aabb.maxPoint.z;
+
+	// splitting
+
+	if (splitAxis == 0)
+	{
+		for (int i = 0; i < _AABBList->size(); i++)
+		{
+			if (_AABBList->at(i).minPoint.x > splitMedian)
+			{
+				AABBListRight.push_back(_AABBList->at(i));
+			}
+			else if (_AABBList->at(i).maxPoint.x < splitMedian)
+			{
+				AABBListLeft.push_back(_AABBList->at(i));
+			}
+			else
+			{
+				AABBListLeft.push_back(_AABBList->at(i));
+				AABBListRight.push_back(_AABBList->at(i));
+			}
+		}
+	}
+	else if (splitAxis == 1)
+	{
+		for (int i = 0; i < _AABBList->size(); i++)
+		{
+			if (_AABBList->at(i).minPoint.y > splitMedian)
+			{
+				AABBListRight.push_back(_AABBList->at(i));
+			}
+			else if (_AABBList->at(i).maxPoint.y < splitMedian)
+			{
+				AABBListLeft.push_back(_AABBList->at(i));
+			}
+			else
+			{
+				AABBListLeft.push_back(_AABBList->at(i));
+				AABBListRight.push_back(_AABBList->at(i));
+			}
+		}
+	}
+	else if (splitAxis == 2)
+	{
+		for (int i = 0; i < _AABBList->size(); i++)
+		{
+			if (_AABBList->at(i).minPoint.z > splitMedian)
+			{
+				AABBListRight.push_back(_AABBList->at(i));
+			}
+			else if (_AABBList->at(i).maxPoint.z < splitMedian)
+			{
+				AABBListLeft.push_back(_AABBList->at(i));
+			}
+			else
+			{
+				AABBListLeft.push_back(_AABBList->at(i));
+				AABBListRight.push_back(_AABBList->at(i));
+			}
+		}
+	}
+
+	// kalla nästa djup
+
+	if (AABBListLeft.size() < 7 || AABBListLeft.size() == _AABBList->size()) // löv nod
+	{
+		assignTriangles(_node->left, &AABBListLeft);
+	}
+	else
+	{
+		createKDNodeSplit(&AABBListLeft, _node->left);
+	}
+
+	if (AABBListRight.size() < 7 || AABBListRight.size() == _AABBList->size()) // löv nod
+	{
+		assignTriangles(_node->right, &AABBListRight);
+	}
+	else
+	{
+		createKDNodeSplit(&AABBListRight, _node->right);
+	}
+
+}
+
+void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node)
 {
 	
-	switch (_split)
-	{
-	case 1:		// SPLITT IN X
 
-		sortAABBX(_AABBList, 0, _AABBList->size() - 1);
-		createNodeAABB(_node, _AABBList);
-		splitListX(_node, _AABBList);
-		assignTriangles(_node, _AABBList);
-		break;
-	case 2:		// SPLITT IN Y
 
-		sortAABBY(_AABBList, 0, _AABBList->size() - 1);
-		createNodeAABB(_node, _AABBList);
-		splitListY(_node, _AABBList);
-		assignTriangles(_node, _AABBList);
-		break;
-	case 3:		// SPLITT IN Z
+	// calculate split aabb
+	int splitAxis = nodeAABBSplit(_node);
 
-		sortAABBZ(_AABBList, 0, _AABBList->size() - 1);
-		createNodeAABB(_node, _AABBList);
-		splitListZ(_node, _AABBList);
-		assignTriangles(_node, _AABBList);
-		break;
-	}
+	// split the aabblist
+	splitAABBList(_node,_AABBList,splitAxis);
+
+
+
+	// call the next node
+
+
+
+	//switch (_split)
+	//{
+	//case 1:		// SPLITT IN X
+
+	//	createNodeAABB(_node, _AABBList);
+	//	splitListX(_node, _AABBList);
+	//	assignTriangles(_node, _AABBList);
+	//	break;
+	//case 2:		// SPLITT IN Y
+
+	//	createNodeAABB(_node, _AABBList);
+	//	splitListY(_node, _AABBList);
+	//	assignTriangles(_node, _AABBList);
+	//	break;
+	//case 3:		// SPLITT IN Z
+
+	//	createNodeAABB(_node, _AABBList);
+	//	splitListZ(_node, _AABBList);
+	//	assignTriangles(_node, _AABBList);
+	//	break;
+	//}
 
 
 }

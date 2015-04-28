@@ -34,8 +34,8 @@ static const int NUMDIM = 3; // the number of dimensions our application uses
 #define PI (3.14159265358979323846f)
 #define LIGHT_POSITION_RANGEMODIFIER 30
 #define LIGHT_RANGE 40.f
-#define LIGHT_AMBIENT_MOD 0.25f
-#define LIGHT_DIFFUSE_MOD 0.55f
+#define LIGHT_AMBIENT_MOD 0.75f
+#define LIGHT_DIFFUSE_MOD 0.95f
 #define LIGHT_RANDOM_SEED 10
 
 static const int  MAXDEPTH = 2;

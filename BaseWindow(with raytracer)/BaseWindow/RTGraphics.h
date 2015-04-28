@@ -34,10 +34,9 @@ private:
 	void createNodeBuffer(Node* _rootNode);
 	void createLightBuffer();
 	void createKdTree(Mesh *_mesh);
-	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node* _node, int _split);
-	void splitListX(Node* _node, std::vector<AABB>* _AABBList);
-	void splitListY(Node* _node, std::vector<AABB>* _AABBList);
-	void splitListZ(Node* _node, std::vector<AABB>* _AABBList);
+	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node* _node);
+
+	void splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int splitAxis);
 
 	ComputeWrap *computeWrap;
 
