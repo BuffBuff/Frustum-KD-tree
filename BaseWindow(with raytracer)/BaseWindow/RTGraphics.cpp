@@ -20,6 +20,8 @@ m_fps(0.f)
 	m_lightcBuffer	= nullptr;
 	m_spherecBuffer = nullptr;
 
+	g_timer = new D3D11Timer(g_Device, g_DeviceContext);
+
 	computeWrap = nullptr;
 	computeWrap = new ComputeWrap(g_Device,g_DeviceContext);
 
@@ -135,12 +137,17 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
-	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
+	m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
 
+	g_timer->Start();
 	createKdTree(&m_mesh);
+	g_timer->Stop();
+
+	m_kdGenTime = g_timer->GetTime();
+
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
@@ -149,7 +156,7 @@ void RTGraphics::createTriangleTexture()
 											 false,
 											 m_mesh.getTriangles(),
 											 false,
-											 "Structured Buffer: Mesh Texture");
+ 											 "Structured Buffer: Mesh Texture");
 
 	//from wchat_t to string
 	//std::string narrow = converter.to_bytes(wide_utf16_source_string);
@@ -316,45 +323,157 @@ void breadthFillKDBuffers(Node* _rootNode, std::vector<NodePass2> *_initdata, st
 	}
 }
 
+void RTGraphics::optimFillKDBuffers(Node* _rootNode, std::vector<int> *_indiceList)
+{
+	std::vector<Node*> nextNode;
+	nextNode.push_back(_rootNode);
+
+	std::vector<int> nextID;
+	std::vector<int> depth;
+	std::vector<int> levelID;
+
+	nextID.push_back(0);
+	depth.push_back(0);
+	levelID.push_back(0);
+
+	while (nextNode.size() > 0)
+	{
+
+		initData[nextID.at(0)].aabb = nextNode.at(0)->aabb;
+		initData[nextID.at(0)].nrOfTriangles = nextNode.at(0)->index.size();
+		initData[nextID.at(0)].index = -1;
+
+		if (initData[nextID.at(0)].nrOfTriangles > 0) // löv nod
+		{
+			initData[nextID.at(0)].index = _indiceList->size();
+			for (int i = 0; i < initData[nextID.at(0)].nrOfTriangles; i++)
+			{
+				_indiceList->push_back(nextNode.at(0)->index.at(i));
+			}
+
+		}
+		else // gör beräkningar för nästa djup
+		{
+			// öka depth
+			int nextDepth = depth.at(0) + 1;
+
+			depth.push_back(nextDepth);
+			depth.push_back(nextDepth);
+
+			// sätta levelID
+			int levelIDLeft, levelIDRight;
+
+			levelIDLeft = (levelID.at(0) * 2);
+			levelIDRight = levelIDLeft + 1;
+
+			levelID.push_back(levelIDLeft);
+			levelID.push_back(levelIDRight);
+
+			// beräkna left - right indexes
+			int left, right;
+
+			left = ((1 << nextDepth) - 1) + levelIDLeft;
+			right = ((1 << nextDepth) - 1) + levelIDRight;
+
+			nextID.push_back(left);
+			nextID.push_back(right);
+
+			// next node
+			nextNode.push_back(nextNode.at(0)->left);
+			nextNode.push_back(nextNode.at(0)->right);
+		}
+
+		nextNode.erase(nextNode.begin());
+		nextID.erase(nextID.begin());
+		depth.erase(depth.begin());
+		levelID.erase(levelID.begin());
+
+	}
+
+
+}
+
+
+
 void RTGraphics::createNodeBuffer(Node* _rootNode)
 {
-	std::vector<NodePass2> *initdata = new std::vector<NodePass2>();
-	std::vector<int> *indiceList = new std::vector<int>();
+		std::vector<int> *indiceList = new std::vector<int>();
+	
+
+		//depthFillKDBuffers(_rootNode, initdata, indiceList, 0);
+
+		optimFillKDBuffers(_rootNode, indiceList);
+	
+	
 
 
-	NodePass2 node;
-	node.aabb = _rootNode->aabb;
-	node.index = -1;
-	node.nrOfTriangles = 0;
-
-	initdata->push_back(node);
-
-	//depthFillKDBuffers(_rootNode, initdata, indiceList, 0);
-	breadthFillKDBuffers(_rootNode, initdata, indiceList);
-
-	//something silly with this memory release 
-	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-											 sizeof(NodePass2),
-											 initdata->size(),
-											 false,
-											 true,
-											 initdata->data(),
-											 false,
-											 "Structed Buffer: Node Buffer");
-
-	//something silly with this memory release 
-	m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-											 sizeof(int),
-											 indiceList->size(),
-											 false,
-											 true,
-											 indiceList->data(),
-											 false,
-											 "Structed Buffer: Indice Buffer");
-
-	delete initdata;
-	delete indiceList;
+		//something silly with this memory release 
+		m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+												 sizeof(NodePass2),
+												 3000000,
+												 false,
+												 true,
+												 initData,
+												 false,
+												 "Structed Buffer: Node Buffer");
+	
+		//something silly with this memory release 
+		m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+												 sizeof(int),
+												 indiceList->size(),
+												 false,
+												 true,
+												 indiceList->data(),
+												 false,
+												 "Structed Buffer: Indice Buffer");
+	
+		//delete initData;
+		delete indiceList;
 }
+//
+//void RTGraphics::createNodeBuffer(Node* _rootNode)
+//{
+//	std::vector<NodePass2> *initdata = new std::vector<NodePass2>();
+//	std::vector<int> *indiceList = new std::vector<int>();
+//
+//
+//	NodePass2 node;
+//	node.aabb = _rootNode->aabb;
+//	node.index = -1;
+//	node.nrOfTriangles = 0;
+//
+//	initdata->push_back(node);
+//
+//	//depthFillKDBuffers(_rootNode, initdata, indiceList, 0);
+//	g_timer->Start();
+//	breadthFillKDBuffers(_rootNode, initdata, indiceList);
+//	g_timer->Stop();
+//
+//	m_gpuTextureGenTime = g_timer->GetTime();
+//
+//	//something silly with this memory release 
+//	m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+//											 sizeof(NodePass2),
+//											 initdata->size(),
+//											 false,
+//											 true,
+//											 initdata->data(),
+//											 false,
+//											 "Structed Buffer: Node Buffer");
+//
+//	//something silly with this memory release 
+//	m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+//											 sizeof(int),
+//											 indiceList->size(),
+//											 false,
+//											 true,
+//											 indiceList->data(),
+//											 false,
+//											 "Structed Buffer: Indice Buffer");
+//
+//	delete initdata;
+//	delete indiceList;
+//}
 
 void RTGraphics::createLightBuffer()
 {
@@ -464,13 +583,25 @@ void RTGraphics::Render(float _dt)
 		MessageBox(NULL,"Failed to present the swapchain","RT Render Error",S_OK);
 
 	//Title text and FPS counter
+	/*char title[256];
+	sprintf_s(
+		title,
+		sizeof(title),
+		"FCKDT Project - fps: %f - genTime: %f, %f",
+		m_fps,
+		m_kdGenTime,
+		m_gpuTextureGenTime
+		);*/
+
 	char title[256];
 	sprintf_s(
 		title,
 		sizeof(title),
-		"FCKDT Project - fps: %f",
-		m_fps
+		"FCKDT Project - genTime: %f, %f",
+		m_kdGenTime,
+		m_gpuTextureGenTime
 		);
+
 	SetWindowText(*m_Hwnd, title);
 }
 
@@ -634,12 +765,16 @@ void RTGraphics::createKdTree(Mesh *_mesh)
 		aabbList.push_back(aabb);
 	}
 
+	nrOfNodes++;
+
 	createNodeAABB(&m_rootNode,&aabbList);
 
-	createKDNodeSplit(&aabbList,&m_rootNode);
+	createKDNodeSplit(&aabbList,&m_rootNode,0);
 
 	//debug to check the KDTree
 	//checkTree(&m_rootNode, *triangleList);
+
+	nrOfNodes = nrOfNodes;
 
 	int breakStop = 0;
 }
@@ -656,7 +791,7 @@ void assignTriangles(Node* _node, std::vector<AABB>* _AABBList)
 }
 
 
-int nodeAABBSplit(Node* _node)
+int RTGraphics::nodeAABBSplit(Node* _node)
 {
 
 	// select split axis
@@ -672,6 +807,8 @@ int nodeAABBSplit(Node* _node)
 	// create the new nodes
 	_node->left = new Node();
 	_node->right = new Node();
+
+	nrOfNodes += 2;
 
 	// split the aabb for the new nodes
 	float median = length[splitAxis] * 0.5f;
@@ -730,7 +867,7 @@ bool aabbCollision(NodeAABB* _aabb1, AABB* _aabb2)
 
 }
 
-void RTGraphics::splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int splitAxis)
+void RTGraphics::splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int splitAxis, int _depth)
 {
 	std::vector<AABB> AABBListLeft;
 	std::vector<AABB> AABBListRight;
@@ -806,13 +943,43 @@ void RTGraphics::splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int sp
 
 	// kalla nästa djup
 
+	if (AABBListLeft.size() == 0 || AABBListRight.size() == 0 || _depth > 19)
+	{
+		if (AABBListLeft.size() > 0)
+		{
+			_node->aabb = _node->left->aabb;
+		}
+		else
+		{
+			_node->aabb = _node->right->aabb;
+		}
+
+		SAFE_DELETE(_node->left);
+		SAFE_DELETE(_node->right);
+
+		nrOfNodes -= 2;
+
+		if (_AABBList->size() < 100 || _depth > 19)
+		{
+			assignTriangles(_node, _AABBList);
+
+			return;
+		}
+		else
+		{
+			createKDNodeSplit(_AABBList, _node,_depth);
+			return;
+		}
+
+	}
+
 	if (AABBListLeft.size() < 7 || AABBListLeft.size() == _AABBList->size()) // löv nod
 	{
 		assignTriangles(_node->left, &AABBListLeft);
 	}
 	else
 	{
-		createKDNodeSplit(&AABBListLeft, _node->left);
+		createKDNodeSplit(&AABBListLeft, _node->left, _depth + 1);
 	}
 
 	if (AABBListRight.size() < 7 || AABBListRight.size() == _AABBList->size()) // löv nod
@@ -821,12 +988,12 @@ void RTGraphics::splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int sp
 	}
 	else
 	{
-		createKDNodeSplit(&AABBListRight, _node->right);
+		createKDNodeSplit(&AABBListRight, _node->right, _depth + 1);
 	}
 
 }
 
-void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node)
+void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node, int _depth)
 {
 	
 
@@ -835,7 +1002,7 @@ void RTGraphics::createKDNodeSplit(std::vector<AABB>* _AABBList, Node* _node)
 	int splitAxis = nodeAABBSplit(_node);
 
 	// split the aabblist
-	splitAABBList(_node,_AABBList,splitAxis);
+	splitAABBList(_node,_AABBList,splitAxis,_depth);
 
 
 

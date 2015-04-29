@@ -6,6 +6,8 @@
 #include <locale>
 #include <codecvt>
 #include <string>
+#include "D3D11Timer.h"
+
 
 extern ID3D11Device* g_Device;
 extern ID3D11DeviceContext* g_DeviceContext;
@@ -34,9 +36,16 @@ private:
 	void createNodeBuffer(Node* _rootNode);
 	void createLightBuffer();
 	void createKdTree(Mesh *_mesh);
-	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node* _node);
+	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node* _node, int _depth);
 
-	void splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int splitAxis);
+	void splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int splitAxis, int _depth);
+	int nodeAABBSplit(Node* _node);
+	void optimFillKDBuffers(Node* _rootNode, std::vector<int> *_indiceList);
+
+
+	int nrOfNodes = 0;
+
+	NodePass2 initData[3000000];
 
 	ComputeWrap *computeWrap;
 
@@ -63,6 +72,11 @@ private:
 	//Timers
 	float						m_time;
 	float						m_fps;
+
+	float						m_kdGenTime;
+	float						m_gpuTextureGenTime;
+	D3D11Timer					*g_timer = NULL;
+
 
 
 	//constant buffers
