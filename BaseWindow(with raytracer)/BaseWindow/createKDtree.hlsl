@@ -96,8 +96,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			}
 			else if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] >= KDtree[splitStart + oldSplitID].split.y)
 			{
-				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
-				splittingSwap[workingSplit][workID][3] = aabbSplitID;
+				splittingSwap[workingSplit][workID][0] = oldSplitID + 1;
+				splittingSwap[workingSplit][workID][1] = aabbSplitID;
 
 				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
 
@@ -349,74 +349,3 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-
-
-/*
-////////////////////////////////////////////////////////////// NEJ funkar ej beskriver old felet
-
-//int output;// = CustomInterlockedAdd(0, 1);
-
-
-//InterlockedAdd(splittSize[0][0], 1, output); // denna rad ska addera ett värde till splittSize[0][0] och sedan returnera värdet under det nya värdet // detta är inte vad den gör
-
-//// -- varje tråd i parallel
-//// Addera 1 till splittSize[0][0]
-//// Få ut värdet som blir efter att den egna tråden har adderat 1
-//// Sätt output till värdet som fås ut
-//
-
-//splittSize[workID][1] = output;
-
-//splittSize[workID][0] = 0;
-
-//splittSize[0][0] = 0;
-
-
-//DeviceMemoryBarrierWithGroupSync();
-
-
-//InterlockedAdd(splittSize[splittSize[workID][1]][0],1);
-
-//	int output = CustomInterlockedAdd(splittSize[workID][0], 999);
-
-
-/////////////////////////// OLD
-
-//while (splittingSwap[workingSplit][workID][0] != -1 || splittingSwap[workingSplit][workID][2] != -1)
-//{
-//	int moveID; // the id to move the data to
-//	int moveToSplit; // the splitID to move the data to
-//	//int splitOffset; // the offset to the start of the split the value belongs in
-
-//	if (splittingSwap[workingSplit][workID][0] != -1)
-//	{
-
-//		moveToSplit = splittingSwap[workingSplit][workID][0];
-//		//splitOffset = splittSize[moveToSplit];
-
-//		InterlockedAdd(splittSize[moveToSplit][0], 1, moveID);// moveID får orginal värdet av splittSize? sen adderas alla trådarna
-
-//		splittingSwap[moveSplit][moveID][0] = splittingSwap[workingSplit][workID][0];
-//		splittingSwap[moveSplit][moveID][1] = splittingSwap[workingSplit][workID][1];
-//		splittingSwap[moveSplit][moveID][2] = -1;
-//		splittingSwap[moveSplit][moveID][3] = -1;
-//	}
-//	if (splittingSwap[workingSplit][workID][2] != -1)
-//	{
-//		moveToSplit = splittingSwap[workingSplit][workID][2];
-//		//splitOffset = splittSize[moveToSplit];
-
-//		InterlockedAdd(splittSize[moveToSplit][0], 1, moveID); // moveID får orginal värdet av splittSize? sen adderas alla trådarna
-
-//		splittingSwap[moveSplit][moveID][0] = splittingSwap[workingSplit][workID][2];
-//		splittingSwap[moveSplit][moveID][1] = splittingSwap[workingSplit][workID][3];
-//		splittingSwap[moveSplit][moveID][2] = -1;
-//		splittingSwap[moveSplit][moveID][3] = -1;
-//	}
-
-
-//		workID += NROFTHREADSCREATIONDISPATCHES;
-//	}
-
-/////////////////////////// END OLD
-*/
