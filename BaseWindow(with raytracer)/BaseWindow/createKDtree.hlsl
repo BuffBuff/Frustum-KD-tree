@@ -340,7 +340,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 		
-
+		
 			depth++;
 
 			DeviceMemoryBarrierWithGroupSync();

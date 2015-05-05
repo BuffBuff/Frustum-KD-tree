@@ -38,6 +38,6 @@ static const int NUMDIM = 3; // the number of dimensions our application uses
 #define LIGHT_DIFFUSE_MOD 0.95f
 #define LIGHT_RANDOM_SEED 10
 
-static const int  MAXDEPTH = 2;
+static const int  MAXDEPTH = 1;
 
 
