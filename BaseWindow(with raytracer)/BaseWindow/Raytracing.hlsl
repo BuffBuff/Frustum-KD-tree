@@ -170,6 +170,12 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					}
 				}
 				//finish up for a new round in the loop
+
+			/*	if (nextArray[readFrom][0] == 1)
+				{
+					readFrom--;
+				}*/
+
 				node = nextArray[readFrom][0];
 				readFrom--;
 				depth++;

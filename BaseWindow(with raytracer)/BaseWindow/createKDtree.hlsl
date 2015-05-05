@@ -225,7 +225,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 				
 
-				if (splittSize[workID][1] > 8 && MAXDEPTH - 1 != depth) // splitta boxen och skriv till nästa djup
+				if (splittSize[workID][1] > 6 && MAXDEPTH - 1 != depth) // splitta boxen och skriv till nästa djup
 				{
 
 					// 0 = current depth = splitstart + workID
@@ -258,8 +258,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis] -= middleOffset;
 
-					KDtree[startIndexNextDepth + (workID * 2)].split = splitAxis;
-					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis];
+					KDtree[startIndexNextDepth + (workID * 2)].split.x = splitAxis;
+					KDtree[startIndexNextDepth + (workID * 2)].split.y = KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis];
 
 					// right
 					KDtree[startIndexNextDepth + ((workID * 2) + 1)] = KDtree[startIndexThisDepth + workID];
@@ -267,8 +267,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis] += middleOffset;
 
-					KDtree[startIndexNextDepth + (workID * 2)].split = splitAxis;
-					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis];
+					KDtree[startIndexNextDepth + (workID * 2)].split.x = splitAxis;
+					KDtree[startIndexNextDepth + (workID * 2)].split.y = KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis];
 
 				}
 				else if (splittSize[workID][0] > 0)// leafNode
@@ -329,8 +329,6 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			highIndex = splittSize[(1 << (depth + 1))][0];
 
 
-		
-		
 			depth++;
 
 			DeviceMemoryBarrierWithGroupSync();
