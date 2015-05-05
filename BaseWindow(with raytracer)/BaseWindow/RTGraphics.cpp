@@ -137,10 +137,10 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/bunny.obj");
+	m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
-	m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
+	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
 
 	g_timer->Start();
 	createKdTree(&m_mesh);

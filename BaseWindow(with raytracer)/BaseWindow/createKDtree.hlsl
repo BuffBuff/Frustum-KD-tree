@@ -75,17 +75,23 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		while (workID < highIndex)
 		{
+			//first:	what array to work from
+			//second:	offset in the array
+			//third:	int4(x,y,z,w)
+			//splittingSwap[0/1][0/3000000][0/3]
 			int	oldSplitID = splittingSwap[workingSplit][workID][0];
 			oldSplitID *= 2;
 
 			int	aabbSplitID = splittingSwap[workingSplit][workID][1];
 
+			//sets the values to -1 to represent empty
 			splittingSwap[workingSplit][workID][0] = -1;
 			splittingSwap[workingSplit][workID][1] = -1;
 			splittingSwap[workingSplit][workID][2] = -1;
 			splittingSwap[workingSplit][workID][3] = -1;
 
-
+			//checks if the maxpoint for a specific triangleaabb is smaller then current splitvalue
+			//adding to one side of the split
 			if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] <= KDtree[splitStart + oldSplitID].split.y)
 			{
 				splittingSwap[workingSplit][workID][0] = oldSplitID;
@@ -94,6 +100,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
 
 			}
+			//checks if the minpoint for a specific triangleaabb is larger then current splitvalue
+			//adding to the other side of the split
 			else if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] >= KDtree[splitStart + oldSplitID].split.y)
 			{
 				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
@@ -102,6 +110,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
 
 			}
+			//else the split is through the triangleaabb
+			//added to both sides of the split
 			//if (splittingSwap[workingSplit][workID][0] == -1 && splittingSwap[workingSplit][workID][2] == -1)
 			else
 			{
@@ -258,8 +268,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis] -= middleOffset;
 
-					KDtree[startIndexNextDepth + (workID * 2)].split = splitAxis;
-					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis];
+					KDtree[startIndexNextDepth + (workID * 2)].split.x = splitAxis;
+					KDtree[startIndexNextDepth + (workID * 2)].split.y = KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis];
 
 					// right
 					KDtree[startIndexNextDepth + ((workID * 2) + 1)] = KDtree[startIndexThisDepth + workID];
@@ -267,8 +277,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis] += middleOffset;
 
-					KDtree[startIndexNextDepth + (workID * 2)].split = splitAxis;
-					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis];
+					KDtree[startIndexNextDepth + (workID * 2)].split.x = splitAxis;
+					KDtree[startIndexNextDepth + (workID * 2)].split.y = KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis];
 
 				}
 				else if (splittSize[workID][0] > 0)// leafNode
