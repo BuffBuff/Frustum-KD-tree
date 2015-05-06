@@ -42,7 +42,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-		while (workID < 3000000)
+	while (workID < MAXSIZE)
 		{
 			splittSize[workID][0] = 0;
 			splittSize[workID][1] = 0;
@@ -122,7 +122,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		workID = threadIndex;
 
-		while (workID < 2999999)
+		while (workID < MAXSIZE - 1)
 		{
 			splittSize[workID][1] = splittSize[workID+1][0];
 			workID += NROFTHREADSCREATIONDISPATCHES;

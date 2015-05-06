@@ -115,7 +115,7 @@ void GPURTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/broccoli.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
@@ -217,7 +217,7 @@ void GPURTGraphics::createSwapStructures()
 {
 	m_SwapStructure[0] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(int)*4,
-		3000000,
+		MAXSIZE,
 		false,
 		true,
 		NULL,
@@ -226,7 +226,7 @@ void GPURTGraphics::createSwapStructures()
 
 	m_SwapStructure[1] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(int)*4,
-		3000000,
+		MAXSIZE,
 		false,
 		true,
 		NULL,
@@ -235,7 +235,7 @@ void GPURTGraphics::createSwapStructures()
 
 	m_SwapSize = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(int)*2,
-		3000000,
+		MAXSIZE,
 		false,
 		true,
 		NULL,
@@ -244,7 +244,7 @@ void GPURTGraphics::createSwapStructures()
 
 	m_IndiceBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(int),
-		3000000,
+		MAXSIZE,
 		false,
 		true,
 		NULL,
@@ -253,7 +253,7 @@ void GPURTGraphics::createSwapStructures()
 
 	m_KDTreeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(NodePass2),
-		3000000,
+		MAXSIZE,
 		false,
 		true,
 		NULL,
@@ -272,7 +272,7 @@ void GPURTGraphics::createSwapStructures()
 	
 	m_mutex = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(int),
-		3000000,
+		MAXSIZE,
 		false,
 		true,
 		NULL,

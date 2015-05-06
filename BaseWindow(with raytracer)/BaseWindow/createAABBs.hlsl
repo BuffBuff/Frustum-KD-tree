@@ -48,7 +48,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-	while (workID < 3000000)
+	while (workID < MAXSIZE)
 	{
 		splittingSwap[0][workID][0] = -1;
 		splittingSwap[0][workID][1] = -1;

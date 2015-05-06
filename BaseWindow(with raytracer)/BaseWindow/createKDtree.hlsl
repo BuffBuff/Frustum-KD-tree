@@ -51,7 +51,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	for (; depth < MAXDEPTH;)
 	{
 
-		while (workID < 3000000)
+		while (workID < MAXSIZE)
 		{
 			splittSize[workID][0] = 0;
 			splittSize[workID][1] = 0;
@@ -78,7 +78,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			//first:	what array to work from
 			//second:	offset in the array
 			//third:	int4(x,y,z,w)
-			//splittingSwap[0/1][0/3000000][0/3]
+			//splittingSwap[0/1][0/MAXSIZE][0/3]
 			int	oldSplitID = splittingSwap[workingSplit][workID][0];
 			oldSplitID *= 2;
 

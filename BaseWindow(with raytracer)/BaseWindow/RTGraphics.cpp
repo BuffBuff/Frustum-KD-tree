@@ -137,7 +137,7 @@ void RTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.loadObj("Meshi/bunny.obj");
 	m_mesh.setColor(XMFLOAT4(1,0,0,1));
 	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
@@ -410,7 +410,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 		//something silly with this memory release 
 		m_NodeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 												 sizeof(NodePass2),
-												 3000000,
+												 MAXSIZE,
 												 false,
 												 true,
 												 initData,
@@ -943,7 +943,7 @@ void RTGraphics::splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int sp
 
 	// kalla nästa djup
 
-	if (AABBListLeft.size() == 0 || AABBListRight.size() == 0 || _depth > 19)
+	if (AABBListLeft.size() == 0 || AABBListRight.size() == 0 || _depth > MAXOFFLINEDEPTH - 1)
 	{
 		if (AABBListLeft.size() > 0)
 		{

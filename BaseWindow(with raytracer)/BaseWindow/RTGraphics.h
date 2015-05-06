@@ -45,7 +45,7 @@ private:
 
 	int nrOfNodes = 0;
 
-	NodePass2 initData[3000000];
+	NodePass2 initData[MAXSIZE];
 
 	ComputeWrap *computeWrap;
 
