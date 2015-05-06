@@ -6,8 +6,8 @@
 #include "Graphics.h"
 
 //#define standardrender
-//#define raytracing
-#define gpuraytracing
+#define raytracing
+//#define gpuraytracing
 
 #ifdef raytracing
 #include "RTGraphics.h"

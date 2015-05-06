@@ -136,10 +136,30 @@ void RTGraphics::createTriangleTexture()
 	//Mesh
 	///////////////////////////////////////////////////////////////////////////////////////////
 
+	//meshes:
+	//kub; bunny; cornell_box;
+
+
+	std::string inputfile = "Meshi/cornell_box.obj";
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+
+	std::string err = tinyobj::LoadObj(shapes, materials, inputfile.c_str());
+
+	if (!err.empty()) 
+	{
+		MessageBox(NULL, "Failed reading the OBJ-file", inputfile.c_str(), MB_OK);
+	}
+
+	fillMesh(&shapes, &materials, &m_mesh);
+
+
+	//////////////////OLD////////////////
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
-	m_mesh.setColor(XMFLOAT4(1,0,0,1));
-	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
+	//m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.setColor(XMFLOAT4(1,1,1,1));
+	m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
+	//m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
 
 	g_timer->Start();
@@ -172,6 +192,85 @@ void RTGraphics::createTriangleTexture()
 							 &m_meshTexture);
 
 }
+
+void RTGraphics::fillMesh(std::vector<tinyobj::shape_t>* _shapes, std::vector<tinyobj::material_t>* _materials, Mesh* _mesh)
+{
+	std::vector<TriangleMat> temp;
+
+	for (int i = 0; i < _shapes->size(); i++)
+	{
+		std::vector<XMFLOAT4> pos;
+		std::vector<XMFLOAT4> normal;
+		for (int j = 0; j < _shapes->at(i).mesh.indices.size(); j++)
+		{
+			XMFLOAT4 tempPos;
+			tempPos.x = _shapes->at(i).mesh.positions.at(_shapes->at(i).mesh.indices.at(j) * 3);
+			tempPos.y = _shapes->at(i).mesh.positions.at(_shapes->at(i).mesh.indices.at(j) * 3 + 1);
+			tempPos.z = _shapes->at(i).mesh.positions.at(_shapes->at(i).mesh.indices.at(j) * 3 + 2);
+			tempPos.w = 0;
+
+			pos.push_back(tempPos);
+
+			if (_shapes->at(i).mesh.normals.size() > 0)
+			{
+				XMFLOAT4 tempNormal;
+				//Normals
+				tempNormal.x = _shapes->at(i).mesh.normals.at(_shapes->at(i).mesh.indices.at(j) * 3);
+				tempNormal.y = _shapes->at(i).mesh.normals.at(_shapes->at(i).mesh.indices.at(j) * 3 + 1);
+				tempNormal.z = _shapes->at(i).mesh.normals.at(_shapes->at(i).mesh.indices.at(j) * 3 + 2);
+				tempNormal.w = 0;
+
+				normal.push_back(tempNormal);
+			}
+
+		}
+
+		for (int j = 0; j < pos.size(); j += 3)
+		{
+			TriangleMat tempPush;
+			tempPush.pos0 = pos.at(j);
+			tempPush.pos1 = pos.at(j + 1);
+			tempPush.pos2 = pos.at(j + 2);
+
+			tempPush.ID = temp.size();
+			tempPush.pad = 0;
+
+			if (_shapes->at(i).mesh.normals.size() > 0)
+			{
+				tempPush.normal = normal.at(j);
+			}
+
+			temp.push_back(tempPush);
+		}
+
+
+		int k = 0;
+		for (int j = 0; j < _shapes->at(i).mesh.texcoords.size(); j += 6)
+		{
+			//Textcoordinats
+			temp.at(k).textureCoordinate0.x = _shapes->at(i).mesh.texcoords.at(j);
+			temp.at(k).textureCoordinate0.y = _shapes->at(i).mesh.texcoords.at(j + 1);
+
+			temp.at(k).textureCoordinate1.x = _shapes->at(i).mesh.texcoords.at(j + 2);
+			temp.at(k).textureCoordinate1.y = _shapes->at(i).mesh.texcoords.at(j + 3);
+
+			temp.at(k).textureCoordinate2.x = _shapes->at(i).mesh.texcoords.at(j + 4);
+			temp.at(k).textureCoordinate2.y = _shapes->at(i).mesh.texcoords.at(j + 5);
+			k++;
+		}
+
+	
+	}
+
+	for (int i = 0; i < temp.size(); i++)
+	{
+		_mesh->m_meshTriangles.push_back(temp.at(i));
+	}
+
+	_mesh->m_nrOfFaces = _mesh->m_meshTriangles.size();
+
+}
+
 /*
 void depthFillKDBuffers(Node* _node, std::vector<NodePass2> *_initdata, std::vector<int> *_indiceList, int _index)
 {

@@ -81,6 +81,9 @@
     <ClCompile Include="GPURTGraphics.cpp">
       <Filter>Source Files\GPU Raytracer</Filter>
     </ClCompile>
+    <ClCompile Include="tinyobjloader\tiny_obj_loader.cc">
+      <Filter>Externs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -124,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="GPURTGraphics.h">
       <Filter>Header Files\GPU Raytracer</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyobjloader\tiny_obj_loader.h">
+      <Filter>Externs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
