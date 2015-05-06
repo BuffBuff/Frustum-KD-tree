@@ -7,6 +7,7 @@
 #include <codecvt>
 #include <string>
 #include "D3D11Timer.h"
+#include "tinyobjloader\tiny_obj_loader.h"
 
 
 extern ID3D11Device* g_Device;
@@ -36,6 +37,7 @@ private:
 	void createNodeBuffer(Node* _rootNode);
 	void createLightBuffer();
 	void createKdTree(Mesh *_mesh);
+	void fillMesh(std::vector<tinyobj::shape_t>* _shapes, std::vector<tinyobj::material_t>* _materials, Mesh* _mesh);
 	void createKDNodeSplit(std::vector<AABB>* _aabbList, Node* _node, int _depth);
 
 	void splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int splitAxis, int _depth);
@@ -61,6 +63,10 @@ private:
 	ComputeBuffer				*m_meshBuffer;
 	ID3D11ShaderResourceView	*m_meshTexture;
 	
+	//tiny mesh
+//	std::vector<tinyobj::shape_t> shapes;
+//	std::vector<tinyobj::material_t> materials;
+
 	//blululululu
 	ComputeBuffer				*m_NodeBuffer;
 	ComputeBuffer				*m_Indices;
