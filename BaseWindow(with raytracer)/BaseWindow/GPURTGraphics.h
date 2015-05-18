@@ -7,6 +7,7 @@
 #include <codecvt>
 #include <string>
 #include "D3D11Timer.h"
+#include "tinyobjloader\tiny_obj_loader.h"
 
 extern ID3D11Device* g_Device;
 extern ID3D11DeviceContext* g_DeviceContext;
@@ -35,6 +36,7 @@ private:
 	void createLightBuffer();
 	void createKdTree(Mesh *_mesh);
 	void createSwapStructures();
+	void fillMesh(std::vector<tinyobj::shape_t>* _shapes, std::vector<tinyobj::material_t>* _materials, Mesh* _mesh);
 
 	ComputeWrap *computeWrap;
 
@@ -81,6 +83,11 @@ private:
 	//Light
 	ID3D11Buffer				*m_lightcBuffer;
 	cLightBuffer				lightcb;
+
+	//Light sphere
+	ID3D11Buffer				*m_spherecBuffer;
+	cSphereBuffer				spherecb;
+
 
 	D3D11Timer					*g_timer = NULL;
 

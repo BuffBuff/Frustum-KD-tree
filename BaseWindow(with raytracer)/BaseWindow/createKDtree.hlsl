@@ -92,7 +92,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 			//checks if the maxpoint for a specific triangleaabb is smaller then current splitvalue
 			//adding to one side of the split
-			if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] <= KDtree[splitStart + oldSplitID].split.y)
+			if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] < KDtree[splitStart + oldSplitID].split.y)
 			{
 				splittingSwap[workingSplit][workID][0] = oldSplitID;
 				splittingSwap[workingSplit][workID][1] = aabbSplitID;
@@ -102,7 +102,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			}
 			//checks if the minpoint for a specific triangleaabb is larger then current splitvalue
 			//adding to the other side of the split
-			else if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] >= KDtree[splitStart + oldSplitID].split.y)
+			else if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] > KDtree[splitStart + oldSplitID].split.y)
 			{
 				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
 				splittingSwap[workingSplit][workID][3] = aabbSplitID;
@@ -235,7 +235,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 				
 
-				if (splittSize[workID][1] > 6 && MAXDEPTH - 1 != depth) // splitta boxen och skriv till nästa djup
+				if (splittSize[workID][1] > 6 && depth < MAXDEPTH - 1) // splitta boxen och skriv till nästa djup
 				{
 
 					// 0 = current depth = splitstart + workID
@@ -317,11 +317,22 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 				
 				}
-				/*else
+				else
 				{
-					KDtree[startIndexNextDepth + workID].split[0] = -1;
-					KDtree[startIndexNextDepth + workID].split[1] = -1;
-				}*/
+					KDtree[startIndexNextDepth + workID].index = 0;
+					KDtree[startIndexNextDepth + workID].aabb.minPoint.w = startIndexNextDepth + workID;
+					KDtree[startIndexNextDepth + workID].aabb.minPoint.z = startIndexNextDepth;
+					KDtree[startIndexNextDepth + workID].aabb.minPoint.y = nextDepth;
+					KDtree[startIndexNextDepth + workID].aabb.minPoint.x = startIndexThisDepth;
+
+					KDtree[startIndexNextDepth + workID].aabb.maxPoint.w = 9999;
+					KDtree[startIndexNextDepth + workID].aabb.maxPoint.z = 9999;
+					KDtree[startIndexNextDepth + workID].aabb.maxPoint.y = 9999;
+					KDtree[startIndexNextDepth + workID].aabb.maxPoint.x = 9999;
+
+					KDtree[startIndexNextDepth + workID].split[0] = depth;
+					KDtree[startIndexNextDepth + workID].split[1] = workID;
+				}
 
 				workID += NROFTHREADSCREATIONDISPATCHES;
 

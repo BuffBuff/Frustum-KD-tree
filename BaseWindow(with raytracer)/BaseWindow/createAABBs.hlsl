@@ -146,18 +146,29 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		}
 		KDtree[0].index = -1;
 
+		int splitAxis; // 0 = x, 1 = y, 2 = z
+		float splitLength[3];
+		splitLength[0] = KDtree[0].aabb.maxPoint.x - KDtree[0].aabb.minPoint.x;
+		splitLength[1] = KDtree[0].aabb.maxPoint.y - KDtree[0].aabb.minPoint.y;
+		splitLength[2] = KDtree[0].aabb.maxPoint.z - KDtree[0].aabb.minPoint.z;
+
+		splitAxis = splitLength[0] > splitLength[1] ? 0 : 1;
+		splitAxis = splitLength[splitAxis]	 > splitLength[2] ? splitAxis : 2;
+
+		
+
 		// left
 		KDtree[1] = KDtree[0];
 
-		KDtree[1].aabb.maxPoint.x -= (KDtree[1].aabb.maxPoint.x - KDtree[1].aabb.minPoint.x) * 0.5f;
+		KDtree[1].aabb.maxPoint[splitAxis] -= (KDtree[1].aabb.maxPoint[splitAxis] - KDtree[1].aabb.minPoint[splitAxis]) * 0.5f;
 
 		// right
 		KDtree[2] = KDtree[0];
 
-		KDtree[2].aabb.minPoint.x += (KDtree[2].aabb.maxPoint.x - KDtree[2].aabb.minPoint.x) * 0.5f;
+		KDtree[2].aabb.minPoint[splitAxis] += (KDtree[2].aabb.maxPoint[splitAxis] - KDtree[2].aabb.minPoint[splitAxis]) * 0.5f;
 
-		KDtree[0].split.x = 0;
-		KDtree[0].split.y = KDtree[2].aabb.minPoint.x;
+		KDtree[0].split.x = splitAxis;
+		KDtree[0].split.y = KDtree[2].aabb.minPoint.z;
 
 
 	}

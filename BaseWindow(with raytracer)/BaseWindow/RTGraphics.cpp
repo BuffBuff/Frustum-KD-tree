@@ -140,7 +140,7 @@ void RTGraphics::createTriangleTexture()
 	//kub; bunny; cornell_box;
 
 
-	std::string inputfile = "Meshi/cornell_box.obj";
+	std::string inputfile = "Meshi/kub.obj";
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 
@@ -156,7 +156,7 @@ void RTGraphics::createTriangleTexture()
 
 	//////////////////OLD////////////////
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/kub.obj");
+	//m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,1,1,1));
 	m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
 	//m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
@@ -1058,7 +1058,7 @@ void RTGraphics::splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int sp
 
 		nrOfNodes -= 2;
 
-		if (_AABBList->size() < 100 || _depth > 19)
+		if (_AABBList->size() < 100 || _depth > MAXOFFLINEDEPTH - 1)
 		{
 			assignTriangles(_node, _AABBList);
 

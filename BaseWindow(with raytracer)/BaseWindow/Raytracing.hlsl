@@ -68,6 +68,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		{
 			missedAllTriangles = 0;
 
+
+			
+
+
 			//if leafnode
 			if (KDtree[node].index != -1)
 			{
@@ -85,6 +89,11 @@ void main(uint3 threadID : SV_DispatchThreadID)
 						hd.t = hit.x;
 						hd.bufferpos = threadID.xy;
 						missedAllTriangles++;
+
+						//if (depth > 3)
+						//{
+						//	return;
+						//}
 
 					}
 				}
@@ -171,7 +180,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				}
 				//finish up for a new round in the loop
 
-			/*	if (nextArray[readFrom][0] == 1)
+			/*	
+				if (nextArray[readFrom][0] == 1)
 				{
 					readFrom--;
 				}*/
@@ -341,6 +351,9 @@ void main(uint3 threadID : SV_DispatchThreadID)
 							levelIndex++;
 						}
 					}
+
+					
+
 					//finish up for a new round in the loop
 					node = nextArray[readFrom][0];
 					readFrom--;

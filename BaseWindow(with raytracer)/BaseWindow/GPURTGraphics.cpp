@@ -113,13 +113,28 @@ void GPURTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 	//Mesh
 	///////////////////////////////////////////////////////////////////////////////////////////
+	std::string inputfile = "Meshi/cornell_box.obj";
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
 
+	std::string err = tinyobj::LoadObj(shapes, materials, inputfile.c_str());
+
+	if (!err.empty())
+	{
+		MessageBox(NULL, "Failed reading the OBJ-file", inputfile.c_str(), MB_OK);
+	}
+
+	fillMesh(&shapes, &materials, &m_mesh);
+
+
+	//////////////////OLD////////////////
 	//Load OBJ-file
-	m_mesh.loadObj("Meshi/broccoli.obj");
-	m_mesh.setColor(XMFLOAT4(1,0,0,1));
-	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
+	//m_mesh.loadObj("Meshi/kub.obj");
+	m_mesh.setColor(XMFLOAT4(1, 1, 1, 1));
+	m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
+	//m_mesh.scaleMesh(XMFLOAT3(10,10,10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
-	m_mesh.rotateMesh(XMFLOAT3(0.1f*PI, 0.1f * PI, 0.1f*PI));
+	//m_mesh.rotateMesh(XMFLOAT3(0.1f*PI, 0.1f * PI, 0.1f*PI));
 
 	createKdTree(&m_mesh);
 
@@ -153,6 +168,85 @@ void GPURTGraphics::createTriangleTexture()
 							 meshTextureWstring.c_str(),
 							 NULL, 
 							 &m_meshTexture);
+
+}
+
+
+void GPURTGraphics::fillMesh(std::vector<tinyobj::shape_t>* _shapes, std::vector<tinyobj::material_t>* _materials, Mesh* _mesh)
+{
+	std::vector<TriangleMat> temp;
+
+	for (int i = 0; i < _shapes->size(); i++)
+	{
+		std::vector<XMFLOAT4> pos;
+		std::vector<XMFLOAT4> normal;
+		for (int j = 0; j < _shapes->at(i).mesh.indices.size(); j++)
+		{
+			XMFLOAT4 tempPos;
+			tempPos.x = _shapes->at(i).mesh.positions.at(_shapes->at(i).mesh.indices.at(j) * 3);
+			tempPos.y = _shapes->at(i).mesh.positions.at(_shapes->at(i).mesh.indices.at(j) * 3 + 1);
+			tempPos.z = _shapes->at(i).mesh.positions.at(_shapes->at(i).mesh.indices.at(j) * 3 + 2);
+			tempPos.w = 0;
+
+			pos.push_back(tempPos);
+
+			if (_shapes->at(i).mesh.normals.size() > 0)
+			{
+				XMFLOAT4 tempNormal;
+				//Normals
+				tempNormal.x = _shapes->at(i).mesh.normals.at(_shapes->at(i).mesh.indices.at(j) * 3);
+				tempNormal.y = _shapes->at(i).mesh.normals.at(_shapes->at(i).mesh.indices.at(j) * 3 + 1);
+				tempNormal.z = _shapes->at(i).mesh.normals.at(_shapes->at(i).mesh.indices.at(j) * 3 + 2);
+				tempNormal.w = 0;
+
+				normal.push_back(tempNormal);
+			}
+
+		}
+
+		for (int j = 0; j < pos.size(); j += 3)
+		{
+			TriangleMat tempPush;
+			tempPush.pos0 = pos.at(j);
+			tempPush.pos1 = pos.at(j + 1);
+			tempPush.pos2 = pos.at(j + 2);
+
+			tempPush.ID = temp.size();
+			tempPush.pad = 0;
+
+			if (_shapes->at(i).mesh.normals.size() > 0)
+			{
+				tempPush.normal = normal.at(j);
+			}
+
+			temp.push_back(tempPush);
+		}
+
+
+		int k = 0;
+		for (int j = 0; j < _shapes->at(i).mesh.texcoords.size(); j += 6)
+		{
+			//Textcoordinats
+			temp.at(k).textureCoordinate0.x = _shapes->at(i).mesh.texcoords.at(j);
+			temp.at(k).textureCoordinate0.y = _shapes->at(i).mesh.texcoords.at(j + 1);
+
+			temp.at(k).textureCoordinate1.x = _shapes->at(i).mesh.texcoords.at(j + 2);
+			temp.at(k).textureCoordinate1.y = _shapes->at(i).mesh.texcoords.at(j + 3);
+
+			temp.at(k).textureCoordinate2.x = _shapes->at(i).mesh.texcoords.at(j + 4);
+			temp.at(k).textureCoordinate2.y = _shapes->at(i).mesh.texcoords.at(j + 5);
+			k++;
+		}
+
+
+	}
+
+	for (int i = 0; i < temp.size(); i++)
+	{
+		_mesh->m_meshTriangles.push_back(temp.at(i));
+	}
+
+	_mesh->m_nrOfFaces = _mesh->m_meshTriangles.size();
 
 }
 
@@ -194,22 +288,24 @@ void GPURTGraphics::createNodeBuffer(Node* _rootNode)
 
 void GPURTGraphics::createLightBuffer()
 {
-
-	int rangeModifier = 15;
-	float lightRange = 30.f;
-	float ambientMod = 0.55f;
-	float diffuseMod = 0.85f;
-	std::srand(10);
+	std::srand(LIGHT_RANDOM_SEED);
 	for (int i = 0; i < NROFLIGHTS; i++)
 	{
-		float rx = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
-		float ry = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
-		float rz = ((float)(std::rand() % rangeModifier)) - rangeModifier / 2;
+		float rx = ((float)(std::rand() % LIGHT_POSITION_RANGEMODIFIER)) - LIGHT_POSITION_RANGEMODIFIER / 2;
+		float ry = ((float)(std::rand() % LIGHT_POSITION_RANGEMODIFIER)) - LIGHT_POSITION_RANGEMODIFIER / 2;
+		float rz = ((float)(std::rand() % LIGHT_POSITION_RANGEMODIFIER)) - LIGHT_POSITION_RANGEMODIFIER / 2;
 		lightcb.lightList[i].pos = XMFLOAT4(rx, ry, rz, 1.f);
-		lightcb.lightList[i].ambient = XMFLOAT4(ambientMod, ambientMod, ambientMod, 1.f);
-		lightcb.lightList[i].diffuse = XMFLOAT4(diffuseMod, diffuseMod, diffuseMod, 1.f);
-		lightcb.lightList[i].range = lightRange;
+		lightcb.lightList[i].ambient = XMFLOAT4(LIGHT_AMBIENT_MOD, LIGHT_AMBIENT_MOD, LIGHT_AMBIENT_MOD, 1.f);
+		lightcb.lightList[i].diffuse = XMFLOAT4(LIGHT_DIFFUSE_MOD, LIGHT_DIFFUSE_MOD, LIGHT_DIFFUSE_MOD, 1.f);
+		lightcb.lightList[i].range = LIGHT_RANGE;
 		lightcb.lightList[i].pad = XMFLOAT3(0.f, 0.f, 0.f);
+
+		//extra debug spheres
+		//create lightsphere
+		spherecb.sphereList[i].pos = lightcb.lightList[i].pos;
+		spherecb.sphereList[i].color = XMFLOAT4(1, 0, 0, 1);
+		spherecb.sphereList[i].radie = 4.f;
+		spherecb.sphereList[i].pad = XMFLOAT3(0, 0, 0);
 	}
 }
 
@@ -357,6 +453,8 @@ void GPURTGraphics::Update(float _dt)
 	g_DeviceContext->Flush();
 	g_timer->Stop();
 
+	float getTime = g_timer->GetTime();
+
 	//	create the KD tree 
 
 	createKDtree->Set();
@@ -365,6 +463,16 @@ void GPURTGraphics::Update(float _dt)
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	g_timer->Stop();
+
+	getTime = g_timer->GetTime();
+
+	//unset buffers
+	ID3D11UnorderedAccessView* nulluav[] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 7, nulluav, NULL);
+
+	ID3D11ShaderResourceView* nullsrv[] = { NULL, NULL, NULL, NULL };
+	g_DeviceContext->CSSetShaderResources(0, 4, nullsrv);
+
 
 	//for (int i = 0; i < MAXDEPTH; i++)
 	//{
