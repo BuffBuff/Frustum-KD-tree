@@ -18,8 +18,8 @@ public:
 	bool GetMPressed() {return mPressed;}
 	bool GetNPressed() {return nPressed;}
 	bool GetBPressed() {return bPressed;}
-	bool GetIsVPressed() {return isvPressed;}
-	bool GetIsCPressed() {return iscPressed;}
+	bool GetIsVPressed() { return vPressed; }
+	bool GetIsCPressed() { return cPressed; }
 
 };
 

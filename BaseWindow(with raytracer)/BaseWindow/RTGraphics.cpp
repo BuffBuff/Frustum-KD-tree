@@ -627,9 +627,6 @@ void RTGraphics::Update(float _dt)
 
 	//g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
 
-	g_DeviceContext->UpdateSubresource(m_spherecBuffer, 0, NULL, &spherecb, 0, 0);
-
-	g_DeviceContext->UpdateSubresource(m_togglecBuffer, 0, NULL, &togglescb, 0, 0);
 
 	m_time += _dt;
 	static float frameCnt = 0;
@@ -686,7 +683,7 @@ void RTGraphics::Render(float _dt)
 	sprintf_s(
 		title,
 		sizeof(title),
-		"FCKDT Project - fps: %f - genTime: %f, %f",
+		"Offline - fps: %f - genTime: %f, %f",
 		m_fps,
 		m_kdGenTime,
 		m_gpuTextureGenTime
@@ -1139,4 +1136,10 @@ void RTGraphics::updateTogglecb(int _lightSpheres, int _placeHolder1, int _place
 	togglescb.lightSpheres = _lightSpheres;
 
 	togglescb.togglePad = XMFLOAT3(0, 0, 0);
+
+	g_DeviceContext->UpdateSubresource(m_spherecBuffer, 0, NULL, &spherecb, 0, 0);
+
+	g_DeviceContext->UpdateSubresource(m_togglecBuffer, 0, NULL, &togglescb, 0, 0);
+
+
 }

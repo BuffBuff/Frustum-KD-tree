@@ -536,7 +536,7 @@ void GPURTGraphics::Render(float _dt)
 	sprintf_s(
 		title,
 		sizeof(title),
-		"FCKDT Project - fps: %f - aabb: %f",
+		"Realtime - fps: %f - aabb: %f",
 		m_fps,
 		g_timer->GetTime()
 		);
