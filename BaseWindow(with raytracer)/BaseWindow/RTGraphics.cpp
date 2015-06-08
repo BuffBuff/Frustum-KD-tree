@@ -604,28 +604,28 @@ RTGraphics::~RTGraphics()
 void RTGraphics::Update(float _dt)
 {
 	// updating the constant buffer holding the camera transforms
-	XMFLOAT4X4 temp, viewInv, projInv;
-	XMFLOAT3 tempp = Cam->getCameraPosition(); // w ska va 1
-	XMStoreFloat4x4(&temp, XMMatrixIdentity());
+	//XMFLOAT4X4 temp, viewInv, projInv;
+	//XMFLOAT3 tempp = Cam->getCameraPosition(); // w ska va 1
+	//XMStoreFloat4x4(&temp, XMMatrixIdentity());
 
-	XMStoreFloat4x4(&temp, XMMatrixTranslation(tempp.x,tempp.y,tempp.z));
+	//XMStoreFloat4x4(&temp, XMMatrixTranslation(tempp.x,tempp.y,tempp.z));
 
-	XMStoreFloat4x4(&temp, XMMatrixTranspose(XMLoadFloat4x4(&temp)));
+	//XMStoreFloat4x4(&temp, XMMatrixTranspose(XMLoadFloat4x4(&temp)));
 
-	XMStoreFloat4x4(&viewInv, XMMatrixInverse(&XMMatrixDeterminant(
-		XMLoadFloat4x4(&Cam->getViewMatrix())), XMLoadFloat4x4(&Cam->getViewMatrix())));
+	//XMStoreFloat4x4(&viewInv, XMMatrixInverse(&XMMatrixDeterminant(
+	//	XMLoadFloat4x4(&Cam->getViewMatrix())), XMLoadFloat4x4(&Cam->getViewMatrix())));
 
-	XMStoreFloat4x4(&projInv, XMMatrixInverse(&XMMatrixDeterminant(
-		XMLoadFloat4x4(&Cam->getProjectionMatrix())), XMLoadFloat4x4(&Cam->getProjectionMatrix())));
+	//XMStoreFloat4x4(&projInv, XMMatrixInverse(&XMMatrixDeterminant(
+	//	XMLoadFloat4x4(&Cam->getProjectionMatrix())), XMLoadFloat4x4(&Cam->getProjectionMatrix())));
 
 
-	cb.IV = viewInv;
-	cb.IP = projInv;
-	cb.cameraPos = XMFLOAT4(tempp.x, tempp.y, tempp.z, 1);
-	cb.nrOfTriangles = m_mesh.getNrOfFaces();
-	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+	//cb.IV = viewInv;
+	//cb.IP = projInv;
+	//cb.cameraPos = XMFLOAT4(tempp.x, tempp.y, tempp.z, 1);
+	//cb.nrOfTriangles = m_mesh.getNrOfFaces();
+	//g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 
-	g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
+	//g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
 
 	g_DeviceContext->UpdateSubresource(m_spherecBuffer, 0, NULL, &spherecb, 0, 0);
 
@@ -682,7 +682,7 @@ void RTGraphics::Render(float _dt)
 		MessageBox(NULL,"Failed to present the swapchain","RT Render Error",S_OK);
 
 	//Title text and FPS counter
-	/*char title[256];
+	char title[256];
 	sprintf_s(
 		title,
 		sizeof(title),
@@ -690,16 +690,16 @@ void RTGraphics::Render(float _dt)
 		m_fps,
 		m_kdGenTime,
 		m_gpuTextureGenTime
-		);*/
-
-	char title[256];
-	sprintf_s(
-		title,
-		sizeof(title),
-		"FCKDT Project - genTime: %f, %f",
-		m_kdGenTime,
-		m_gpuTextureGenTime
 		);
+
+	//char title[256];
+	//sprintf_s(
+	//	title,
+	//	sizeof(title),
+	//	"FCKDT Project - genTime: %f, %f",
+	//	m_kdGenTime,
+	//	m_gpuTextureGenTime
+	//	);
 
 	SetWindowText(*m_Hwnd, title);
 }

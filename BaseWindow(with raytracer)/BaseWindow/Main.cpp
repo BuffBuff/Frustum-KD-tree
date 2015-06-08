@@ -6,7 +6,7 @@
 #include "Graphics.h"
 
 //#define standardrender
-//#define raytracing
+#define raytracing
 #define gpuraytracing
 
 #ifdef raytracing
@@ -42,17 +42,21 @@ ButtonInput* buttonInput = new ButtonInput();
 
 int g_Width, g_Height;
 
+enum { GPUGen, Offline };
+
+int renderMethod = GPUGen;
+bool modeChange = false;
 
 
 #ifdef raytracing
 
-RTGraphics *graphics;
+RTGraphics *RTgraphics;
 
 #endif
 
 #ifdef gpuraytracing
 
-GPURTGraphics *graphics;
+GPURTGraphics *GPURTgraphics;
 
 #endif
 
@@ -78,7 +82,9 @@ char* FeatureLevelToString(D3D_FEATURE_LEVEL featureLevel)
 
 void toggle()
 {
-	graphics->updateTogglecb(buttonInput->GetMPressed(), buttonInput->GetIsVPressed(), buttonInput->GetBPressed() );
+	RTgraphics->updateTogglecb(buttonInput->GetIsVPressed(), buttonInput->GetIsVPressed(), buttonInput->GetBPressed());
+	//GPURTgraphics->updateTogglecb(buttonInput->GetIsVPressed(), buttonInput->GetIsVPressed(), buttonInput->GetBPressed());
+
 }
 
 
@@ -164,11 +170,11 @@ HRESULT Init()
 		return hr;
 
 #ifdef raytracing
-	graphics = new RTGraphics(&g_hWnd);
+	RTgraphics = new RTGraphics(&g_hWnd);
 #endif
 
 #ifdef gpuraytracing
-	graphics = new GPURTGraphics(&g_hWnd);
+	GPURTgraphics = new GPURTGraphics(&g_hWnd);
 #endif
 
 #ifdef standardrender
@@ -229,10 +235,33 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
 			toggle();
 
-			//render
-			graphics->Update(dt);
-			graphics->Render(dt);
+			if (buttonInput->GetMPressed() && modeChange == false)
+			{
+				modeChange = true;
+				renderMethod++;
+				if (renderMethod > 1)
+				{
+					renderMethod = 0;
+				}
+			}
+			else if (buttonInput->GetMPressed() == false)
+			{
+				modeChange = false;
+			}
 
+			GPURTgraphics->UpdateCamera(dt);
+
+			//render
+			if (renderMethod == Offline)
+			{
+				RTgraphics->Update(dt);
+				RTgraphics->Render(dt);
+			}
+			else if (renderMethod == GPUGen)
+			{
+				GPURTgraphics->Update(dt);
+				GPURTgraphics->Render(dt);
+			}
 			Cam->update();
 
 			prevTimeStamp = currTimeStamp;
@@ -330,9 +359,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void release()
 {
-	graphics->release();
+	RTgraphics->release();
+	GPURTgraphics->release();
 
-	SAFE_DELETE(graphics);
+	SAFE_DELETE(RTgraphics);
+	SAFE_DELETE(GPURTgraphics);
 
 	SAFE_RELEASE(g_Device);
 	SAFE_RELEASE(g_DeviceContext);

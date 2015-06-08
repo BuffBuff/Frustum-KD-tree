@@ -16,6 +16,8 @@ extern IDXGISwapChain* g_SwapChain;
 
 extern Camera* Cam;
 
+using namespace DirectX;
+
 class RTGraphics
 {
 public:

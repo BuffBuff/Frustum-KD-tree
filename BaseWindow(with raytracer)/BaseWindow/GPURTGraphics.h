@@ -26,6 +26,8 @@ public:
 	void release();
 	void updateTogglecb(int _lightSpheres, int _placeHolder1, int _placeHolder2);
 
+	void UpdateCamera(float _dt);
+
 private:
 	//Converter (sting to wstring)
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;

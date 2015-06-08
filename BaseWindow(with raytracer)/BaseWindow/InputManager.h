@@ -127,7 +127,7 @@ void inline HandleRawInput( HWND &hWnd, HRAWINPUT &lParam )
 					break;
 
 					case 'C' : buttonInput->SetCPressed(true);
-					break;					
+					break;		
 				}
 			break;
 		}

@@ -10,7 +10,7 @@ private:
 public:
 	//ButtonInput();
 
-	void SetMPressed(bool pressed){if(pressed){if(ismPressed == false){mPressed = !mPressed;}ismPressed = true;}else{ismPressed = false;}}//{mPressed = pressed;}
+	void SetMPressed(bool pressed){ if (pressed){ if (ismPressed == false){ mPressed = !mPressed; }ismPressed = true; } else{ ismPressed = false; mPressed = !mPressed; } }
 	void SetNPressed(bool pressed){if(pressed){if(isnPressed == false){nPressed = !nPressed;}isnPressed = true;}else{isnPressed = false;}}
 	void SetBPressed(bool pressed){if(pressed){if(isbPressed == false){bPressed = !bPressed;}isbPressed = true;}else{isbPressed = false;}}
 	void SetVPressed(bool pressed){if(pressed){if(isvPressed == false){vPressed = !vPressed;}isvPressed = true;}else{isvPressed = false;}}

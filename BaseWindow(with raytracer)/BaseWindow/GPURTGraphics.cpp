@@ -381,14 +381,14 @@ GPURTGraphics::~GPURTGraphics()
 {
 }
 
-void GPURTGraphics::Update(float _dt)
+void GPURTGraphics::UpdateCamera(float _dt)
 {
 	// updating the constant buffer holding the camera transforms
 	XMFLOAT4X4 temp, viewInv, projInv;
 	XMFLOAT3 tempp = Cam->getCameraPosition(); // w ska va 1
 	XMStoreFloat4x4(&temp, XMMatrixIdentity());
 
-	XMStoreFloat4x4(&temp, XMMatrixTranslation(tempp.x,tempp.y,tempp.z));
+	XMStoreFloat4x4(&temp, XMMatrixTranslation(tempp.x, tempp.y, tempp.z));
 
 	XMStoreFloat4x4(&temp, XMMatrixTranspose(XMLoadFloat4x4(&temp)));
 
@@ -407,6 +407,8 @@ void GPURTGraphics::Update(float _dt)
 
 	g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
 
+
+
 	m_time += _dt;
 	static float frameCnt = 0;
 	static float t_base = 0.f;
@@ -419,6 +421,12 @@ void GPURTGraphics::Update(float _dt)
 		frameCnt = 0;
 		t_base += 1.f;
 	}
+}
+
+
+void GPURTGraphics::Update(float _dt)
+{
+
 
 
 	// fill the aabb buffer
