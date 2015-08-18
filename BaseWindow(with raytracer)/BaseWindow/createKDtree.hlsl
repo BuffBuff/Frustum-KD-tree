@@ -13,11 +13,12 @@ RWStructuredBuffer<int> indiceList : register(u2);
 
 RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int4 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
 
+
 RWStructuredBuffer<int2> splittSize : register(u5); // used for storing the size of every split and then the start values of the split 0 = size of previus split, 1 = offset in current split
 
 RWStructuredBuffer<int> indexingCount : register(u6); // using this struct to designate which index in the indiceList to wright the leaf node to, index 1 is the depth value of the current depth
 
-RWStructuredBuffer<int> mutex : register(u7);	// Used in the custom interlocking function
+RWStructuredBuffer<float> mutex : register(u7);	// Used in the custom interlocking function
 
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
@@ -92,34 +93,32 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 			//checks if the maxpoint for a specific triangleaabb is smaller then current splitvalue
 			//adding to one side of the split
-			if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] < KDtree[splitStart + oldSplitID].split.y)
-			{
-				splittingSwap[workingSplit][workID][0] = oldSplitID;
-				splittingSwap[workingSplit][workID][1] = aabbSplitID;
+			//if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] < KDtree[splitStart + oldSplitID].split.y)
+			//{
+			//	splittingSwap[workingSplit][workID][0] = oldSplitID;
+			//	splittingSwap[workingSplit][workID][1] = aabbSplitID;
 
-				InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
+			//	InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
 
-			}
-			//checks if the minpoint for a specific triangleaabb is larger then current splitvalue
-			//adding to the other side of the split
-			else if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] > KDtree[splitStart + oldSplitID].split.y)
-			{
-				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
-				splittingSwap[workingSplit][workID][3] = aabbSplitID;
+			//}
+			////checks if the minpoint for a specific triangleaabb is larger then current splitvalue
+			////adding to the other side of the split
+			//else if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] > KDtree[splitStart + oldSplitID].split.y)
+			//{
+			//	splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
+			//	splittingSwap[workingSplit][workID][3] = aabbSplitID;
 
-				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
+			//	InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
 
-			}
-			//else the split is through the triangleaabb
+			//}
+			//else //the split is through the triangleaabb
 			//added to both sides of the split
 			//if (splittingSwap[workingSplit][workID][0] == -1 && splittingSwap[workingSplit][workID][2] == -1)
-			else
 			{
 				splittingSwap[workingSplit][workID][0] = oldSplitID;
 				splittingSwap[workingSplit][workID][1] = aabbSplitID;
 
 				InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
-
 
 
 				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
@@ -128,6 +127,65 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
 
 			}
+
+	
+
+			/*if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] < 60)
+			{
+				splittingSwap[workingSplit][workID][0] = oldSplitID;
+				splittingSwap[workingSplit][workID][1] = aabbSplitID;
+
+				InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
+
+			}*/
+
+			//checks if the minpoint for a specific triangleaabb is larger then current splitvalue
+			//adding to the other side of the split
+
+
+			/*if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] > -1 && 
+				aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] < 57)
+			{
+				splittingSwap[workingSplit][workID][0] = oldSplitID;
+				splittingSwap[workingSplit][workID][1] = aabbSplitID;
+
+				InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
+
+			}*/
+
+			/*splittingSwap[workingSplit][workID][0] = oldSplitID;
+			splittingSwap[workingSplit][workID][1] = aabbSplitID;
+
+			InterlockedAdd(splittSize[oldSplitID + 1][0], 1);*/
+
+			/*if (KDtree[splitStart + oldSplitID].split.y > 27 && KDtree[splitStart + oldSplitID].split.y < 28)
+			{
+				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
+				splittingSwap[workingSplit][workID][3] = aabbSplitID;
+
+				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
+
+			}*/
+			//if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] < 0.00000)
+			//if (aabbList[aabbSplitID].minPoint.z >= 0.00000)
+			////if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] == -10.00000)
+			////if (splitStart + oldSplitID == 0)
+			////if (KDtree[splitStart + oldSplitID].split.x < 4)
+			//{
+
+
+			//	splittingSwap[workingSplit][workID][0] = oldSplitID;
+			//	splittingSwap[workingSplit][workID][1] = aabbSplitID;
+
+			//	InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
+
+
+			//	splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
+			//	splittingSwap[workingSplit][workID][3] = aabbSplitID;
+
+			//	InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
+
+			//}
 
 			workID += NROFTHREADSCREATIONDISPATCHES;
 		}
@@ -181,15 +239,19 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		// splittSize // contains the start intex to wright to for the splits and how many has been written
 
 
-		if (workID < (1 << (depth + 1)))
+		while (workID < (1 << (depth + 1000)))
 		{
 
 			int counter = 0;
 
-			while (splittingSwap[workingSplit][counter][0] != -1 || splittingSwap[workingSplit][counter][2] != -1)
+			//while (splittingSwap[workingSplit][counter][0] != -1 || splittingSwap[workingSplit][counter][2] != -1) // FEL HÄR DETTA FÅR TRIANGLAR ATT FÖRSVINNA OM EN TRIANGEL INTE ANSES FINNAS I KD-TRÄDET
+			while (counter < highIndex) // FEL HÄR DETTA FÅR TRIANGLAR ATT FÖRSVINNA OM EN TRIANGEL INTE ANSES FINNAS I KD-TRÄDET
 			{
 				int leftRight = workID % 2;
 		
+				mutex[workID] = 1; //--------------------------------------------------------------------- DEBUGING
+
+
 				if (splittingSwap[workingSplit][counter][leftRight * 2] == workID)
 				{
 					//int splitOffset = splittSize[workID][0]; // the offset to the start of the split the value belongs in
@@ -199,6 +261,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					splittingSwap[moveSplit][splittSize[workID][0]][1] = splittingSwap[workingSplit][counter][(leftRight * 2) + 1];
 					splittingSwap[moveSplit][splittSize[workID][0]][2] = -1;
 					splittingSwap[moveSplit][splittSize[workID][0]][3] = -1;
+
+
+					//mutex[counter] = splittingSwap[moveSplit][splittSize[workID][0]][0];
+
 
 					InterlockedAdd(splittSize[workID][0],1);
 				}
@@ -224,6 +290,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			// clear splitSize - done
 		
 			workID = threadIndex;
+
+
 
 			int startIndexThisDepth = (1 << (depth + 1)) - 1;
 			int nextDepth = (1 << (depth + 1));
@@ -308,11 +376,18 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					//KDtree[startIndexThisDepth + workID].split[0] = depth;
 					//KDtree[startIndexThisDepth + workID].split[1] = 50;
 
+
+
 					for (int i = 0; i < nrOfTrianglesInSplit; i++)
 					{
+
+
+
 						indiceList[wrightLocation + i] = aabbList[splittingSwap[moveSplit][splittingSwapStartLocation + i][1]].triangleID;
 						splittingSwap[moveSplit][splittingSwapStartLocation + i][0] = -1;  // KAN GÅ HELT ÅT SKOGEN ATT SÄTTA DEM TILL -1 HÄR -----------------------------------------------------------------
 						splittingSwap[moveSplit][splittingSwapStartLocation + i][1] = -1;
+
+
 					}
 
 				

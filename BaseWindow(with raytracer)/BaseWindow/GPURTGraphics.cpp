@@ -113,7 +113,9 @@ void GPURTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 	//Mesh
 	///////////////////////////////////////////////////////////////////////////////////////////
+	//std::string inputfile = "Meshi/kub.obj";
 	std::string inputfile = "Meshi/cornell_box.obj";
+
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 
@@ -367,7 +369,7 @@ void GPURTGraphics::createSwapStructures()
 
 	
 	m_mutex = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-		sizeof(int),
+		sizeof(float),
 		MAXSIZE,
 		false,
 		true,
