@@ -57,14 +57,14 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			splittSize[workID][0] = 0;
 			splittSize[workID][1] = 0;
 
-	/*		splittingSwap[moveSplit][workID][0] = -1;
-			splittingSwap[moveSplit][workID][1] = -1;*/
+			/*		splittingSwap[moveSplit][workID][0] = -1;
+					splittingSwap[moveSplit][workID][1] = -1;*/
 
 			workID += NROFTHREADSCREATIONDISPATCHES;
 
 		}
 
-		
+
 		DeviceMemoryBarrierWithGroupSync();
 		workID = threadIndex;						// setting the workID for the first pass
 
@@ -123,19 +123,19 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
 				splittingSwap[workingSplit][workID][3] = aabbSplitID;
-				
+
 				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
 
 			}
 
-	
+
 
 			/*if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] < 60)
 			{
-				splittingSwap[workingSplit][workID][0] = oldSplitID;
-				splittingSwap[workingSplit][workID][1] = aabbSplitID;
+			splittingSwap[workingSplit][workID][0] = oldSplitID;
+			splittingSwap[workingSplit][workID][1] = aabbSplitID;
 
-				InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
+			InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
 
 			}*/
 
@@ -143,15 +143,15 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			//adding to the other side of the split
 
 
-			/*if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] > -1 && 
+			/*if (aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] > -1 &&
 				aabbList[aabbSplitID].minPoint[KDtree[splitStart + oldSplitID].split.x] < 57)
-			{
+				{
 				splittingSwap[workingSplit][workID][0] = oldSplitID;
 				splittingSwap[workingSplit][workID][1] = aabbSplitID;
 
 				InterlockedAdd(splittSize[oldSplitID + 1][0], 1);
 
-			}*/
+				}*/
 
 			/*splittingSwap[workingSplit][workID][0] = oldSplitID;
 			splittingSwap[workingSplit][workID][1] = aabbSplitID;
@@ -160,10 +160,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 			/*if (KDtree[splitStart + oldSplitID].split.y > 27 && KDtree[splitStart + oldSplitID].split.y < 28)
 			{
-				splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
-				splittingSwap[workingSplit][workID][3] = aabbSplitID;
+			splittingSwap[workingSplit][workID][2] = oldSplitID + 1;
+			splittingSwap[workingSplit][workID][3] = aabbSplitID;
 
-				InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
+			InterlockedAdd(splittSize[oldSplitID + 2][0], 1);
 
 			}*/
 			//if (aabbList[aabbSplitID].maxPoint[KDtree[splitStart + oldSplitID].split.x] < 0.00000)
@@ -194,19 +194,25 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		//	Beräkna start index för varje split
 		//////////////////////////////////////////////////////////////////////
 
+		
+
 		DeviceMemoryBarrierWithGroupSync();
+
+
+		
 
 		workID = threadIndex;
 
 		while (workID < 2999999)
 		{
-			splittSize[workID][1] = splittSize[workID+1][0];
+			splittSize[workID][1] = splittSize[workID + 1][0];
 			workID += NROFTHREADSCREATIONDISPATCHES;
 
 		}
 
 
-		//DeviceMemoryBarrierWithGroupSync();
+
+		DeviceMemoryBarrierWithGroupSync();
 
 		int sum = 0;
 		workID = 1;
@@ -223,8 +229,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		DeviceMemoryBarrierWithGroupSync();
 
-
-
+		
 
 		//////////////////////////////////////////////////////////////////////
 		//	Flytta splitten
@@ -232,12 +237,14 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		workID = threadIndex;
 
+
 		// splittingSwap[2] // swapping structure to move and create the list of indices // the int4 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
 		// splitStart // the amount of splits for the current depth
 		// moveSplit // the split to move the list to
 		// workingSplit // the split that the elements are to be split from
 		// splittSize // contains the start intex to wright to for the splits and how many has been written
 
+	
 
 		while (workID < (1 << (depth + 1000)))
 		{
@@ -249,7 +256,6 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			{
 				int leftRight = workID % 2;
 		
-				mutex[workID] = 1; //--------------------------------------------------------------------- DEBUGING
 
 
 				if (splittingSwap[workingSplit][counter][leftRight * 2] == workID)
@@ -282,6 +288,17 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		//////////////////////////////////////////////////////////////////////
 
 		DeviceMemoryBarrierWithGroupSync();
+		
+		
+		workID = threadIndex;
+		if (depth == 0)
+		{
+
+			mutex[workID * 2] = splittSize[workID][0]; //--------------------------------------------------------------------- DEBUGING
+			mutex[(workID * 2) + 1] = splittSize[workID][1]; //--------------------------------------------------------------------- DEBUGING
+		}
+		DeviceMemoryBarrierWithGroupSync();
+		
 
 
 			// Splitta boxarna i kd-trädet -- done?
