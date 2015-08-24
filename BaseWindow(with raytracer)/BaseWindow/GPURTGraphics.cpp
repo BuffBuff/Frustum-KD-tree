@@ -106,6 +106,21 @@ void GPURTGraphics::createCBuffers()
 	}
 	g_DeviceContext->CSSetConstantBuffers(1, 1, &m_lightcBuffer);
 
+	if (sizeof(depthcBuffer) % 16 > 0)
+	{
+		cbDesc.ByteWidth = (int)((sizeof(depthcBuffer) / 16) + 1) * 16;
+	}
+	else
+	{
+		cbDesc.ByteWidth = sizeof(depthcBuffer);
+	}
+
+	hr = g_Device->CreateBuffer(&cbDesc, NULL, &m_depthcBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, "Failed Making Constant Buffer lightcBuffer", "Create Buffer", MB_OK);
+	}
+	g_DeviceContext->CSSetConstantBuffers(4, 1, &m_depthcBuffer);
 }
 
 void GPURTGraphics::createTriangleTexture()
@@ -405,6 +420,10 @@ void GPURTGraphics::UpdateCamera(float _dt)
 	cb.IP = projInv;
 	cb.cameraPos = XMFLOAT4(tempp.x, tempp.y, tempp.z, 1);
 	cb.nrOfTriangles = m_mesh.getNrOfFaces();
+
+	cb.pad.x = 0;
+	cb.pad.y = 1;
+
 	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 
 	g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
@@ -470,7 +489,26 @@ void GPURTGraphics::Update(float _dt)
 	createKDtree->Set();
 
 	g_timer->Start();
-	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	depthcb.depth = 0;
+	depthcb.padDepth.x = 0;
+	depthcb.padDepth.y = 0;
+	depthcb.padDepth.z = 0;
+
+
+	for (int i = 0; i < 1; i++)
+	{
+		//g_DeviceContext->UpdateSubresource(m_depthcBuffer, 0, NULL, &depthcb, 0, 0);
+
+		g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+
+
+		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+
+		depthcb.depth++;
+
+	}
+
+
 	g_DeviceContext->Flush();
 	g_timer->Stop();
 

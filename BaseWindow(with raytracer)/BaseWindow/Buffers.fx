@@ -30,4 +30,12 @@ cbuffer Toggles : register(c3)
 	float3 togglePad;
 };
 
+cbuffer DepthUppdate : register(c4)
+{
+	int Depth37;
+	float3 padDepth;
+};
+
+
+
 #endif

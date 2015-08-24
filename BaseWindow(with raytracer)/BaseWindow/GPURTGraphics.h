@@ -90,6 +90,9 @@ private:
 	ID3D11Buffer				*m_spherecBuffer;
 	cSphereBuffer				spherecb;
 
+	ID3D11Buffer				*m_depthcBuffer;
+	depthcBuffer				depthcb;
+
 
 	D3D11Timer					*g_timer = NULL;
 
