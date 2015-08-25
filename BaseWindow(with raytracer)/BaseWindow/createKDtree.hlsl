@@ -29,7 +29,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int workID = threadIndex;								// the triangle/AABB that the tread currently handles
 	int workingSplit = 0;							// the splitSwap currently woking on 0 - 1
 	int moveSplit = 1;								// the splitSwap to move to
-	int depth = Depth37;							// the current depth of the tree;
+	int depth = pad.x;							// the current depth of the tree;
 
 
 

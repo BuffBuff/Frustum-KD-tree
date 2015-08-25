@@ -492,10 +492,10 @@ void GPURTGraphics::Update(float _dt)
 	depthcb.depth = 0;
 	depthcb.padDepth.x = 0;
 	depthcb.padDepth.y = 0;
-	depthcb.padDepth.z = 0;
+	depthcb.padDepth.z = 1;
 
 
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < MAXDEPTH; i++)
 	{
 		//g_DeviceContext->UpdateSubresource(m_depthcBuffer, 0, NULL, &depthcb, 0, 0);
 
@@ -504,7 +504,7 @@ void GPURTGraphics::Update(float _dt)
 
 		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 
-		depthcb.depth++;
+		cb.pad.x++;
 
 	}
 
