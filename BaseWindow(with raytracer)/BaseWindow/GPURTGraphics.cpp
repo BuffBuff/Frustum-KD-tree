@@ -501,8 +501,18 @@ void GPURTGraphics::Update(float _dt)
 
 		g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 
+		//// the split calculation
+		//splitCalcKDtree->Set();
+		//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 
+		//// moving the split
+		//splitCalcKDtree->Set();
+		//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+
+		//// next depth prep
+		//splitCalcKDtree->Set();
 		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+
 
 		cb.pad.x++;
 

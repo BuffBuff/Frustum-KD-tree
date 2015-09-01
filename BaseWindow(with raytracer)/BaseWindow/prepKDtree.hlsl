@@ -28,17 +28,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int workID = threadIndex;								// the triangle/AABB that the tread currently handles
 	int workingSplit = 0;							// the splitSwap currently woking on 0 - 1
 	int moveSplit = 1;								// the splitSwap to move to
-	int nrOfSplits = 2;
-	int depth = indexingCount[1];							// the current depth of the tree;
+	int depth = 0;							// the current depth of the tree;
 	int nrOfElements = nrOfTriangles;
 
 
-
-
-	// Creating kd-tree
-
-	int lowIndex = 0;						// the current treads low work index
-	int highIndex = indexingCount[2];			// the current treads end work index
 
 
 		//////////////////////////////////////////////////////////////////////
@@ -63,9 +56,9 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			{
 				// splitStart  // the number of nodes in the current depth
 
-				
 
-				if (splittSize[workID][1] > 8 && MAXDEPTH - 1 != depth) // splitta boxen och skriv till nästa djup
+
+				if (splittSize[workID][1] > 6 && depth < MAXDEPTH - 1) // splitta boxen och skriv till nästa djup
 				{
 
 					// 0 = current depth = splitstart + workID
@@ -84,10 +77,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					splitLength[2] = KDtree[startIndexThisDepth + workID].aabb.maxPoint.z - KDtree[startIndexThisDepth + workID].aabb.minPoint.z;
 
 					splitAxis = splitLength[0] > splitLength[1] ? 0 : 1;
-					splitAxis = splitLength[splitAxis]	 > splitLength[2] ? splitAxis : 2;
+					splitAxis = splitLength[splitAxis] > splitLength[2] ? splitAxis : 2;
 
 					//float middleOffset = (KDtree[startIndexThisDepth + (workID * 2)].aabb.maxPoint[splitAxis] - KDtree[startIndexThisDepth + (workID * 2)].aabb.minPoint[splitAxis]) * 0.5f;
-					
+
 					float middleOffset = KDtree[startIndexThisDepth + workID].aabb.maxPoint[splitAxis];
 					middleOffset -= KDtree[startIndexThisDepth + workID].aabb.minPoint[splitAxis];
 					middleOffset *= 0.5f;
@@ -98,8 +91,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis] -= middleOffset;
 
-					KDtree[startIndexNextDepth + (workID * 2)].split = splitAxis;
-					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis];
+					KDtree[startIndexNextDepth + (workID * 2)].split.x = splitAxis;
+					KDtree[startIndexNextDepth + (workID * 2)].split.y = KDtree[startIndexNextDepth + (workID * 2)].aabb.maxPoint[splitAxis];
 
 					// right
 					KDtree[startIndexNextDepth + ((workID * 2) + 1)] = KDtree[startIndexThisDepth + workID];
@@ -107,8 +100,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 					KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis] += middleOffset;
 
-					KDtree[startIndexNextDepth + (workID * 2)].split = splitAxis;
-					KDtree[startIndexNextDepth + (workID * 2)].split = KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis];
+					KDtree[startIndexNextDepth + (workID * 2)].split.x = splitAxis;
+					KDtree[startIndexNextDepth + (workID * 2)].split.y = KDtree[startIndexNextDepth + ((workID * 2) + 1)].aabb.minPoint[splitAxis];
 
 				}
 				else if (splittSize[workID][0] > 0)// leafNode
@@ -138,51 +131,43 @@ void main(uint3 threadID : SV_DispatchThreadID)
 					//KDtree[startIndexThisDepth + workID].split[0] = depth;
 					//KDtree[startIndexThisDepth + workID].split[1] = 50;
 
+
+
 					for (int i = 0; i < nrOfTrianglesInSplit; i++)
 					{
+
+
+
 						indiceList[wrightLocation + i] = aabbList[splittingSwap[moveSplit][splittingSwapStartLocation + i][1]].triangleID;
 						splittingSwap[moveSplit][splittingSwapStartLocation + i][0] = -1;  // KAN GÅ HELT ÅT SKOGEN ATT SÄTTA DEM TILL -1 HÄR -----------------------------------------------------------------
 						splittingSwap[moveSplit][splittingSwapStartLocation + i][1] = -1;
+
+
 					}
 
-				
+
 				}
-				/*else
+				else
 				{
-					KDtree[startIndexNextDepth + workID].split[0] = -1;
-					KDtree[startIndexNextDepth + workID].split[1] = -1;
-				}*/
+					KDtree[startIndexNextDepth + workID].index = 0;
+					KDtree[startIndexNextDepth + workID].aabb.minPoint.w = startIndexNextDepth + workID;
+					KDtree[startIndexNextDepth + workID].aabb.minPoint.z = startIndexNextDepth;
+					KDtree[startIndexNextDepth + workID].aabb.minPoint.y = nextDepth;
+					KDtree[startIndexNextDepth + workID].aabb.minPoint.x = startIndexThisDepth;
+
+					KDtree[startIndexNextDepth + workID].aabb.maxPoint.w = 9999;
+					KDtree[startIndexNextDepth + workID].aabb.maxPoint.z = 9999;
+					KDtree[startIndexNextDepth + workID].aabb.maxPoint.y = 9999;
+					KDtree[startIndexNextDepth + workID].aabb.maxPoint.x = 9999;
+
+					KDtree[startIndexNextDepth + workID].split[0] = depth;
+					KDtree[startIndexNextDepth + workID].split[1] = workID;
+				}
 
 				workID += NROFTHREADSCREATIONDISPATCHES;
 
 			}
 
-			workID = threadIndex;
-
-			DeviceMemoryBarrierWithGroupSync();
-
-
-
-
-			//int temp = indexingCount[3];
-			//indexingCount[3] = indexingCount[4];
-			//indexingCount[4] = temp;
-
-
-			if (threadIndex == 0)
-			{
-				indexingCount[1] += 1;
-				indexingCount[2] = splittSize[(1 << (depth + 1))][0];
-
-			}
-
-			while (workID < indexingCount[2])
-			{
-				splittingSwap[moveSplit][workID] = splittingSwap[workingSplit][workID];
-
-
-				workID += NROFTHREADSCREATIONDISPATCHES;
-			}
 
 
 }

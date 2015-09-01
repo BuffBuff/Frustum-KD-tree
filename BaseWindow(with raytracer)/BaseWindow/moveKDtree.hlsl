@@ -29,7 +29,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int workingSplit = 0;							// the splitSwap currently woking on 0 - 1
 	int moveSplit = 1;								// the splitSwap to move to
 	int nrOfSplits = 2;
-	int depth = indexingCount[1];							// the current depth of the tree;
+	int depth = 0;							// the current depth of the tree;
 	int nrOfElements = nrOfTriangles;
 
 
@@ -43,48 +43,82 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-		//////////////////////////////////////////////////////////////////////
-		//	Flytta splitten
-		//////////////////////////////////////////////////////////////////////
+	while (workID < 2999999)
+	{
+		splittSize[workID][1] = splittSize[workID + 1][0];
+		workID += NROFTHREADSCREATIONDISPATCHES;
 
-		workID = threadIndex;
-
-		// splittingSwap[2] // swapping structure to move and create the list of indices // the int4 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
-		// splitStart // the amount of splits for the current depth
-		// moveSplit // the split to move the list to
-		// workingSplit // the split that the elements are to be split from
-		// splittSize // contains the start intex to wright to for the splits and how many has been written
+	}
 
 
-		if (workID < (1 << (depth + 1)))
+
+	DeviceMemoryBarrierWithGroupSync();
+
+	int sum = 0;
+	workID = 1;
+	if (threadIndex == 0)
+	{
+		while (workID < MAXSIZE)
 		{
+			sum += splittSize[workID][0];
+			//splittSize[workID][1] = splittSize[workID][0];
+			splittSize[workID][0] = sum;
+			workID++;
+		}
+	}
 
-			int counter = 0;
+	DeviceMemoryBarrierWithGroupSync();////////////////////////////////////////////////////////
 
-			//while (splittingSwap[workingSplit][counter][0] != -1 || splittingSwap[workingSplit][counter][2] != -1)
-			while (counter < highIndex)
+	//////////////////////////////////////////////////////////////////////
+	//	Flytta splitten
+	//////////////////////////////////////////////////////////////////////
+
+	workID = threadIndex;
+
+
+	// splittingSwap[2] // swapping structure to move and create the list of indices // the int4 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
+	// splitStart // the amount of splits for the current depth
+	// moveSplit // the split to move the list to
+	// workingSplit // the split that the elements are to be split from
+	// splittSize // contains the start intex to wright to for the splits and how many has been written
+
+
+
+	while (workID < (1 << (depth + 1)))
+	{
+
+		int counter = 0;
+
+		//while (splittingSwap[workingSplit][counter][0] != -1 || splittingSwap[workingSplit][counter][2] != -1) // FEL HÄR DETTA FÅR TRIANGLAR ATT FÖRSVINNA OM EN TRIANGEL INTE ANSES FINNAS I KD-TRÄDET
+		while (counter < highIndex) // FEL HÄR DETTA FÅR TRIANGLAR ATT FÖRSVINNA OM EN TRIANGEL INTE ANSES FINNAS I KD-TRÄDET
+		{
+			int leftRight = workID % 2;
+
+
+
+			if (splittingSwap[workingSplit][counter][leftRight * 2] == workID)
 			{
-				int leftRight = workID % 2;
-		
-				if (splittingSwap[workingSplit][counter][leftRight * 2] == workID)
-				{
-					//int splitOffset = splittSize[workID][0]; // the offset to the start of the split the value belongs in
-					//int moveID = splittSize[workID][1]; // the id offset to move the data to
+				//int splitOffset = splittSize[workID][0]; // the offset to the start of the split the value belongs in
+				//int moveID = splittSize[workID][1]; // the id offset to move the data to
 
-					splittingSwap[moveSplit][splittSize[workID][0]][0] = splittingSwap[workingSplit][counter][leftRight * 2];
-					splittingSwap[moveSplit][splittSize[workID][0]][1] = splittingSwap[workingSplit][counter][(leftRight * 2) + 1];
-					splittingSwap[moveSplit][splittSize[workID][0]][2] = -1;
-					splittingSwap[moveSplit][splittSize[workID][0]][3] = -1;
+				splittingSwap[moveSplit][splittSize[workID][0]][0] = splittingSwap[workingSplit][counter][leftRight * 2];
+				splittingSwap[moveSplit][splittSize[workID][0]][1] = splittingSwap[workingSplit][counter][(leftRight * 2) + 1];
+				splittingSwap[moveSplit][splittSize[workID][0]][2] = -1;
+				splittingSwap[moveSplit][splittSize[workID][0]][3] = -1;
 
-					InterlockedAdd(splittSize[workID][0],1);
-				}
 
-				counter++;
+				//mutex[counter] = splittingSwap[moveSplit][splittSize[workID][0]][0];
+
+
+				InterlockedAdd(splittSize[workID][0], 1);
 			}
 
-			workID += NROFTHREADSCREATIONDISPATCHES;
-
+			counter++;
 		}
+
+		workID += NROFTHREADSCREATIONDISPATCHES;
+
+	}
 
 }
 
