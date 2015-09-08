@@ -28,7 +28,8 @@
 enum COMPUTE_BUFFER_TYPE
 {
 	STRUCTURED_BUFFER,
-	RAW_BUFFER
+	RAW_BUFFER,
+	APPEND_BUFFER
 };
 
 class ComputeBuffer
@@ -184,7 +185,7 @@ public:
 	ID3D11Buffer* CreateConstantBuffer(UINT uSize, VOID* pInitData, char* debugName = NULL);
 
 	ComputeBuffer* CreateBuffer(COMPUTE_BUFFER_TYPE uType, UINT uElementSize,
-		UINT uCount, bool bSRV, bool bUAV, VOID* pInitData, bool bCreateStaging = false, char* debugName = NULL);
+		UINT uCount, bool bSRV, bool bUAV,bool bAppend, VOID* pInitData, bool bCreateStaging = false, char* debugName = NULL);
 
 	ComputeTexture* CreateTexture(DXGI_FORMAT dxFormat,	UINT uWidth,
 		UINT uHeight, UINT uRowPitch, VOID* pInitData, bool bCreateStaging = false, char* debugName = NULL);
@@ -193,9 +194,11 @@ public:
 
 private:
 	ID3D11Buffer* CreateStructuredBuffer(UINT uElementSize, UINT uCount, bool bSRV, bool bUAV, VOID* pInitData);
+	ID3D11Buffer* CreateAppendBuffer(UINT uElementSize, UINT uCount, bool bSRV, bool bUAV, VOID* pInitData);
 	ID3D11Buffer* CreateRawBuffer(UINT uSize, VOID* pInitData);
 	ID3D11ShaderResourceView* CreateBufferSRV(ID3D11Buffer* pBuffer);
 	ID3D11UnorderedAccessView* CreateBufferUAV(ID3D11Buffer* pBuffer);
+	ID3D11UnorderedAccessView* CreateBufferUAVAppend(ID3D11Buffer* pBuffer);
 	ID3D11Buffer* CreateStagingBuffer(UINT uSize);
 
 	//texture functions

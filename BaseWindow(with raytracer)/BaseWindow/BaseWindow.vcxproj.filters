@@ -172,6 +172,9 @@
     <FxCompile Include="moveKDtree.hlsl">
       <Filter>Shaders\GPU kd</Filter>
     </FxCompile>
+    <FxCompile Include="createKDtreeAppend.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources.hlsl">

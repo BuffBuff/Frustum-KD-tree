@@ -2,7 +2,7 @@
 
 
 
-//StructuredBuffer<TriangleMat> triangles : register(t1);
+StructuredBuffer<TriangleMat> triangles : register(t1);
 
 RWStructuredBuffer<AABB> aabbList : register(u0);
 

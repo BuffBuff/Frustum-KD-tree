@@ -1,24 +1,22 @@
 #include "Collisions.fx"
 
-
-
-StructuredBuffer<TriangleMat> triangles : register(t1);
+StructuredBuffer<TriangleMat> triangles :register(t1);
 
 RWStructuredBuffer<AABB> aabbList : register(u0);
 
-RWStructuredBuffer<NodePass2> KDtree : register(u1); // to do skapa den fulla strukturen
+RWStructuredBuffer<NodePass2> KDtree : register(u1);
 
-RWStructuredBuffer<int> indiceList : register(u2); // to do skapa append list 
+AppendStructuredBuffer<int> indiceList : register(u2);
+
+ConsumeStructuredBuffer<int4> splittingSwapConsume : register(u3);// the int4 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
+AppendStructuredBuffer<int4> splittingSwapAppend : register(u4);
 
 
-RWStructuredBuffer<int4> splittingSwap[2] : register(u3); // the int2 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
-
-RWStructuredBuffer<int2> splittSize : register(u5); // used for storing the size of every split and then the start values of the split
+RWStructuredBuffer<int2> splittSize : register(u5); // used for storing the size of every split and then the start values of the split 0 = size of previus split, 1 = offset in current split
 
 RWStructuredBuffer<int> indexingCount : register(u6); // using this struct to designate which index in the indiceList to wright the leaf node to, index 1 is the depth value of the current depth
 
-RWStructuredBuffer<int> mutex : register(u7);	// Used in the custom interlocking function
-
+RWStructuredBuffer<float> mutex : register(u7);	// Used in the custom interlocking function
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
@@ -48,7 +46,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-	while (workID < MAXSIZE)
+	/*while (workID < MAXSIZE)
 	{
 		splittingSwap[0][workID][0] = -1;
 		splittingSwap[0][workID][1] = -1;
@@ -69,13 +67,13 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		workID += NROFTHREADSCREATIONDISPATCHES;
 
-	}
+	}*/
 
-	workID = threadIndex;
-	DeviceMemoryBarrierWithGroupSync();
+	//workID = threadIndex;
+	//DeviceMemoryBarrierWithGroupSync();
 
 
-	// Creating the aabbs for the triangles
+	//// Creating the aabbs for the triangles
 	while (workID < nrOfTriangles)
 	{
 		triangleInWork = triangles[workID];
@@ -102,10 +100,13 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 		aabbList[workID] = aabbMemReadTest;
 
-		splittingSwap[workingSplit][workID][0] = 0;
-		splittingSwap[workingSplit][workID][1] = workID;
-		splittingSwap[workingSplit][workID][2] = -1;
-		splittingSwap[workingSplit][workID][3] = 0;
+		int4 appendValues;
+		appendValues[0] = 0;
+		appendValues[1] = workID;
+		appendValues[2] = -1;
+		appendValues[3] = 0;
+
+	//	splittingSwapAppend.Append(appendValues);
 
 		workID += NROFTHREADSCREATIONDISPATCHES;
 
@@ -120,58 +121,56 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-	if (threadIndex < 6)
-	{
-		float minValue = MAXDIST;
-		float maxValue = -MAXDIST;
-		int listPart = threadIndex % 2;
-		int splitPart = threadIndex % 3;
-		for (int i = nrOfTriangles*(listPart * 0.5); i < nrOfTriangles *(0.5 * (listPart + 1)); i++)
-		{
-			minValue = aabbList[i].minPoint[splitPart] < minValue ? aabbList[i].minPoint[splitPart] : minValue;
-			maxValue = aabbList[i].maxPoint[splitPart] > maxValue ? aabbList[i].maxPoint[splitPart] : maxValue;
-		}
+	//if (threadIndex < 6)
+	//{
+	//	float minValue = MAXDIST;
+	//	float maxValue = -MAXDIST;
+	//	int listPart = threadIndex % 2;
+	//	int splitPart = threadIndex % 3;
+	//	for (int i = nrOfTriangles*(listPart * 0.5); i < nrOfTriangles *(0.5 * (listPart + 1)); i++)
+	//	{
+	//		minValue = aabbList[i].minPoint[splitPart] < minValue ? aabbList[i].minPoint[splitPart] : minValue;
+	//		maxValue = aabbList[i].maxPoint[splitPart] > maxValue ? aabbList[i].maxPoint[splitPart] : maxValue;
+	//	}
 
-		KDtree[listPart].aabb.minPoint[splitPart] = minValue;
-		KDtree[listPart].aabb.maxPoint[splitPart] = maxValue;
+	//	KDtree[listPart].aabb.minPoint[splitPart] = minValue;
+	//	KDtree[listPart].aabb.maxPoint[splitPart] = maxValue;
 
-	}
+	//}
 
-	if (threadIndex == 0)
-	{
-		[unroll]for (int i = 0; i < 3; i++)
-		{
-			KDtree[0].aabb.minPoint[i] = KDtree[0].aabb.minPoint[i] < KDtree[1].aabb.minPoint[i] ? KDtree[0].aabb.minPoint[i] : KDtree[1].aabb.minPoint[i];
-			KDtree[0].aabb.maxPoint[i] = KDtree[0].aabb.maxPoint[i] > KDtree[1].aabb.maxPoint[i] ? KDtree[0].aabb.maxPoint[i] : KDtree[1].aabb.maxPoint[i];
-		}
-		KDtree[0].index = -1;
+	//if (threadIndex == 0)
+	//{
+	//	[unroll]for (int i = 0; i < 3; i++)
+	//	{
+	//		KDtree[0].aabb.minPoint[i] = KDtree[0].aabb.minPoint[i] < KDtree[1].aabb.minPoint[i] ? KDtree[0].aabb.minPoint[i] : KDtree[1].aabb.minPoint[i];
+	//		KDtree[0].aabb.maxPoint[i] = KDtree[0].aabb.maxPoint[i] > KDtree[1].aabb.maxPoint[i] ? KDtree[0].aabb.maxPoint[i] : KDtree[1].aabb.maxPoint[i];
+	//	}
+	//	KDtree[0].index = -1;
 
-		int splitAxis; // 0 = x, 1 = y, 2 = z
-		float splitLength[3];
-		splitLength[0] = KDtree[0].aabb.maxPoint.x - KDtree[0].aabb.minPoint.x;
-		splitLength[1] = KDtree[0].aabb.maxPoint.y - KDtree[0].aabb.minPoint.y;
-		splitLength[2] = KDtree[0].aabb.maxPoint.z - KDtree[0].aabb.minPoint.z;
+	//	int splitAxis; // 0 = x, 1 = y, 2 = z
+	//	float splitLength[3];
+	//	splitLength[0] = KDtree[0].aabb.maxPoint.x - KDtree[0].aabb.minPoint.x;
+	//	splitLength[1] = KDtree[0].aabb.maxPoint.y - KDtree[0].aabb.minPoint.y;
+	//	splitLength[2] = KDtree[0].aabb.maxPoint.z - KDtree[0].aabb.minPoint.z;
 
-		splitAxis = splitLength[0] > splitLength[1] ? 0 : 1;
-		splitAxis = splitLength[splitAxis]	 > splitLength[2] ? splitAxis : 2;
+	//	splitAxis = splitLength[0] > splitLength[1] ? 0 : 1;
+	//	splitAxis = splitLength[splitAxis]	 > splitLength[2] ? splitAxis : 2;
 
-		
+	//	
 
-		// left
-		KDtree[1] = KDtree[0];
+	//	// left
+	//	KDtree[1] = KDtree[0];
 
-		KDtree[1].aabb.maxPoint[splitAxis] -= (KDtree[1].aabb.maxPoint[splitAxis] - KDtree[1].aabb.minPoint[splitAxis]) * 0.5f;
+	//	KDtree[1].aabb.maxPoint[splitAxis] -= (KDtree[1].aabb.maxPoint[splitAxis] - KDtree[1].aabb.minPoint[splitAxis]) * 0.5f;
 
-		// right
-		KDtree[2] = KDtree[0];
+	//	// right
+	//	KDtree[2] = KDtree[0];
 
-		KDtree[2].aabb.minPoint[splitAxis] += (KDtree[2].aabb.maxPoint[splitAxis] - KDtree[2].aabb.minPoint[splitAxis]) * 0.5f;
+	//	KDtree[2].aabb.minPoint[splitAxis] += (KDtree[2].aabb.maxPoint[splitAxis] - KDtree[2].aabb.minPoint[splitAxis]) * 0.5f;
 
-		KDtree[0].split.x = splitAxis;
-		KDtree[0].split.y = KDtree[2].aabb.minPoint.z;
+	//	KDtree[0].split.x = splitAxis;
+	//	KDtree[0].split.y = KDtree[2].aabb.minPoint.z;
 
+	//}
 
-	}
-
-	
 }

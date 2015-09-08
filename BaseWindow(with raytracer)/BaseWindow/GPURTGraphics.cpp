@@ -28,7 +28,7 @@ m_fps(0.f)
 	raytracer = computeWrap->CreateComputeShader("Raytracing");
 
 	createKDtree = nullptr;
-	createKDtree = computeWrap->CreateComputeShader("createKDtree");
+	createKDtree = computeWrap->CreateComputeShader("createKDtreeAppend");
 
 	createAABBs = computeWrap->CreateComputeShader("createAABBs");
 
@@ -128,8 +128,8 @@ void GPURTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 	//Mesh
 	///////////////////////////////////////////////////////////////////////////////////////////
-	//std::string inputfile = "Meshi/kub.obj";
-	std::string inputfile = "Meshi/cornell_box.obj";
+	std::string inputfile = "Meshi/kub.obj";
+	//std::string inputfile = "Meshi/cornell_box.obj";
 
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -148,8 +148,8 @@ void GPURTGraphics::createTriangleTexture()
 	//Load OBJ-file
 	//m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1, 1, 1, 1));
-	m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
-	//m_mesh.scaleMesh(XMFLOAT3(10,10,10));
+	//m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
+	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
 	//m_mesh.rotateMesh(XMFLOAT3(0.1f*PI, 0.1f * PI, 0.1f*PI));
 
@@ -159,6 +159,7 @@ void GPURTGraphics::createTriangleTexture()
 											 sizeof(TriangleMat),
 											 m_mesh.getNrOfFaces(),
 											 true,
+											 false,
 											 false,
 											 m_mesh.getTriangles(),
 											 false,
@@ -170,6 +171,7 @@ void GPURTGraphics::createTriangleTexture()
 												m_mesh.getNrOfFaces(),
 												false,
 												true,
+												false,
 												NULL,
 												false,
 												"Structured Buffer: Mesh Texture");
@@ -288,15 +290,17 @@ void GPURTGraphics::createNodeBuffer(Node* _rootNode)
 											 initdata->size(),
 											 true,
 											 false,
+											 false,
 											 initdata->data(),
 											 false,
 											 "Structed Buffer: Node Buffer");
 
-	m_Indices = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+	m_Indices = computeWrap->CreateBuffer(APPEND_BUFFER,
 											 sizeof(int),
 											 indiceList->size(),
-											 true,
 											 false,
+											 false,
+											 true,
 											 indiceList->data(),
 											 false,
 											 "Structed Buffer: Indice Buffer");
@@ -328,18 +332,20 @@ void GPURTGraphics::createLightBuffer()
 
 void GPURTGraphics::createSwapStructures()
 {
-	m_SwapStructure[0] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+	m_SwapStructure[0] = computeWrap->CreateBuffer(APPEND_BUFFER,
 		sizeof(int)*4,
 		MAXSIZE,
+		false,
 		false,
 		true,
 		NULL,
 		false,
 		"Structured Buffer: Swap Structure");
 
-	m_SwapStructure[1] = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+	m_SwapStructure[1] = computeWrap->CreateBuffer(APPEND_BUFFER,
 		sizeof(int)*4,
 		MAXSIZE,
+		false,
 		false,
 		true,
 		NULL,
@@ -351,13 +357,15 @@ void GPURTGraphics::createSwapStructures()
 		MAXSIZE,
 		false,
 		true,
+		false,
 		NULL,
 		false,
 		"Structured Buffer: Swap size Structure");
 
-	m_IndiceBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+	m_IndiceBuffer = computeWrap->CreateBuffer(APPEND_BUFFER,
 		sizeof(int),
 		MAXSIZE,
+		false,
 		false,
 		true,
 		NULL,
@@ -369,6 +377,7 @@ void GPURTGraphics::createSwapStructures()
 		MAXSIZE,
 		false,
 		true,
+		false,
 		NULL,
 		false,
 		"Structured Buffer: Swap size Structure");
@@ -378,6 +387,7 @@ void GPURTGraphics::createSwapStructures()
 		100,
 		false,
 		true,
+		false,
 		NULL,
 		false,
 		"Structured Buffer: Swap size Structure");
@@ -388,6 +398,7 @@ void GPURTGraphics::createSwapStructures()
 		MAXSIZE,
 		false,
 		true,
+		false,
 		NULL,
 		false,
 		"Structured Buffer: Swap size Structure");
@@ -478,7 +489,7 @@ void GPURTGraphics::Update(float _dt)
 	createAABBs->Set();
 
 	g_timer->Start();
-	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	g_timer->Stop();
 
@@ -495,31 +506,31 @@ void GPURTGraphics::Update(float _dt)
 	depthcb.padDepth.z = 1;
 
 
-	for (int i = 0; i < MAXDEPTH; i++)
-	{
-		//g_DeviceContext->UpdateSubresource(m_depthcBuffer, 0, NULL, &depthcb, 0, 0);
+	//for (int i = 0; i < MAXDEPTH; i++)
+	//{
+	//	//g_DeviceContext->UpdateSubresource(m_depthcBuffer, 0, NULL, &depthcb, 0, 0);
 
-		g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+	//	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 
-		//// the split calculation
-		//splitCalcKDtree->Set();
-		//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	//	//// the split calculation
+	//	//splitCalcKDtree->Set();
+	//	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 
-		//// moving the split
-		//splitCalcKDtree->Set();
-		//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	//	//// moving the split
+	//	//splitCalcKDtree->Set();
+	//	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 
-		//// next depth prep
-		//splitCalcKDtree->Set();
-		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-
-
-		cb.pad.x++;
-
-	}
+	//	//// next depth prep
+	//	//splitCalcKDtree->Set();
+	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 
 
-	g_DeviceContext->Flush();
+	//	cb.pad.x++;
+
+	//}
+
+
+	//g_DeviceContext->Flush();
 	g_timer->Stop();
 
 	getTime = g_timer->GetTime();
@@ -565,7 +576,7 @@ void GPURTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(2, 2, uav1, NULL);
 
 	//dispatch
-	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
+	//g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
 
 	//unset buffers
 	ID3D11UnorderedAccessView* nulluav[] = { NULL, NULL, NULL, NULL };

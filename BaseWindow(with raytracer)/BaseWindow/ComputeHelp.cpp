@@ -64,7 +64,7 @@ void ComputeShader::Unset()
 }
 
 ComputeBuffer* ComputeWrap::CreateBuffer(COMPUTE_BUFFER_TYPE uType,
-	UINT uElementSize, UINT uCount, bool bSRV, bool bUAV, VOID* pInitData, bool bCreateStaging, char* debugName)
+	UINT uElementSize, UINT uCount, bool bSRV, bool bUAV, bool bAppend, VOID* pInitData, bool bCreateStaging, char* debugName)
 {
 	ComputeBuffer* buffer = new ComputeBuffer();
 	buffer->_D3DContext = mD3DDeviceContext;
@@ -73,6 +73,8 @@ ComputeBuffer* ComputeWrap::CreateBuffer(COMPUTE_BUFFER_TYPE uType,
 		buffer->_Resource = CreateStructuredBuffer(uElementSize, uCount, bSRV, bUAV, pInitData);
 	else if(uType == RAW_BUFFER)
 		buffer->_Resource = CreateRawBuffer(uElementSize * uCount, pInitData);
+	else if (uType == APPEND_BUFFER)
+		buffer->_Resource = CreateAppendBuffer(uElementSize, uCount, bSRV, bUAV, pInitData);
 
 	if(buffer->_Resource != NULL)
 	{
@@ -80,7 +82,10 @@ ComputeBuffer* ComputeWrap::CreateBuffer(COMPUTE_BUFFER_TYPE uType,
 			buffer->_ResourceView = CreateBufferSRV(buffer->_Resource);
 		if(bUAV)
 			buffer->_UnorderedAccessView = CreateBufferUAV(buffer->_Resource);
-		
+		if (bAppend)
+			buffer->_UnorderedAccessView = CreateBufferUAVAppend(buffer->_Resource);
+
+
 		if(bCreateStaging)
 			buffer->_Staging = CreateStagingBuffer(uElementSize * uCount);
 	}
@@ -127,6 +132,45 @@ ID3D11Buffer* ComputeWrap::CreateStructuredBuffer(UINT uElementSize, UINT uCount
 	else
 	{
 		mD3DDevice->CreateBuffer(&desc, NULL, &pBufOut);
+	}
+
+	return pBufOut;
+}
+
+ID3D11Buffer* ComputeWrap::CreateAppendBuffer(UINT uElementSize, UINT uCount,
+	bool bSRV, bool bUAV, VOID* pInitData)
+{
+	HRESULT hr = S_OK;
+	ID3D11Buffer* pBufOut = NULL;
+
+	D3D11_BUFFER_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.BindFlags = 0;
+
+	desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+	if (bSRV)	desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+
+	UINT bufferSize = uElementSize * uCount;
+	desc.ByteWidth = bufferSize < 16 ? 16 : bufferSize;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	desc.StructureByteStride = uElementSize;
+
+	if (pInitData)
+	{
+		D3D11_SUBRESOURCE_DATA InitData;
+		InitData.pSysMem = pInitData;
+		hr = mD3DDevice->CreateBuffer(&desc, &InitData, &pBufOut);
+
+		
+	}
+	else
+	{
+		hr = mD3DDevice->CreateBuffer(&desc, NULL, &pBufOut);
+	}
+
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, "Failed Making Structured buffer", "Create Buffer", MB_OK);
 	}
 
 	return pBufOut;
@@ -229,6 +273,26 @@ ID3D11UnorderedAccessView* ComputeWrap::CreateBufferUAV(ID3D11Buffer* pBuffer)
 	}
     
 	mD3DDevice->CreateUnorderedAccessView(pBuffer, &desc, &pUAVOut);
+
+	return pUAVOut;
+}
+
+ID3D11UnorderedAccessView* ComputeWrap::CreateBufferUAVAppend(ID3D11Buffer* pBuffer)
+{
+	ID3D11UnorderedAccessView* pUAVOut = NULL;
+
+	D3D11_BUFFER_DESC descBuf;
+	ZeroMemory(&descBuf, sizeof(descBuf));
+	pBuffer->GetDesc(&descBuf);
+
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
+	uavDesc.Buffer.NumElements = descBuf.ByteWidth / 4;
+
+	mD3DDevice->CreateUnorderedAccessView(pBuffer, &uavDesc, &pUAVOut);
 
 	return pUAVOut;
 }

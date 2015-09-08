@@ -176,6 +176,7 @@ void RTGraphics::createTriangleTexture()
 											 m_mesh.getNrOfFaces(),
 											 true,
 											 false,
+											 false,
 											 m_mesh.getTriangles(),
 											 false,
  											 "Structured Buffer: Mesh Texture");
@@ -514,6 +515,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 												 MAXSIZE,
 												 false,
 												 true,
+												 false,
 												 initData,
 												 false,
 												 "Structed Buffer: Node Buffer");
@@ -524,6 +526,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 												 indiceList->size(),
 												 false,
 												 true,
+												 false,
 												 indiceList->data(),
 												 false,
 												 "Structed Buffer: Indice Buffer");
