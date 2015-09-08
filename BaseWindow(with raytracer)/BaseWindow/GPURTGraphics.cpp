@@ -297,7 +297,7 @@ void GPURTGraphics::createNodeBuffer(Node* _rootNode)
 
 	m_Indices = computeWrap->CreateBuffer(APPEND_BUFFER,
 											 sizeof(int),
-											 indiceList->size(),
+											 MAXSIZE,
 											 false,
 											 false,
 											 true,

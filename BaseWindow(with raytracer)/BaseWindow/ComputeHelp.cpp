@@ -290,7 +290,7 @@ ID3D11UnorderedAccessView* ComputeWrap::CreateBufferUAVAppend(ID3D11Buffer* pBuf
 	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 	uavDesc.Buffer.FirstElement = 0;
 	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
-	uavDesc.Buffer.NumElements = descBuf.ByteWidth / 4;
+	uavDesc.Buffer.NumElements = descBuf.ByteWidth / descBuf.StructureByteStride;
 
 	mD3DDevice->CreateUnorderedAccessView(pBuffer, &uavDesc, &pUAVOut);
 
