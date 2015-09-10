@@ -49,7 +49,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int q;
 
 	//while (depth < 2)
-	for (; depth < MAXDEPTH;)
+	[loop]for (; depth < MAXDEPTH;)
 	{
 
 		while (workID < MAXSIZE)
