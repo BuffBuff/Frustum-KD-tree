@@ -28,7 +28,10 @@ m_fps(0.f)
 	raytracer = computeWrap->CreateComputeShader("Raytracing");
 
 	createKDtree = nullptr;
-	createKDtree = computeWrap->CreateComputeShader("createKDtreeAppend");
+	createKDtree = computeWrap->CreateComputeShader("createKDtree");
+
+	createKDtreeAppend = nullptr;
+	createKDtreeAppend = computeWrap->CreateComputeShader("createKDtreeAppend");
 
 	createAABBs = computeWrap->CreateComputeShader("createAABBs");
 
@@ -362,8 +365,18 @@ void GPURTGraphics::createSwapStructures()
 		false,
 		"Structured Buffer: Swap size Structure");
 
-	m_IndiceBuffer = computeWrap->CreateBuffer(APPEND_BUFFER,
+	m_IndiceBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(int),
+		MAXSIZE,
+		false,
+		true,
+		false,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
+	m_AppendIndiceBuffer = computeWrap->CreateBuffer(APPEND_BUFFER,
+		sizeof(int)*2,
 		MAXSIZE,
 		false,
 		false,
@@ -469,7 +482,7 @@ void GPURTGraphics::Update(float _dt)
 
 	
 
-	ID3D11UnorderedAccessView* uav1[] = { m_aabbBuffer->GetUnorderedAccessView(), m_KDTreeBuffer->GetUnorderedAccessView(), m_IndiceBuffer->GetUnorderedAccessView() };
+	ID3D11UnorderedAccessView* uav1[] = { m_aabbBuffer->GetUnorderedAccessView(), m_KDTreeBuffer->GetUnorderedAccessView(), m_AppendIndiceBuffer->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 3, uav1, NULL);
 
 	ID3D11UnorderedAccessView* uav2[] = { m_SwapStructure[0]->GetUnorderedAccessView(), m_SwapStructure[1]->GetUnorderedAccessView() };
@@ -484,27 +497,31 @@ void GPURTGraphics::Update(float _dt)
 	ID3D11UnorderedAccessView* uav5[] = { m_mutex->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(7, 1, uav5, NULL);
 
-	// create the AABB list
-
+	// create the AABB list --------------------------------------
 	createAABBs->Set();
-
 	g_timer->Start();
-	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	g_timer->Stop();
 
 	float getTime = g_timer->GetTime();
 
-	//	create the KD tree 
-
+	//	create the full KD tree ----------------------------------------
 	createKDtree->Set();
-
 	g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	g_timer->Stop();
+
+
+
+
+
+
 	depthcb.depth = 0;
 	depthcb.padDepth.x = 0;
 	depthcb.padDepth.y = 0;
 	depthcb.padDepth.z = 1;
-
 
 	//for (int i = 0; i < MAXDEPTH; i++)
 	//{
@@ -531,7 +548,7 @@ void GPURTGraphics::Update(float _dt)
 
 
 	//g_DeviceContext->Flush();
-	g_timer->Stop();
+
 
 	getTime = g_timer->GetTime();
 

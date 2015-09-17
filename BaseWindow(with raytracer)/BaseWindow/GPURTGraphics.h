@@ -44,6 +44,7 @@ private:
 
 	ComputeShader *raytracer = NULL;
 	ComputeShader *createKDtree = NULL;
+	ComputeShader *createKDtreeAppend = NULL;
 
 	ComputeShader *splitCalcKDtree = NULL;
 	ComputeShader *moveKDtree = NULL;
@@ -69,6 +70,7 @@ private:
 	ComputeBuffer				*m_SwapStructure[2];
 	ComputeBuffer				*m_SwapSize = NULL;
 	ComputeBuffer				*m_IndiceBuffer = NULL;
+	ComputeBuffer				*m_AppendIndiceBuffer = NULL;
 	ComputeBuffer				*m_KDTreeBuffer = NULL;
 	ComputeBuffer				*m_indexingCountBuffer = NULL;
 	ComputeBuffer				*m_mutex = NULL;
