@@ -40,7 +40,8 @@ m_fps(0.f)
 	moveKDtree = computeWrap->CreateComputeShader("moveKDtree");
 	prepKDtree = computeWrap->CreateComputeShader("prepKDtree");
 
-
+	sortListPass = nullptr;
+	sortListPass = computeWrap->CreateComputeShader("sortListPass");
 
 	ID3D11Texture2D* pBackBuffer;
 	hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
@@ -514,8 +515,12 @@ void GPURTGraphics::Update(float _dt)
 	g_timer->Stop();
 
 
-
-
+	// create the sorting list ----------------------------------
+	sortListPass->Set();
+	g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	g_timer->Stop();
 
 
 	depthcb.depth = 0;
