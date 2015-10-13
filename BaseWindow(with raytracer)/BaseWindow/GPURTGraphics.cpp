@@ -300,7 +300,7 @@ void GPURTGraphics::createNodeBuffer(Node* _rootNode)
 											 "Structed Buffer: Node Buffer");
 
 	m_Indices = computeWrap->CreateBuffer(APPEND_BUFFER,
-											 sizeof(int),
+											 sizeof(int)*2,
 											 MAXSIZE,
 											 false,
 											 false,
@@ -507,13 +507,14 @@ void GPURTGraphics::Update(float _dt)
 
 	float getTime = g_timer->GetTime();
 
+	createAABBs->Unset();
+
+
 	//	create the full KD tree ----------------------------------------
 	createKDtree->Set();
-	g_timer->Start();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
-	g_timer->Stop();
-
+	createKDtree->Unset();
 
 	// create the sorting list ----------------------------------
 	sortListPass->Set();
@@ -522,40 +523,42 @@ void GPURTGraphics::Update(float _dt)
 	g_DeviceContext->Flush();
 	g_timer->Stop();
 
+	// place the aabbs in the correct kdtree-node ------------------------------
 
-	depthcb.depth = 0;
-	depthcb.padDepth.x = 0;
-	depthcb.padDepth.y = 0;
-	depthcb.padDepth.z = 1;
+	int consumeID = 1;
+	int appendID = 0;
+	cb.pad.x = 0;
 
-	//for (int i = 0; i < MAXDEPTH; i++)
-	//{
-	//	//g_DeviceContext->UpdateSubresource(m_depthcBuffer, 0, NULL, &depthcb, 0, 0);
+	for (int i = 0; i < MAXDEPTH; i++)
+	{
 
-	//	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+		g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 
-	//	//// the split calculation
-	//	//splitCalcKDtree->Set();
-	//	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-
-	//	//// moving the split
-	//	//splitCalcKDtree->Set();
-	//	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-
-	//	//// next depth prep
-	//	//splitCalcKDtree->Set();
-	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+		ID3D11UnorderedAccessView* nulluav2[] = { NULL, NULL };
+		g_DeviceContext->CSSetUnorderedAccessViews(3, 2, nulluav2, NULL);
 
 
-	//	cb.pad.x++;
+		unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
 
-	//}
+		ID3D11UnorderedAccessView* uav3solo[] = { m_SwapStructure[appendID]->GetUnorderedAccessView() };
+		ID3D11UnorderedAccessView* uav4solo[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
+		g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav3solo, &appendCount);		// Consume
+		g_DeviceContext->CSSetUnorderedAccessViews(4, 1, uav4solo, NULL);				// Append
 
+		createKDtreeAppend->Set();
+		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+		g_DeviceContext->Flush();
+		createKDtreeAppend->Unset();
 
-	//g_DeviceContext->Flush();
+		int temp = consumeID;
+		consumeID = appendID;
+		appendID = temp;
 
+		cb.pad.x++;
 
-	getTime = g_timer->GetTime();
+	}
+
+	//getTime = g_timer->GetTime();
 
 	//unset buffers
 	ID3D11UnorderedAccessView* nulluav[] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -563,23 +566,6 @@ void GPURTGraphics::Update(float _dt)
 
 	ID3D11ShaderResourceView* nullsrv[] = { NULL, NULL, NULL, NULL };
 	g_DeviceContext->CSSetShaderResources(0, 4, nullsrv);
-
-
-	//for (int i = 0; i < MAXDEPTH; i++)
-	//{
-
-	//	splitCalcKDtree->Set();
-	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-
-	//	moveKDtree->Set();
-	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-
-	//	prepKDtree->Set();
-	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-	//}
-
-
-
 }
 
 void GPURTGraphics::Render(float _dt)
@@ -645,6 +631,26 @@ void GPURTGraphics::release()
 void GPURTGraphics::createKdTree(Mesh *_mesh)
 {
 
+}
+
+unsigned int GPURTGraphics::getAppendCount(ID3D11UnorderedAccessView *_uav)
+{
+	D3D11_BUFFER_DESC desc;
+	desc.ByteWidth = 4;
+	desc.BindFlags = 0;
+	desc.MiscFlags = 0;
+	desc.Usage = D3D11_USAGE_STAGING;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	ID3D11Buffer* staging = nullptr;
+	g_Device->CreateBuffer(&desc, nullptr, &staging);
+	g_DeviceContext->CopyStructureCount(staging, 0, _uav);
+	D3D11_MAPPED_SUBRESOURCE subresource;
+	g_DeviceContext->Map(staging, 0, D3D11_MAP_READ, 0, &subresource);
+	unsigned int numActiveElements = *(unsigned int*)subresource.pData;
+	g_DeviceContext->Unmap(staging, 0);
+	staging->Release();
+
+	return numActiveElements;
 }
 
 void GPURTGraphics::updateTogglecb(int _lightSpheres, int _placeHolder1, int _placeHolder2)

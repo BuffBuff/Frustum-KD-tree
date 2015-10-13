@@ -39,6 +39,8 @@ private:
 	void createKdTree(Mesh *_mesh);
 	void createSwapStructures();
 	void fillMesh(std::vector<tinyobj::shape_t>* _shapes, std::vector<tinyobj::material_t>* _materials, Mesh* _mesh);
+	unsigned int getAppendCount(ID3D11UnorderedAccessView *_uav);
+
 
 	ComputeWrap *computeWrap;
 
