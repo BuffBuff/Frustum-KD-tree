@@ -32,14 +32,68 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	int depth = pad.x;							// the current depth of the tree;
 
 
-
 	// Creating kd-tree
 
 	int lowIndex = 0;						// the current treads low work index
 	int highIndex = nrOfTriangles;			// the current treads end work index
 
-	mutex[workID] = -1;
+	while (true)
+	{
 
+		int4 workElement = splittingSwapConsume.Consume();
+		// if the consume gives null value
+		if (workElement.w == 0)
+		{
+			break;
+		}	
+
+		// Finding the index values for the node
+		// depth
+		int kdTreeOffset = workElement.y - (1 << depth);			// the offset to the kd-node on current lvl
+		int aabbIndex = workElement.x;								// the index of the aabb to process
+		int childIndex[2];								
+		childIndex[0] = (1 << (depth + 1)) + (kdTreeOffset * 2);	// left kd child node index
+		childIndex[1] = (1 << (depth + 1)) + (kdTreeOffset * 2);	// right kd child node index
+
+		if (splittSize[workElement.y].x <= 6 || depth == MAXDEPTH)
+		{
+
+			int2 appendValues;
+			appendValues[0] = childIndex[1];
+			appendValues[1] = aabbIndex;
+
+			indiceList.Append(appendValues);
+		}
+		else
+		{
+			if (aabbList[aabbIndex].maxPoint[KDtree[childIndex[0]].split.x] < KDtree[childIndex[0]].split.y)
+			{
+				int4 appendValues;
+				appendValues[0] = childIndex[0];
+				appendValues[1] = aabbIndex;
+				appendValues[2] = -1;
+				appendValues[3] = -1;
+
+				InterlockedAdd(splittSize[childIndex[0]].x, 1);
+
+				splittingSwapAppend.Append(appendValues);
+			}
+
+			if (aabbList[aabbIndex].maxPoint[KDtree[childIndex[1]].split.x] < KDtree[childIndex[1]].split.y)
+			{
+				int4 appendValues;
+				appendValues[0] = childIndex[1];
+				appendValues[1] = aabbIndex;
+				appendValues[2] = -1;
+				appendValues[3] = -1;
+
+				InterlockedAdd(splittSize[childIndex[1]].x, 1);
+
+				splittingSwapAppend.Append(appendValues);
+			}
+
+		}
+	}
 
 
 }

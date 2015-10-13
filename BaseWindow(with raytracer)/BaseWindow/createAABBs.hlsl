@@ -46,28 +46,15 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 
 
-	/*while (workID < MAXSIZE)
+	while (workID < MAXSIZE)
 	{
-		splittingSwap[0][workID][0] = -1;
-		splittingSwap[0][workID][1] = -1;
-		splittingSwap[0][workID][2] = -1;
-		splittingSwap[0][workID][3] = -1;
-
-		splittingSwap[1][workID][0] = -1;
-		splittingSwap[1][workID][1] = -1;
-		splittingSwap[1][workID][2] = -1;
-		splittingSwap[1][workID][3] = -1;
 
 		splittSize[workID][0] = 0;
 		splittSize[workID][1] = 0;
 
-		indiceList[workID] = -1;
-
-		mutex[workID] = 0;
-
 		workID += NROFTHREADSCREATIONDISPATCHES;
 
-	}*/
+	}
 
 	//workID = threadIndex;
 	//DeviceMemoryBarrierWithGroupSync();
@@ -104,9 +91,10 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		appendValues[0] = 0;
 		appendValues[1] = workID;
 		appendValues[2] = -1;
-		appendValues[3] = 0;
+		appendValues[3] = -1;
 
-	//	splittingSwapAppend.Append(appendValues);
+		splittingSwapAppend.Append(appendValues);
+		splittSize[0].x = nrOfTriangles;
 
 		workID += NROFTHREADSCREATIONDISPATCHES;
 
@@ -140,7 +128,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	if (threadIndex == 0)
 	{
-		[unroll]for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 		{
 			KDtree[0].aabb.minPoint[i] = KDtree[0].aabb.minPoint[i] < KDtree[1].aabb.minPoint[i] ? KDtree[0].aabb.minPoint[i] : KDtree[1].aabb.minPoint[i];
 			KDtree[0].aabb.maxPoint[i] = KDtree[0].aabb.maxPoint[i] > KDtree[1].aabb.maxPoint[i] ? KDtree[0].aabb.maxPoint[i] : KDtree[1].aabb.maxPoint[i];
