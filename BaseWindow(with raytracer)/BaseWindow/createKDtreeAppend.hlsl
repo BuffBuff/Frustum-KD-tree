@@ -52,21 +52,24 @@ void main(uint3 threadID : SV_DispatchThreadID)
 		int kdTreeOffset = workElement.y - (1 << depth);			// the offset to the kd-node on current lvl
 		int aabbIndex = workElement.x;								// the index of the aabb to process
 		int childIndex[2];								
-		childIndex[0] = (1 << (depth + 1)) + (kdTreeOffset * 2);	// left kd child node index
-		childIndex[1] = (1 << (depth + 1)) + (kdTreeOffset * 2);	// right kd child node index
+		childIndex[0] = (1 << (depth + 1)) + (kdTreeOffset * 2);		// left kd child node index
+		childIndex[1] = (1 << (depth + 1)) + (kdTreeOffset * 2) + 1;	// right kd child node index
 
-		if (splittSize[workElement.y].x <= 6 || depth == MAXDEPTH)
+		if (splittSize[workElement.y].x <= 6 || depth == MAXDEPTH) // om en child node ska skapas
 		{
 
 			int2 appendValues;
-			appendValues[0] = childIndex[1];
+			appendValues[0] = workElement.y;
 			appendValues[1] = aabbIndex;
 
 			indiceList.Append(appendValues);
+
+			KDtree[workElement.y].nrOfTriangles = splittSize[workElement.y].x;
+
 		}
 		else
 		{
-			if (aabbList[aabbIndex].maxPoint[KDtree[childIndex[0]].split.x] < KDtree[childIndex[0]].split.y)
+			if (aabbList[aabbIndex].minPoint[KDtree[childIndex[0]].split.x] > KDtree[childIndex[0]].split.y) // left split
 			{
 				int4 appendValues;
 				appendValues[0] = childIndex[0];
@@ -79,7 +82,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 				splittingSwapAppend.Append(appendValues);
 			}
 
-			if (aabbList[aabbIndex].maxPoint[KDtree[childIndex[1]].split.x] < KDtree[childIndex[1]].split.y)
+			if (aabbList[aabbIndex].maxPoint[KDtree[childIndex[1]].split.x] < KDtree[childIndex[1]].split.y) // right split
 			{
 				int4 appendValues;
 				appendValues[0] = childIndex[1];
