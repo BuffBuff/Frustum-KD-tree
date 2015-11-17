@@ -6,7 +6,7 @@ RWStructuredBuffer<AABB> aabbList : register(u0);
 
 RWStructuredBuffer<NodePass2> KDtree : register(u1);
 
-AppendStructuredBuffer<int> indiceList : register(u2);
+//AppendStructuredBuffer<int> indiceList : register(u2);
 
 ConsumeStructuredBuffer<int4> splittingSwapConsume : register(u3);// the int4 holds x = the left split index, y = the left aabb index, z = the right split index, w = right the aabb index  
 AppendStructuredBuffer<int4> splittingSwapAppend : register(u4);

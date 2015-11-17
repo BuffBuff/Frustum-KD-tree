@@ -376,12 +376,12 @@ void GPURTGraphics::createSwapStructures()
 		false,
 		"Structured Buffer: Swap size Structure");
 
-	m_AppendIndiceBuffer = computeWrap->CreateBuffer(APPEND_BUFFER,
+	m_AppendIndiceBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(int)*2,
 		MAXSIZE,
 		false,
-		false,
 		true,
+		false,
 		NULL,
 		false,
 		"Structured Buffer: Swap size Structure");
@@ -483,8 +483,8 @@ void GPURTGraphics::Update(float _dt)
 
 	
 
-	ID3D11UnorderedAccessView* uav1[] = { m_aabbBuffer->GetUnorderedAccessView(), m_KDTreeBuffer->GetUnorderedAccessView(), m_AppendIndiceBuffer->GetUnorderedAccessView() };
-	g_DeviceContext->CSSetUnorderedAccessViews(0, 3, uav1, NULL);
+	ID3D11UnorderedAccessView* uav1[] = { m_aabbBuffer->GetUnorderedAccessView(), m_KDTreeBuffer->GetUnorderedAccessView()};
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav1, NULL);
 
 	ID3D11UnorderedAccessView* uav2[] = { m_SwapStructure[0]->GetUnorderedAccessView(), m_SwapStructure[1]->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, uav2,NULL);
@@ -500,30 +500,20 @@ void GPURTGraphics::Update(float _dt)
 
 	// create the AABB list --------------------------------------
 	createAABBs->Set();
-	g_timer->Start();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
-	g_timer->Stop();
 
-	float getTime = g_timer->GetTime();
+
 
 	createAABBs->Unset();
-
 
 	//	create the full KD tree ----------------------------------------
 	createKDtree->Set();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	createKDtree->Unset();
-
-	// create the sorting list ----------------------------------
-	sortListPass->Set();
-	g_timer->Start();
-	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-	g_DeviceContext->Flush();
-	g_timer->Stop();
-
 	// place the aabbs in the correct kdtree-node ------------------------------
+
 
 	int consumeID = 1;
 	int appendID = 0;
@@ -542,8 +532,8 @@ void GPURTGraphics::Update(float _dt)
 
 		ID3D11UnorderedAccessView* uav3solo[] = { m_SwapStructure[appendID]->GetUnorderedAccessView() };
 		ID3D11UnorderedAccessView* uav4solo[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
-		g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav3solo, &appendCount);		// Consume
-		g_DeviceContext->CSSetUnorderedAccessViews(4, 1, uav4solo, NULL);				// Append
+		g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav4solo, &appendCount);		// Consume
+		g_DeviceContext->CSSetUnorderedAccessViews(4, 1, uav3solo, NULL);				// Append
 
 		createKDtreeAppend->Set();
 		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
@@ -556,12 +546,44 @@ void GPURTGraphics::Update(float _dt)
 
 		cb.pad.x++;
 
+		if (appendCount > 0)
+		{
+			//Title text and FPS counter
+			char title[256];
+			sprintf_s(
+				title,
+				sizeof(title),
+				"Appendcount: %f ",
+				appendCount
+				);
+			SetWindowText(*m_Hwnd, title);
+		}
+
 	}
 
 	//getTime = g_timer->GetTime();
 
-	//unset buffers
+	// create the sorting list ----------------------------------
+
+//	g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav3solo, &appendCount);		// Consume
+
 	ID3D11UnorderedAccessView* nulluav[] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 7, nulluav, NULL);
+
+	unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
+	ID3D11UnorderedAccessView* uavConsume[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uavConsume, &appendCount);
+
+	ID3D11UnorderedAccessView* uavIndice[] = { m_AppendIndiceBuffer->GetUnorderedAccessView(), m_IndiceBuffer->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(1, 2, uavIndice, NULL);
+
+	sortListPass->Set();
+	//g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	//g_timer->Stop();
+
+	//unset buffers
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 7, nulluav, NULL);
 
 	ID3D11ShaderResourceView* nullsrv[] = { NULL, NULL, NULL, NULL };
@@ -600,16 +622,16 @@ void GPURTGraphics::Render(float _dt)
 	if (FAILED(g_SwapChain->Present(0, 0)))
 		MessageBox(NULL,"Failed to present the swapchain","GPURT Render Error",S_OK);
 
-	//Title text and FPS counter
-	char title[256];
-	sprintf_s(
-		title,
-		sizeof(title),
-		"Realtime - fps: %f - aabb: %f",
-		m_fps,
-		g_timer->GetTime()
-		);
-	SetWindowText(*m_Hwnd, title);
+	////Title text and FPS counter
+	//char title[256];
+	//sprintf_s(
+	//	title,
+	//	sizeof(title),
+	//	"Realtime - fps: %f - aabb: %f",
+	//	m_fps,
+	//	g_timer->GetTime()
+	//	);
+	//SetWindowText(*m_Hwnd, title);
 }
 
 void GPURTGraphics::release()
