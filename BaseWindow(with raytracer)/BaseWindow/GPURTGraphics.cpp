@@ -122,7 +122,7 @@ void GPURTGraphics::createCBuffers()
 	hr = g_Device->CreateBuffer(&cbDesc, NULL, &m_depthcBuffer);
 	if (FAILED(hr))
 	{
-		MessageBox(NULL, "Failed Making Constant Buffer lightcBuffer", "Create Buffer", MB_OK);
+		MessageBox(NULL, "Failed Making Constant Buffer depthcBuffer", "Create Buffer", MB_OK);
 	}
 	g_DeviceContext->CSSetConstantBuffers(4, 1, &m_depthcBuffer);
 }
@@ -547,7 +547,6 @@ void GPURTGraphics::Update(float _dt)
 		ID3D11UnorderedAccessView* nulluav2[] = { NULL, NULL };
 		g_DeviceContext->CSSetUnorderedAccessViews(3, 2, nulluav2, NULL);
 
-
 		unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
 
 		ID3D11UnorderedAccessView* uav3solo[] = { m_SwapStructure[appendID]->GetUnorderedAccessView() };
@@ -684,15 +683,20 @@ void GPURTGraphics::createKdTree(Mesh *_mesh)
 
 unsigned int GPURTGraphics::getAppendCount(ID3D11UnorderedAccessView *_uav)
 {
+	//temp buffer desc
 	D3D11_BUFFER_DESC desc;
 	desc.ByteWidth = 4;
 	desc.BindFlags = 0;
 	desc.MiscFlags = 0;
 	desc.Usage = D3D11_USAGE_STAGING;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+	//fill the temp buffer with the structurecount
 	ID3D11Buffer* staging = nullptr;
 	g_Device->CreateBuffer(&desc, nullptr, &staging);
 	g_DeviceContext->CopyStructureCount(staging, 0, _uav);
+
+	//get out the number from the temp buffer
 	D3D11_MAPPED_SUBRESOURCE subresource;
 	g_DeviceContext->Map(staging, 0, D3D11_MAP_READ, 0, &subresource);
 	unsigned int numActiveElements = *(unsigned int*)subresource.pData;
