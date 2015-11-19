@@ -56,8 +56,8 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	}
 
-	//workID = threadIndex;
-	//DeviceMemoryBarrierWithGroupSync();
+	workID = threadIndex;
+	DeviceMemoryBarrierWithGroupSync();
 
 
 	//// Creating the aabbs for the triangles

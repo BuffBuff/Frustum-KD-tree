@@ -76,9 +76,11 @@ private:
 	ComputeBuffer				*m_KDTreeBuffer = NULL;
 	ComputeBuffer				*m_indexingCountBuffer = NULL;
 	ComputeBuffer				*m_mutex = NULL;
+	ComputeBuffer				*m_SingleBucketList = NULL;
+	ComputeBuffer				*m_ParallelScan = NULL;
 
 	//in
-	ComputeBuffer				*m_AppendIndiceBuffer = NULL;
+	ComputeBuffer				*m_UnsortedIndiceBuffer = NULL;
 	//ut
 	ComputeBuffer				*m_IndiceBuffer = NULL;
 

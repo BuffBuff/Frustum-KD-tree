@@ -376,7 +376,7 @@ void GPURTGraphics::createSwapStructures()
 		false,
 		"Structured Buffer: Swap size Structure");
 
-	m_AppendIndiceBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+	m_UnsortedIndiceBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(int)*2,
 		MAXSIZE,
 		false,
@@ -408,6 +408,26 @@ void GPURTGraphics::createSwapStructures()
 
 	
 	m_mutex = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(float),
+		MAXSIZE,
+		false,
+		true,
+		false,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
+	m_SingleBucketList = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
+		sizeof(float)*2,
+		MAXSIZE,
+		false,
+		true,
+		false,
+		NULL,
+		false,
+		"Structured Buffer: Swap size Structure");
+
+	m_ParallelScan = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(float),
 		MAXSIZE,
 		false,
@@ -546,18 +566,18 @@ void GPURTGraphics::Update(float _dt)
 
 		cb.pad.x++;
 
-		if (appendCount > 0)
-		{
-			//Title text and FPS counter
-			char title[256];
-			sprintf_s(
-				title,
-				sizeof(title),
-				"Appendcount: %f ",
-				appendCount
-				);
-			SetWindowText(*m_Hwnd, title);
-		}
+		//if (appendCount > 0)
+		//{
+		//	//Title text and FPS counter
+		//	char title[256];
+		//	sprintf_s(
+		//		title,
+		//		sizeof(title),
+		//		"Appendcount: %f ",
+		//		appendCount
+		//		);
+		//	SetWindowText(*m_Hwnd, title);
+		//}
 
 	}
 
@@ -574,8 +594,15 @@ void GPURTGraphics::Update(float _dt)
 	ID3D11UnorderedAccessView* uavConsume[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uavConsume, &appendCount);
 
-	ID3D11UnorderedAccessView* uavIndice[] = { m_AppendIndiceBuffer->GetUnorderedAccessView(), m_IndiceBuffer->GetUnorderedAccessView() };
-	g_DeviceContext->CSSetUnorderedAccessViews(1, 2, uavIndice, NULL);
+	ID3D11UnorderedAccessView* uavIndice[] = { m_UnsortedIndiceBuffer->GetUnorderedAccessView(), m_IndiceBuffer->GetUnorderedAccessView(), m_SingleBucketList->GetUnorderedAccessView(), m_ParallelScan->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(1, 4, uavIndice, NULL);
+
+	g_DeviceContext->CSSetUnorderedAccessViews(5, 1, uav3, NULL);
+
+
+	ID3D11UnorderedAccessView* uavkdtree[] = { m_KDTreeBuffer->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(6, 1, uavkdtree, NULL);
+	
 
 	sortListPass->Set();
 	//g_timer->Start();
@@ -622,16 +649,16 @@ void GPURTGraphics::Render(float _dt)
 	if (FAILED(g_SwapChain->Present(0, 0)))
 		MessageBox(NULL,"Failed to present the swapchain","GPURT Render Error",S_OK);
 
-	////Title text and FPS counter
-	//char title[256];
-	//sprintf_s(
-	//	title,
-	//	sizeof(title),
-	//	"Realtime - fps: %f - aabb: %f",
-	//	m_fps,
-	//	g_timer->GetTime()
-	//	);
-	//SetWindowText(*m_Hwnd, title);
+	//Title text and FPS counter
+	/*char title[256];
+	sprintf_s(
+		title,
+		sizeof(title),
+		"Realtime - fps: %f - aabb: %f",
+		m_fps,
+		g_timer->GetTime()
+		);
+	SetWindowText(*m_Hwnd, title);*/
 }
 
 void GPURTGraphics::release()
