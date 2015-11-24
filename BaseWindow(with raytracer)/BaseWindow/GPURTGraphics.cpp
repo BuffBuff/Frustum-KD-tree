@@ -520,12 +520,10 @@ void GPURTGraphics::Update(float _dt)
 
 	// create the AABB list --------------------------------------
 	createAABBs->Set();
-	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1); // 
 	g_DeviceContext->Flush();
-
-
-
 	createAABBs->Unset();
+
 
 	//	create the full KD tree ----------------------------------------
 	createKDtree->Set();
@@ -538,50 +536,37 @@ void GPURTGraphics::Update(float _dt)
 	int consumeID = 1;
 	int appendID = 0;
 	cb.pad.x = 0;
-
-	for (int i = 0; i < MAXDEPTH; i++)
-	{
-
-		g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
-
-		ID3D11UnorderedAccessView* nulluav2[] = { NULL, NULL };
-		g_DeviceContext->CSSetUnorderedAccessViews(3, 2, nulluav2, NULL);
-
-		unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
-
-		ID3D11UnorderedAccessView* uav3solo[] = { m_SwapStructure[appendID]->GetUnorderedAccessView() };
-		ID3D11UnorderedAccessView* uav4solo[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
-		g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav4solo, &appendCount);		// Consume
-		g_DeviceContext->CSSetUnorderedAccessViews(4, 1, uav3solo, NULL);				// Append
-
-		createKDtreeAppend->Set();
-		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-		g_DeviceContext->Flush();
-		createKDtreeAppend->Unset();
-
-		int temp = consumeID;
-		consumeID = appendID;
-		appendID = temp;
-
-		cb.pad.x++;
-
-		//if (appendCount > 0)
-		//{
-		//	//Title text and FPS counter
-		//	char title[256];
-		//	sprintf_s(
-		//		title,
-		//		sizeof(title),
-		//		"Appendcount: %f ",
-		//		appendCount
-		//		);
-		//	SetWindowText(*m_Hwnd, title);
-		//}
-
-	}
-
-	//getTime = g_timer->GetTime();
-
+//
+//	//for (int i = 0; i < MAXDEPTH; i++)
+//	//{
+//
+//	//	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+//
+//	//	ID3D11UnorderedAccessView* nulluav2[] = { NULL, NULL };
+//	//	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, nulluav2, NULL);
+//
+//	//	unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
+//
+//	//	ID3D11UnorderedAccessView* uav3solo[] = { m_SwapStructure[appendID]->GetUnorderedAccessView() };
+//	//	ID3D11UnorderedAccessView* uav4solo[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
+//	//	g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav4solo, &appendCount);		// Consume
+//	//	g_DeviceContext->CSSetUnorderedAccessViews(4, 1, uav3solo, NULL);				// Append
+//
+//	//	createKDtreeAppend->Set();
+//	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+//	//	g_DeviceContext->Flush();
+//	//	createKDtreeAppend->Unset();
+//
+//	//	int temp = consumeID;
+//	//	consumeID = appendID;
+//	//	appendID = temp;
+//
+//	//	cb.pad.x++;
+//
+//	//}
+//
+//	//getTime = g_timer->GetTime();
+//
 	// create the sorting list ----------------------------------
 
 //	g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav3solo, &appendCount);		// Consume
@@ -629,7 +614,7 @@ void GPURTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetShaderResources(0, 2, srv);
 
 	ID3D11UnorderedAccessView* uav1[] = { m_KDTreeBuffer->GetUnorderedAccessView(), m_IndiceBuffer->GetUnorderedAccessView() };
-	g_DeviceContext->CSSetUnorderedAccessViews(2, 2, uav1, NULL);
+	g_DeviceContext->CSSetUnorderedAccessViews(1, 2, uav1, NULL);
 
 	//dispatch
 	//g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);

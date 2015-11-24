@@ -69,7 +69,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 			UnsortedList[workID].x = 0;
 			UnsortedList[workID].y = 0;
 
-			UnsortedList[ParallelScan[workID] - 1] = leafIndex;
+			UnsortedList[ParallelScan[workID] - 1].x = leafIndex;
 		}
 
 		workID += NROFTHREADSCREATIONDISPATCHES;
@@ -126,4 +126,22 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	}
 
 	// Assign the aabb indexes to the correct leafnode index intervalls
+	//(slow version)
+	DeviceMemoryBarrierWithGroupSync();
+	workID = threadID;
+
+	unsigned int i = 0;
+	if (UnsortedList[workID].x > 0)
+	{
+		while (i < MAXSIZE)
+		{
+			if (IndiceBuffer[i].x == UnsortedList[workID].x)
+			{
+				IndiceFinal[UnsortedList[workID].y] = IndiceBuffer[i].x;
+				InterlockedAdd(UnsortedList[workID].y,1);
+			}
+			i+=1;
+		}
+	}
+
 }

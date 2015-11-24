@@ -7,8 +7,8 @@ RWTexture2D<float4> output : register(u0);
 Texture2D MeshTexture : register(t0);
 StructuredBuffer<TriangleMat> triangles : register(t1);
 
-RWStructuredBuffer<NodePass2> KDtree : register(u2);
-RWStructuredBuffer<int> Indices : register(u3);
+RWStructuredBuffer<NodePass2> KDtree : register(u1);
+RWStructuredBuffer<int> Indices : register(u2);
 
 [numthreads(CORETHREADSWIDTH, CORETHREADSHEIGHT, 1)]
 void main(uint3 threadID : SV_DispatchThreadID)
