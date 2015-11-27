@@ -428,7 +428,7 @@ void GPURTGraphics::createSwapStructures()
 		"Structured Buffer: Swap size Structure");
 
 	m_ParallelScan = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
-		sizeof(float),
+		sizeof(int) * 2,
 		MAXSIZE,
 		false,
 		true,
@@ -536,40 +536,40 @@ void GPURTGraphics::Update(float _dt)
 	int consumeID = 1;
 	int appendID = 0;
 	cb.pad.x = 0;
-//
-//	//for (int i = 0; i < MAXDEPTH; i++)
-//	//{
-//
-//	//	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
-//
-//	//	ID3D11UnorderedAccessView* nulluav2[] = { NULL, NULL };
-//	//	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, nulluav2, NULL);
-//
-//	//	unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
-//
-//	//	ID3D11UnorderedAccessView* uav3solo[] = { m_SwapStructure[appendID]->GetUnorderedAccessView() };
-//	//	ID3D11UnorderedAccessView* uav4solo[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
-//	//	g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav4solo, &appendCount);		// Consume
-//	//	g_DeviceContext->CSSetUnorderedAccessViews(4, 1, uav3solo, NULL);				// Append
-//
-//	//	createKDtreeAppend->Set();
-//	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-//	//	g_DeviceContext->Flush();
-//	//	createKDtreeAppend->Unset();
-//
-//	//	int temp = consumeID;
-//	//	consumeID = appendID;
-//	//	appendID = temp;
-//
-//	//	cb.pad.x++;
-//
-//	//}
-//
-//	//getTime = g_timer->GetTime();
-//
+
+	//for (int i = 0; i < MAXDEPTH; i++)
+	//{
+
+	//	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+
+	//	ID3D11UnorderedAccessView* nulluav2[] = { NULL, NULL };
+	//	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, nulluav2, NULL);
+
+	//	unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
+
+	//	ID3D11UnorderedAccessView* uav3solo[] = { m_SwapStructure[appendID]->GetUnorderedAccessView() };
+	//	ID3D11UnorderedAccessView* uav4solo[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
+	//	g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav4solo, &appendCount);		// Consume
+	//	g_DeviceContext->CSSetUnorderedAccessViews(4, 1, uav3solo, NULL);				// Append
+
+	//	createKDtreeAppend->Set();
+	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	//	g_DeviceContext->Flush();
+	//	createKDtreeAppend->Unset();
+
+	//	int temp = consumeID;
+	//	consumeID = appendID;
+	//	appendID = temp;
+
+	//	cb.pad.x++;
+
+	//}
+
+	//getTime = g_timer->GetTime();
+
 	// create the sorting list ----------------------------------
 
-//	g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav3solo, &appendCount);		// Consume
+	//g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav3solo, &appendCount);		// Consume
 
 	ID3D11UnorderedAccessView* nulluav[] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 7, nulluav, NULL);
@@ -617,7 +617,7 @@ void GPURTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(1, 2, uav1, NULL);
 
 	//dispatch
-	//g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
+	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
 
 	//unset buffers
 	ID3D11UnorderedAccessView* nulluav[] = { NULL, NULL, NULL, NULL };
