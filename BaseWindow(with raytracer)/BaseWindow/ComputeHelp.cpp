@@ -131,7 +131,12 @@ ID3D11Buffer* ComputeWrap::CreateStructuredBuffer(UINT uElementSize, UINT uCount
     }
 	else
 	{
-		mD3DDevice->CreateBuffer(&desc, NULL, &pBufOut);
+		HRESULT hr = mD3DDevice->CreateBuffer(&desc, NULL, &pBufOut);
+
+		if (FAILED(hr))
+		{
+			MessageBox(NULL, "Failed Making Structured buffer", "Create Buffer", MB_OK);
+		}
 	}
 
 	return pBufOut;

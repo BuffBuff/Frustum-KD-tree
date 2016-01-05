@@ -48,11 +48,17 @@ private:
 	ComputeShader *createKDtree = NULL;
 	ComputeShader *createKDtreeAppend = NULL;
 
-	ComputeShader *sortListPass = NULL;
+	ComputeShader *sortListPassOne = NULL;
+	ComputeShader *sortListPassTwo = NULL;
+	ComputeShader *sortListPassThree = NULL;
+	ComputeShader *sortListPassFour = NULL;
 
 	ComputeShader *splitCalcKDtree = NULL;
 	ComputeShader *moveKDtree = NULL;
 	ComputeShader *prepKDtree = NULL;
+
+	ComputeShader *resetShader = NULL;
+
 
 	ComputeShader *createAABBs = NULL;
 
@@ -72,6 +78,8 @@ private:
 	ComputeBuffer				*m_NodeBuffer = NULL;
 	ComputeBuffer				*m_Indices = NULL;
 	ComputeBuffer				*m_SwapStructure[2];
+	ComputeBuffer				*m_postAppend;
+
 	ComputeBuffer				*m_SwapSize = NULL;
 	ComputeBuffer				*m_KDTreeBuffer = NULL;
 	ComputeBuffer				*m_indexingCountBuffer = NULL;

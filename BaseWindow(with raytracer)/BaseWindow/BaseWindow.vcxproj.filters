@@ -175,7 +175,19 @@
     <FxCompile Include="createKDtreeAppend.hlsl">
       <Filter>Shaders\GPU kd</Filter>
     </FxCompile>
-    <FxCompile Include="sortListPass.hlsl">
+    <FxCompile Include="sortListPassTwo.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
+    </FxCompile>
+    <FxCompile Include="sortListPassOne.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
+    </FxCompile>
+    <FxCompile Include="ResetShader.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
+    </FxCompile>
+    <FxCompile Include="sortListPassThree.hlsl">
+      <Filter>Shaders\GPU kd</Filter>
+    </FxCompile>
+    <FxCompile Include="sortListPassFour.hlsl">
       <Filter>Shaders\GPU kd</Filter>
     </FxCompile>
   </ItemGroup>

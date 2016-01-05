@@ -33,6 +33,9 @@ m_fps(0.f)
 	createKDtreeAppend = nullptr;
 	createKDtreeAppend = computeWrap->CreateComputeShader("createKDtreeAppend");
 
+	resetShader = nullptr;
+	resetShader = computeWrap->CreateComputeShader("ResetShader");
+
 	createAABBs = computeWrap->CreateComputeShader("createAABBs");
 
 
@@ -40,8 +43,17 @@ m_fps(0.f)
 	moveKDtree = computeWrap->CreateComputeShader("moveKDtree");
 	prepKDtree = computeWrap->CreateComputeShader("prepKDtree");
 
-	sortListPass = nullptr;
-	sortListPass = computeWrap->CreateComputeShader("sortListPass");
+	sortListPassOne = nullptr;
+	sortListPassOne = computeWrap->CreateComputeShader("sortListPassOne");
+
+	sortListPassTwo = nullptr;
+	sortListPassTwo = computeWrap->CreateComputeShader("sortListPassTwo");
+
+	sortListPassThree = nullptr;
+	sortListPassThree = computeWrap->CreateComputeShader("sortListPassThree");
+
+	sortListPassFour = nullptr;
+	sortListPassFour = computeWrap->CreateComputeShader("sortListPassFour");
 
 	ID3D11Texture2D* pBackBuffer;
 	hr = g_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
@@ -125,6 +137,10 @@ void GPURTGraphics::createCBuffers()
 		MessageBox(NULL, "Failed Making Constant Buffer depthcBuffer", "Create Buffer", MB_OK);
 	}
 	g_DeviceContext->CSSetConstantBuffers(4, 1, &m_depthcBuffer);
+
+
+
+
 }
 
 void GPURTGraphics::createTriangleTexture()
@@ -179,6 +195,20 @@ void GPURTGraphics::createTriangleTexture()
 												NULL,
 												false,
 												"Structured Buffer: Mesh Texture");
+
+
+	
+
+	m_postAppend = computeWrap->CreateBuffer(	STRUCTURED_BUFFER,
+												sizeof(int)*4,
+												m_mesh.getNrOfFaces(),
+												false,
+												true,
+												false,
+												NULL,
+												false,
+												"Structured Buffer: Mesh Texture");
+
 	//from wchat_t to string
 	//std::string narrow = converter.to_bytes(wide_utf16_source_string);
 	//from string to wchar_t
@@ -386,6 +416,7 @@ void GPURTGraphics::createSwapStructures()
 		false,
 		"Structured Buffer: Swap size Structure");
 
+
 	m_KDTreeBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 		sizeof(NodePass2),
 		MAXSIZE,
@@ -520,14 +551,14 @@ void GPURTGraphics::Update(float _dt)
 
 	// create the AABB list --------------------------------------
 	createAABBs->Set();
-	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1); // 
+	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1); // 
 	g_DeviceContext->Flush();
 	createAABBs->Unset();
 
 
 	//	create the full KD tree ----------------------------------------
 	createKDtree->Set();
-	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	createKDtree->Unset();
 	// place the aabbs in the correct kdtree-node ------------------------------
@@ -575,8 +606,12 @@ void GPURTGraphics::Update(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 7, nulluav, NULL);
 
 	unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
+
 	ID3D11UnorderedAccessView* uavConsume[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
-	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uavConsume, &appendCount);
+
+	unsigned int keepValue = -1;
+
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uavConsume, &keepValue);
 
 	ID3D11UnorderedAccessView* uavIndice[] = { m_UnsortedIndiceBuffer->GetUnorderedAccessView(), m_IndiceBuffer->GetUnorderedAccessView(), m_SingleBucketList->GetUnorderedAccessView(), m_ParallelScan->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(1, 4, uavIndice, NULL);
@@ -587,10 +622,30 @@ void GPURTGraphics::Update(float _dt)
 	ID3D11UnorderedAccessView* uavkdtree[] = { m_KDTreeBuffer->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(6, 1, uavkdtree, NULL);
 	
+	resetShader->Set();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
 
-	sortListPass->Set();
+	sortListPassOne->Set();
 	//g_timer->Start();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	//g_timer->Stop();
+
+	sortListPassTwo->Set();
+	//g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+
+	sortListPassThree->Set();
+	//g_timer->Start();
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Flush();
+	//g_timer->Stop();
+
+	sortListPassFour->Set();
+	//g_timer->Start();
+	g_DeviceContext->Dispatch(1, 1, 1);
 	g_DeviceContext->Flush();
 	//g_timer->Stop();
 
