@@ -28,7 +28,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 	{
 		if (IndiceBuffer[i].x > -1)
 		{
-			IndiceFinal[splittSize[workID].x] = IndiceBuffer[i].x;
+			IndiceFinal[splittSize[workID].x] = IndiceBuffer[i].y;
 			InterlockedAdd(splittSize[workID].x, 1);
 		}
 		i += 1;

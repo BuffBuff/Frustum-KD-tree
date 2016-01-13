@@ -551,14 +551,14 @@ void GPURTGraphics::Update(float _dt)
 
 	// create the AABB list --------------------------------------
 	createAABBs->Set();
-	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1); // 
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1); // 
 	g_DeviceContext->Flush();
 	createAABBs->Unset();
 
 
 	//	create the full KD tree ----------------------------------------
 	createKDtree->Set();
-	//g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
 	g_DeviceContext->Flush();
 	createKDtree->Unset();
 	// place the aabbs in the correct kdtree-node ------------------------------
@@ -605,7 +605,7 @@ void GPURTGraphics::Update(float _dt)
 	ID3D11UnorderedAccessView* nulluav[] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 7, nulluav, NULL);
 
-	unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
+	//unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
 
 	ID3D11UnorderedAccessView* uavConsume[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
 
