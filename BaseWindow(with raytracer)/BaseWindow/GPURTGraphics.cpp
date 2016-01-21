@@ -672,7 +672,7 @@ void GPURTGraphics::Render(float _dt)
 	g_DeviceContext->CSSetUnorderedAccessViews(1, 2, uav1, NULL);
 
 	//dispatch
-	g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
+	//g_DeviceContext->Dispatch(NROFTHREADSWIDTH, NROFTHREADSHEIGHT, 1);
 
 	//unset buffers
 	ID3D11UnorderedAccessView* nulluav[] = { NULL, NULL, NULL, NULL };

@@ -663,7 +663,7 @@ void RTGraphics::Render(float _dt)
 
 
 	ID3D11UnorderedAccessView* uav1[] = { m_NodeBuffer->GetUnorderedAccessView(), m_Indices->GetUnorderedAccessView() };
-	g_DeviceContext->CSSetUnorderedAccessViews(2, 2, uav1, NULL);
+	g_DeviceContext->CSSetUnorderedAccessViews(1, 2, uav1, NULL);
 
 
 	//dispatch
