@@ -8,7 +8,7 @@
 #include <string>
 #include "D3D11Timer.h"
 #include "tinyobjloader\tiny_obj_loader.h"
-
+#include <fstream>
 
 extern ID3D11Device* g_Device;
 extern ID3D11DeviceContext* g_DeviceContext;
@@ -80,6 +80,13 @@ private:
 	//Timers
 	float						m_time;
 	float						m_fps;
+
+	float						m_gentime1;
+	float						m_gentime2;
+	float						m_gentime3;
+	float						m_gentime4;
+
+
 
 	float						m_kdGenTime;
 	float						m_gpuTextureGenTime;

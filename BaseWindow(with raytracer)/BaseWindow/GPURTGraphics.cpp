@@ -549,6 +549,8 @@ void GPURTGraphics::Update(float _dt)
 	ID3D11UnorderedAccessView* uav5[] = { m_mutex->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(7, 1, uav5, NULL);
 
+	g_timer->Start();
+
 	// create the AABB list --------------------------------------
 	createAABBs->Set();
 	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1); // 
@@ -568,35 +570,35 @@ void GPURTGraphics::Update(float _dt)
 	int appendID = 0;
 	cb.pad.x = 0;
 
-	//for (int i = 0; i < MAXDEPTH; i++)
+	//for (int i = 0; i < maxdepth; i++)
 	//{
 
-	//	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+	//	g_devicecontext->updatesubresource(g_cbuffer, 0, null, &cb, 0, 0);
 
-	//	ID3D11UnorderedAccessView* nulluav2[] = { NULL, NULL };
-	//	g_DeviceContext->CSSetUnorderedAccessViews(3, 2, nulluav2, NULL);
+	//	id3d11unorderedaccessview* nulluav2[] = { null, null };
+	//	g_devicecontext->cssetunorderedaccessviews(3, 2, nulluav2, null);
 
-	//	unsigned int appendCount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
+	//	unsigned int appendcount = getappendcount(m_swapstructure[consumeid]->getunorderedaccessview()); // get nr of elements in the appendbuffer
 
-	//	ID3D11UnorderedAccessView* uav3solo[] = { m_SwapStructure[appendID]->GetUnorderedAccessView() };
-	//	ID3D11UnorderedAccessView* uav4solo[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
-	//	g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav4solo, &appendCount);		// Consume
-	//	g_DeviceContext->CSSetUnorderedAccessViews(4, 1, uav3solo, NULL);				// Append
+	//	id3d11unorderedaccessview* uav3solo[] = { m_swapstructure[appendid]->getunorderedaccessview() };
+	//	id3d11unorderedaccessview* uav4solo[] = { m_swapstructure[consumeid]->getunorderedaccessview() };
+	//	g_devicecontext->cssetunorderedaccessviews(3, 1, uav4solo, &appendcount);		// consume
+	//	g_devicecontext->cssetunorderedaccessviews(4, 1, uav3solo, null);				// append
 
-	//	createKDtreeAppend->Set();
-	//	g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
-	//	g_DeviceContext->Flush();
-	//	createKDtreeAppend->Unset();
+	//	createkdtreeappend->set();
+	//	g_devicecontext->dispatch(nroftreadskdtreecreation, 1, 1);
+	//	g_devicecontext->flush();
+	//	createkdtreeappend->unset();
 
-	//	int temp = consumeID;
-	//	consumeID = appendID;
-	//	appendID = temp;
+	//	int temp = consumeid;
+	//	consumeid = appendid;
+	//	appendid = temp;
 
 	//	cb.pad.x++;
 
 	//}
 
-	//getTime = g_timer->GetTime();
+	//gettime = g_timer->gettime();
 
 	// create the sorting list ----------------------------------
 
@@ -647,7 +649,17 @@ void GPURTGraphics::Update(float _dt)
 	//g_timer->Start();
 	g_DeviceContext->Dispatch(1, 1, 1);
 	g_DeviceContext->Flush();
-	//g_timer->Stop();
+	g_timer->Stop();
+
+	float time = g_timer->GetTime();
+
+	std::ofstream outfile;
+
+	outfile.open("Online.txt", std::ios_base::app);
+	outfile << time << "\n";
+
+	outfile.close();
+
 
 	//unset buffers
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 7, nulluav, NULL);

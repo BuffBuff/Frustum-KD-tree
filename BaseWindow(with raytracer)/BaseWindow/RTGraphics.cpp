@@ -153,7 +153,11 @@ void RTGraphics::createTriangleTexture()
 		MessageBox(NULL, "Failed reading the OBJ-file", inputfile.c_str(), MB_OK);
 	}
 
+
+
 	fillMesh(&shapes, &materials, &m_mesh);
+
+
 
 
 	//////////////////OLD////////////////
@@ -166,10 +170,17 @@ void RTGraphics::createTriangleTexture()
 
 	g_timer->Start();
 	createKdTree(&m_mesh);
+	g_DeviceContext->Flush();
 	g_timer->Stop();
 
 	m_kdGenTime = g_timer->GetTime();
 
+	std::ofstream outfile;
+
+	outfile.open("Offline.txt", std::ios_base::app);
+	outfile << m_kdGenTime << "\n";
+
+	outfile.close();
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
