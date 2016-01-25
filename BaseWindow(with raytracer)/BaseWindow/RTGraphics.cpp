@@ -154,9 +154,9 @@ void RTGraphics::createTriangleTexture()
 	}
 
 
-
+	g_timer->Start();
 	fillMesh(&shapes, &materials, &m_mesh);
-
+	g_DeviceContext->Flush();
 
 
 
@@ -168,7 +168,7 @@ void RTGraphics::createTriangleTexture()
 	//m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
 
-	g_timer->Start();
+	
 	createKdTree(&m_mesh);
 	g_DeviceContext->Flush();
 	g_timer->Stop();
