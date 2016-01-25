@@ -140,13 +140,16 @@ void RTGraphics::createTriangleTexture()
 	//kub; bunny; cornell_box;
 
 
-	//std::string inputfile = "Meshi/kub.obj";
-	std::string inputfile = "Meshi/cornell_box.obj";
+	std::string inputfile = "Meshi/kub.obj";
+	//std::string inputfile = "Meshi/cornell_box.obj";
+	//std::string inputfile = "Meshi/Bunny.obj";
 
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 
+
 	std::string err = tinyobj::LoadObj(shapes, materials, inputfile.c_str());
+	g_DeviceContext->Flush();
 
 	if (!err.empty()) 
 	{
@@ -164,8 +167,8 @@ void RTGraphics::createTriangleTexture()
 	//Load OBJ-file
 	//m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,1,1,1));
-	m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
-	//m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
+	//m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
+	m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
 
 	
@@ -177,7 +180,7 @@ void RTGraphics::createTriangleTexture()
 
 	std::ofstream outfile;
 
-	outfile.open("Offline.txt", std::ios_base::app);
+	outfile.open("OfflineKubLap.txt", std::ios_base::app);
 	outfile << m_kdGenTime << "\n";
 
 	outfile.close();

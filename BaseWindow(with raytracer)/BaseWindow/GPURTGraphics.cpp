@@ -148,8 +148,9 @@ void GPURTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 	//Mesh
 	///////////////////////////////////////////////////////////////////////////////////////////
-	std::string inputfile = "Meshi/kub.obj";
+	//std::string inputfile = "Meshi/kub.obj";
 	//std::string inputfile = "Meshi/cornell_box.obj";
+	std::string inputfile = "Meshi/Bunny.obj";
 
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -655,7 +656,7 @@ void GPURTGraphics::Update(float _dt)
 
 	std::ofstream outfile;
 
-	outfile.open("Online.txt", std::ios_base::app);
+	outfile.open("OnlineBunnyLap.txt", std::ios_base::app);
 	outfile << time << "\n";
 
 	outfile.close();
