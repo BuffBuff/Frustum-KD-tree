@@ -139,10 +139,12 @@ void RTGraphics::createTriangleTexture()
 	//meshes:
 	//kub; bunny; cornell_box;
 
+	std::string inputfile = "Meshi/cornell_box.obj";			// 36
+	//std::string inputfile = "Meshi/teapot.obj";				// 16k
+	//std::string inputfile = "Meshi/mini_spaceship.obj";		// 44k
+	//std::string inputfile = "Meshi/mitsuba.obj";				// 61k
+	//std::string inputfile = "Meshi/Bunny.obj";				// 70k
 
-	std::string inputfile = "Meshi/kub.obj";
-	//std::string inputfile = "Meshi/cornell_box.obj";
-	//std::string inputfile = "Meshi/Bunny.obj";
 
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -168,7 +170,7 @@ void RTGraphics::createTriangleTexture()
 	//m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,1,1,1));
 	//m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
-	m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
+	//m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
 
 	createKdTree(&m_mesh);
@@ -177,12 +179,12 @@ void RTGraphics::createTriangleTexture()
 
 	m_kdGenTime = g_timer->GetTime();
 
-	std::ofstream outfile;
+	//std::ofstream outfile;
 
-	outfile.open("OfflineKubLap.txt", std::ios_base::app);
-	outfile << m_kdGenTime << "\n";
+	//outfile.open("OfflineKubLap.txt", std::ios_base::app);
+	//outfile << m_kdGenTime << "\n";
 
-	outfile.close();
+	//outfile.close();
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
@@ -260,20 +262,20 @@ void RTGraphics::fillMesh(std::vector<tinyobj::shape_t>* _shapes, std::vector<ti
 		}
 
 
-		int k = 0;
-		for (int j = 0; j < _shapes->at(i).mesh.texcoords.size(); j += 6)
-		{
-			//Textcoordinats
-			temp.at(k).textureCoordinate0.x = _shapes->at(i).mesh.texcoords.at(j);
-			temp.at(k).textureCoordinate0.y = _shapes->at(i).mesh.texcoords.at(j + 1);
+		//int k = 0;
+		//for (int j = 0; j < _shapes->at(i).mesh.texcoords.size(); j += 6)
+		//{
+		//	//Textcoordinats
+		//	temp.at(k).textureCoordinate0.x = _shapes->at(i).mesh.texcoords.at(j);
+		//	temp.at(k).textureCoordinate0.y = _shapes->at(i).mesh.texcoords.at(j + 1);
 
-			temp.at(k).textureCoordinate1.x = _shapes->at(i).mesh.texcoords.at(j + 2);
-			temp.at(k).textureCoordinate1.y = _shapes->at(i).mesh.texcoords.at(j + 3);
+		//	temp.at(k).textureCoordinate1.x = _shapes->at(i).mesh.texcoords.at(j + 2);
+		//	temp.at(k).textureCoordinate1.y = _shapes->at(i).mesh.texcoords.at(j + 3);
 
-			temp.at(k).textureCoordinate2.x = _shapes->at(i).mesh.texcoords.at(j + 4);
-			temp.at(k).textureCoordinate2.y = _shapes->at(i).mesh.texcoords.at(j + 5);
-			k++;
-		}
+		//	temp.at(k).textureCoordinate2.x = _shapes->at(i).mesh.texcoords.at(j + 4);
+		//	temp.at(k).textureCoordinate2.y = _shapes->at(i).mesh.texcoords.at(j + 5);
+		//	k++;
+		//}
 
 	
 	}

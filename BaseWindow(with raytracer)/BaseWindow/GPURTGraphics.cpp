@@ -148,9 +148,12 @@ void GPURTGraphics::createTriangleTexture()
 	///////////////////////////////////////////////////////////////////////////////////////////
 	//Mesh
 	///////////////////////////////////////////////////////////////////////////////////////////
-	//std::string inputfile = "Meshi/kub.obj";
-	//std::string inputfile = "Meshi/cornell_box.obj";
-	std::string inputfile = "Meshi/Bunny.obj";
+	
+	std::string inputfile = "Meshi/cornell_box.obj";			// 36
+	//std::string inputfile = "Meshi/teapot.obj";				// 16k
+	//std::string inputfile = "Meshi/mini_spaceship.obj";		// 44k
+	//std::string inputfile = "Meshi/mitsuba.obj";				// 61k
+	//std::string inputfile = "Meshi/Bunny.obj";				// 70k
 
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -170,7 +173,7 @@ void GPURTGraphics::createTriangleTexture()
 	//m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1, 1, 1, 1));
 	//m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
-	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
+	//m_mesh.scaleMesh(XMFLOAT3(10,10,10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.5f,PI));
 	//m_mesh.rotateMesh(XMFLOAT3(0.1f*PI, 0.1f * PI, 0.1f*PI));
 
@@ -277,20 +280,20 @@ void GPURTGraphics::fillMesh(std::vector<tinyobj::shape_t>* _shapes, std::vector
 		}
 
 
-		int k = 0;
-		for (int j = 0; j < _shapes->at(i).mesh.texcoords.size(); j += 6)
-		{
-			//Textcoordinats
-			temp.at(k).textureCoordinate0.x = _shapes->at(i).mesh.texcoords.at(j);
-			temp.at(k).textureCoordinate0.y = _shapes->at(i).mesh.texcoords.at(j + 1);
+		//int k = 0;
+		//for (int j = 0; j < _shapes->at(i).mesh.texcoords.size(); j += 6)
+		//{
+		//	//Textcoordinats
+		//	temp.at(k).textureCoordinate0.x = _shapes->at(i).mesh.texcoords.at(j);
+		//	temp.at(k).textureCoordinate0.y = _shapes->at(i).mesh.texcoords.at(j + 1);
 
-			temp.at(k).textureCoordinate1.x = _shapes->at(i).mesh.texcoords.at(j + 2);
-			temp.at(k).textureCoordinate1.y = _shapes->at(i).mesh.texcoords.at(j + 3);
+		//	temp.at(k).textureCoordinate1.x = _shapes->at(i).mesh.texcoords.at(j + 2);
+		//	temp.at(k).textureCoordinate1.y = _shapes->at(i).mesh.texcoords.at(j + 3);
 
-			temp.at(k).textureCoordinate2.x = _shapes->at(i).mesh.texcoords.at(j + 4);
-			temp.at(k).textureCoordinate2.y = _shapes->at(i).mesh.texcoords.at(j + 5);
-			k++;
-		}
+		//	temp.at(k).textureCoordinate2.x = _shapes->at(i).mesh.texcoords.at(j + 4);
+		//	temp.at(k).textureCoordinate2.y = _shapes->at(i).mesh.texcoords.at(j + 5);
+		//	k++;
+		//}
 
 
 	}
@@ -571,33 +574,33 @@ void GPURTGraphics::Update(float _dt)
 	int appendID = 0;
 	cb.pad.x = 0;
 
-	//for (int i = 0; i < maxdepth; i++)
-	//{
+	for (int i = 0; i < MAXDEPTH; i++)
+	{
 
-	//	g_devicecontext->updatesubresource(g_cbuffer, 0, null, &cb, 0, 0);
+		g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 
-	//	id3d11unorderedaccessview* nulluav2[] = { null, null };
-	//	g_devicecontext->cssetunorderedaccessviews(3, 2, nulluav2, null);
+		ID3D11UnorderedAccessView* nulluav2[] = { NULL, NULL };
+		g_DeviceContext->CSSetUnorderedAccessViews(3, 2, nulluav2, NULL);
 
-	//	unsigned int appendcount = getappendcount(m_swapstructure[consumeid]->getunorderedaccessview()); // get nr of elements in the appendbuffer
+		unsigned int appendcount = getAppendCount(m_SwapStructure[consumeID]->GetUnorderedAccessView()); // get nr of elements in the appendbuffer
 
-	//	id3d11unorderedaccessview* uav3solo[] = { m_swapstructure[appendid]->getunorderedaccessview() };
-	//	id3d11unorderedaccessview* uav4solo[] = { m_swapstructure[consumeid]->getunorderedaccessview() };
-	//	g_devicecontext->cssetunorderedaccessviews(3, 1, uav4solo, &appendcount);		// consume
-	//	g_devicecontext->cssetunorderedaccessviews(4, 1, uav3solo, null);				// append
+		ID3D11UnorderedAccessView* uav3solo[] = { m_SwapStructure[appendID]->GetUnorderedAccessView() };
+		ID3D11UnorderedAccessView* uav4solo[] = { m_SwapStructure[consumeID]->GetUnorderedAccessView() };
+		g_DeviceContext->CSSetUnorderedAccessViews(3, 1, uav4solo, &appendcount);		// consume
+		g_DeviceContext->CSSetUnorderedAccessViews(4, 1, uav3solo, NULL);				// append
 
-	//	createkdtreeappend->set();
-	//	g_devicecontext->dispatch(nroftreadskdtreecreation, 1, 1);
-	//	g_devicecontext->flush();
-	//	createkdtreeappend->unset();
+		createKDtreeAppend->Set();
+		g_DeviceContext->Dispatch(NROFTREADSKDTREECREATION, 1, 1);
+		g_DeviceContext->Flush();
+		createKDtreeAppend->Unset();
 
-	//	int temp = consumeid;
-	//	consumeid = appendid;
-	//	appendid = temp;
+		int temp = consumeID;
+		consumeID = appendID;
+		appendID = temp;
 
-	//	cb.pad.x++;
+		cb.pad.x++;
 
-	//}
+	}
 
 	//gettime = g_timer->gettime();
 
@@ -654,12 +657,12 @@ void GPURTGraphics::Update(float _dt)
 
 	float time = g_timer->GetTime();
 
-	std::ofstream outfile;
+	//std::ofstream outfile;
 
-	outfile.open("OnlineBunnyLap.txt", std::ios_base::app);
-	outfile << time << "\n";
+	//outfile.open("OnlineBunnyLap7.txt", std::ios_base::app);
+	//outfile << time << "\n";
 
-	outfile.close();
+	//outfile.close();
 
 
 	//unset buffers
