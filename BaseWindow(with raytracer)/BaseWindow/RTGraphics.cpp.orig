@@ -140,45 +140,59 @@ void RTGraphics::createTriangleTexture()
 	//kub; bunny; cornell_box;
 
 
-	std::string inputfile = "Meshi/cornell_box.obj";
+	std::string inputfile = "Meshi/kub.obj";
+	//std::string inputfile = "Meshi/cornell_box.obj";
+	//std::string inputfile = "Meshi/Bunny.obj";
+
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 
+
 	std::string err = tinyobj::LoadObj(shapes, materials, inputfile.c_str());
+	g_DeviceContext->Flush();
 
 	if (!err.empty()) 
 	{
 		MessageBox(NULL, "Failed reading the OBJ-file", inputfile.c_str(), MB_OK);
 	}
 
+
+	g_timer->Start();
 	fillMesh(&shapes, &materials, &m_mesh);
+	g_DeviceContext->Flush();
+
 
 
 	//////////////////OLD////////////////
 	//Load OBJ-file
-<<<<<<< HEAD
-	m_mesh.loadObj("Meshi/bunny.obj");
-	m_mesh.setColor(XMFLOAT4(1,0,0,1));
-	m_mesh.scaleMesh(XMFLOAT3(10,10,10));
-=======
 	//m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,1,1,1));
-	m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
-	//m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
->>>>>>> Change_OBJ_Loader
+	//m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
+	m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
 	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
 
-	g_timer->Start();
+<<<<<<< HEAD
+	
+=======
+>>>>>>> origin/Append_Sort
 	createKdTree(&m_mesh);
+	g_DeviceContext->Flush();
 	g_timer->Stop();
 
 	m_kdGenTime = g_timer->GetTime();
 
+	std::ofstream outfile;
+
+	outfile.open("OfflineKubLap.txt", std::ios_base::app);
+	outfile << m_kdGenTime << "\n";
+
+	outfile.close();
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
 											 m_mesh.getNrOfFaces(),
 											 true,
+											 false,
 											 false,
 											 m_mesh.getTriangles(),
 											 false,
@@ -518,6 +532,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 												 MAXSIZE,
 												 false,
 												 true,
+												 false,
 												 initData,
 												 false,
 												 "Structed Buffer: Node Buffer");
@@ -528,6 +543,7 @@ void RTGraphics::createNodeBuffer(Node* _rootNode)
 												 indiceList->size(),
 												 false,
 												 true,
+												 false,
 												 indiceList->data(),
 												 false,
 												 "Structed Buffer: Indice Buffer");
@@ -610,32 +626,29 @@ RTGraphics::~RTGraphics()
 void RTGraphics::Update(float _dt)
 {
 	// updating the constant buffer holding the camera transforms
-	XMFLOAT4X4 temp, viewInv, projInv;
-	XMFLOAT3 tempp = Cam->getCameraPosition(); // w ska va 1
-	XMStoreFloat4x4(&temp, XMMatrixIdentity());
+	//XMFLOAT4X4 temp, viewInv, projInv;
+	//XMFLOAT3 tempp = Cam->getCameraPosition(); // w ska va 1
+	//XMStoreFloat4x4(&temp, XMMatrixIdentity());
 
-	XMStoreFloat4x4(&temp, XMMatrixTranslation(tempp.x,tempp.y,tempp.z));
+	//XMStoreFloat4x4(&temp, XMMatrixTranslation(tempp.x,tempp.y,tempp.z));
 
-	XMStoreFloat4x4(&temp, XMMatrixTranspose(XMLoadFloat4x4(&temp)));
+	//XMStoreFloat4x4(&temp, XMMatrixTranspose(XMLoadFloat4x4(&temp)));
 
-	XMStoreFloat4x4(&viewInv, XMMatrixInverse(&XMMatrixDeterminant(
-		XMLoadFloat4x4(&Cam->getViewMatrix())), XMLoadFloat4x4(&Cam->getViewMatrix())));
+	//XMStoreFloat4x4(&viewInv, XMMatrixInverse(&XMMatrixDeterminant(
+	//	XMLoadFloat4x4(&Cam->getViewMatrix())), XMLoadFloat4x4(&Cam->getViewMatrix())));
 
-	XMStoreFloat4x4(&projInv, XMMatrixInverse(&XMMatrixDeterminant(
-		XMLoadFloat4x4(&Cam->getProjectionMatrix())), XMLoadFloat4x4(&Cam->getProjectionMatrix())));
+	//XMStoreFloat4x4(&projInv, XMMatrixInverse(&XMMatrixDeterminant(
+	//	XMLoadFloat4x4(&Cam->getProjectionMatrix())), XMLoadFloat4x4(&Cam->getProjectionMatrix())));
 
 
-	cb.IV = viewInv;
-	cb.IP = projInv;
-	cb.cameraPos = XMFLOAT4(tempp.x, tempp.y, tempp.z, 1);
-	cb.nrOfTriangles = m_mesh.getNrOfFaces();
-	g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
+	//cb.IV = viewInv;
+	//cb.IP = projInv;
+	//cb.cameraPos = XMFLOAT4(tempp.x, tempp.y, tempp.z, 1);
+	//cb.nrOfTriangles = m_mesh.getNrOfFaces();
+	//g_DeviceContext->UpdateSubresource(g_cBuffer, 0, NULL, &cb, 0, 0);
 
-	g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
+	//g_DeviceContext->UpdateSubresource(m_lightcBuffer, 0, NULL, &lightcb, 0, 0);
 
-	g_DeviceContext->UpdateSubresource(m_spherecBuffer, 0, NULL, &spherecb, 0, 0);
-
-	g_DeviceContext->UpdateSubresource(m_togglecBuffer, 0, NULL, &togglescb, 0, 0);
 
 	m_time += _dt;
 	static float frameCnt = 0;
@@ -667,7 +680,7 @@ void RTGraphics::Render(float _dt)
 
 
 	ID3D11UnorderedAccessView* uav1[] = { m_NodeBuffer->GetUnorderedAccessView(), m_Indices->GetUnorderedAccessView() };
-	g_DeviceContext->CSSetUnorderedAccessViews(2, 2, uav1, NULL);
+	g_DeviceContext->CSSetUnorderedAccessViews(1, 2, uav1, NULL);
 
 
 	//dispatch
@@ -688,24 +701,24 @@ void RTGraphics::Render(float _dt)
 		MessageBox(NULL,"Failed to present the swapchain","RT Render Error",S_OK);
 
 	//Title text and FPS counter
-	/*char title[256];
-	sprintf_s(
-		title,
-		sizeof(title),
-		"FCKDT Project - fps: %f - genTime: %f, %f",
-		m_fps,
-		m_kdGenTime,
-		m_gpuTextureGenTime
-		);*/
-
 	char title[256];
 	sprintf_s(
 		title,
 		sizeof(title),
-		"FCKDT Project - genTime: %f, %f",
+		"Offline - fps: %f - genTime: %f, %f",
+		m_fps,
 		m_kdGenTime,
 		m_gpuTextureGenTime
 		);
+
+	//char title[256];
+	//sprintf_s(
+	//	title,
+	//	sizeof(title),
+	//	"FCKDT Project - genTime: %f, %f",
+	//	m_kdGenTime,
+	//	m_gpuTextureGenTime
+	//	);
 
 	SetWindowText(*m_Hwnd, title);
 }
@@ -1064,7 +1077,7 @@ void RTGraphics::splitAABBList(Node* _node, std::vector<AABB>* _AABBList, int sp
 
 		nrOfNodes -= 2;
 
-		if (_AABBList->size() < 100 || _depth > 19)
+		if (_AABBList->size() < 100 || _depth > MAXOFFLINEDEPTH - 1)
 		{
 			assignTriangles(_node, _AABBList);
 
@@ -1145,4 +1158,10 @@ void RTGraphics::updateTogglecb(int _lightSpheres, int _placeHolder1, int _place
 	togglescb.lightSpheres = _lightSpheres;
 
 	togglescb.togglePad = XMFLOAT3(0, 0, 0);
+
+	g_DeviceContext->UpdateSubresource(m_spherecBuffer, 0, NULL, &spherecb, 0, 0);
+
+	g_DeviceContext->UpdateSubresource(m_togglecBuffer, 0, NULL, &togglescb, 0, 0);
+
+
 }
