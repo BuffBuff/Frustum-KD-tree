@@ -145,10 +145,8 @@ void RTGraphics::createTriangleTexture()
 	//std::string inputfile = "Meshi/mitsuba.obj";				// 61k
 	//std::string inputfile = "Meshi/Bunny.obj";				// 70k
 
-
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
-
 
 	std::string err = tinyobj::LoadObj(shapes, materials, inputfile.c_str());
 	g_DeviceContext->Flush();
@@ -179,12 +177,12 @@ void RTGraphics::createTriangleTexture()
 
 	m_kdGenTime = g_timer->GetTime();
 
-	//std::ofstream outfile;
+	std::ofstream outfile;
 
-	//outfile.open("OfflineKubLap.txt", std::ios_base::app);
-	//outfile << m_kdGenTime << "\n";
+	outfile.open("Tests/Laptop/Offline/CornellBox1.txt", std::ios_base::app);
+	outfile << m_kdGenTime << "\n";
 
-	//outfile.close();
+	outfile.close();
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),
