@@ -139,9 +139,9 @@ void RTGraphics::createTriangleTexture()
 	//meshes:
 	//kub; bunny; cornell_box;
 
-	std::string inputfile = "Meshi/cornell_box.obj";			// 36
+	//std::string inputfile = "Meshi/cornell_box.obj";			// 36
 	//std::string inputfile = "Meshi/teapot.obj";				// 16k
-	//std::string inputfile = "Meshi/mini_spaceship.obj";		// 44k
+	std::string inputfile = "Meshi/mini_spaceship.obj";		// 44k
 	//std::string inputfile = "Meshi/mitsuba.obj";				// 61k
 	//std::string inputfile = "Meshi/Bunny.obj";				// 70k
 
@@ -168,9 +168,10 @@ void RTGraphics::createTriangleTexture()
 	//m_mesh.loadObj("Meshi/kub.obj");
 	m_mesh.setColor(XMFLOAT4(1,1,1,1));
 	//m_mesh.scaleMesh(XMFLOAT3(0.10, 0.10, 0.10));
+	//m_mesh.scaleMesh(XMFLOAT3(2, 2, 2));
 	//m_mesh.scaleMesh(XMFLOAT3(10, 10, 10));
-	//m_mesh.rotateMesh(XMFLOAT3(PI*0.2f,PI*0.1f,PI*0.2f));
-
+	m_mesh.rotateMesh(XMFLOAT3(0,PI,0));
+	//m_mesh.rotateMesh(XMFLOAT3(0, PI, 0));
 	
 	createKdTree(&m_mesh);
 	g_DeviceContext->Flush();
@@ -178,12 +179,12 @@ void RTGraphics::createTriangleTexture()
 
 	m_kdGenTime = g_timer->GetTime();
 
-	std::ofstream outfile;
+	/*std::ofstream outfile;
 
-	outfile.open("Tests/Laptop/Offline/CornellBox1.txt", std::ios_base::app);
+	outfile.open("Tests/Laptop/Offline/mini_spaceship21.txt", std::ios_base::app);
 	outfile << m_kdGenTime << "\n";
 
-	outfile.close();
+	outfile.close();*/
 
 	m_meshBuffer = computeWrap->CreateBuffer(STRUCTURED_BUFFER,
 											 sizeof(TriangleMat),

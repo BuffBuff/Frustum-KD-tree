@@ -1,7 +1,7 @@
 #pragma once
 
 
-static const int NROFLIGHTS = 1;
+static const int NROFLIGHTS = 3;
 static const int NRTRIANGLES = 12;
 static const int NRTRIANGLESMESH = 12;
 static const int NRLIGHTSUSE = 1;

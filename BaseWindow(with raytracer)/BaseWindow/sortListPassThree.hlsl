@@ -24,7 +24,7 @@ void main(uint3 threadID : SV_DispatchThreadID)
 
 	// Calculate the final indice list start positions and assign them to the leaf nodes
 	workID = threadIndex;
-	while (workID < MAXSIZE) // Places the nr of aabbs next to the leafnode index thet holds them and resets ParallelScan
+	while (workID < MAXSIZE) // Places the nr of aabbs next to the leafnode index that holds them and resets ParallelScan
 	{
 		UnsortedList[workID].y = splittSize[UnsortedList[workID].x].x;
 		KDtree[UnsortedList[workID].x].nrOfTriangles = UnsortedList[workID].y;

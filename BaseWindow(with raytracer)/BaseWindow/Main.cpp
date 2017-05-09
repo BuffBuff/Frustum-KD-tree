@@ -44,7 +44,7 @@ int g_Width, g_Height;
 
 enum { GPUGen, Offline };
 
-int renderMethod = Offline;
+int renderMethod = GPUGen;
 bool modeChange = false;
 
 
